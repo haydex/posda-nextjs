@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const dashboardLinks = [
   { href: "/dashboard", label: "Overview" },
@@ -10,6 +13,8 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-5xl gap-8 px-4 py-8 sm:px-6">
       <aside className="w-44 shrink-0 rounded-lg border border-black/10 p-4 dark:border-white/15">
@@ -21,7 +26,11 @@ export default function DashboardLayout({
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 hover:text-black dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
+              className={`rounded-md px-3 py-2 text-sm transition-colors ${
+                pathname === link.href
+                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  : "text-zinc-700 hover:bg-zinc-100 hover:text-black dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
+              }`}
             >
               {link.label}
             </Link>
