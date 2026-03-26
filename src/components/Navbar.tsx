@@ -7,6 +7,9 @@ const navLinks = [
   { href: "/api-demo", label: "API Demo" },
   { href: "/collections", label: "Collections" },
   { href: "/datasets", label: "Datasets" },
+  { href: "/recordsets", label: "Recordsets" },
+  { href: "/transfers", label: "Transfers" },
+  { href: "/releases", label: "Releases" },
   { href: "/drafts", label: "Drafts" },
 ];
 

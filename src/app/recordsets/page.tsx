@@ -2,46 +2,46 @@
 
 import { useEffect, useState } from "react";
 
-type Dataset = {
+type Recordset = {
+  recordset_id: number;
+  recordset_doi: string;
   dataset_id: number;
-  dataset_doi: string;
-  dataset_type: string;
-  dataset_short_title: string;
-  dataset_title: string;
-  dataset_name: string;
+  license_id: number;
+  recordset_type: string;
+  recordset_title: string;
   active: boolean;
   when_created: string;
-  when_updated: string;
   who_created: string;
+  when_updated: string;
   who_updated: string;
 };
 
-type DatasetsResponse = {
-  datasets: Dataset[];
+type RecordsetsResponse = {
+  recordsets: Recordset[];
   total: number;
   timestamp: string;
 };
 
-export default function DatasetsPage() {
-  const [data, setData] = useState<DatasetsResponse | null>(null);
+export default function RecordsetsPage() {
+  const [data, setData] = useState<RecordsetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadDatasets() {
+  async function loadRecordsets() {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch("/api/datasets", { cache: "no-store" });
+      const response = await fetch("/api/recordsets", { cache: "no-store" });
 
       if (!response.ok) {
         throw new Error("Request failed");
       }
 
-      const json = (await response.json()) as DatasetsResponse;
+      const json = (await response.json()) as RecordsetsResponse;
       setData(json);
     } catch {
-      setError("Could not load datasets.");
+      setError("Could not load recordsets.");
       setData(null);
     } finally {
       setIsLoading(false);
@@ -49,14 +49,15 @@ export default function DatasetsPage() {
   }
 
   useEffect(() => {
-    void loadDatasets();
+    void loadRecordsets();
   }, []);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Datasets</h1>
+    <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
+      <h1 className="text-3xl font-semibold tracking-tight">Recordsets</h1>
       <p className="mt-2 text-zinc-600 dark:text-zinc-300">
-        This page calls <code>/api/datasets</code> and renders dataset records.
+        This page calls <code>/api/recordsets</code> and renders recordset
+        records.
       </p>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
@@ -69,7 +70,8 @@ export default function DatasetsPage() {
         {!isLoading && data && (
           <div className="space-y-4">
             <p className="text-sm text-zinc-600 dark:text-zinc-300">
-              Total datasets: <span className="font-medium">{data.total}</span>
+              Total recordsets:{" "}
+              <span className="font-medium">{data.total}</span>
             </p>
 
             <div className="overflow-x-auto">
@@ -78,10 +80,10 @@ export default function DatasetsPage() {
                   <tr className="border-b border-black/10 dark:border-white/15">
                     <th className="px-2 py-2 font-medium">ID</th>
                     <th className="px-2 py-2 font-medium">DOI</th>
+                    <th className="px-2 py-2 font-medium">Dataset ID</th>
+                    <th className="px-2 py-2 font-medium">License ID</th>
                     <th className="px-2 py-2 font-medium">Type</th>
-                    <th className="px-2 py-2 font-medium">Short Title</th>
                     <th className="px-2 py-2 font-medium">Title</th>
-                    <th className="px-2 py-2 font-medium">Name</th>
                     <th className="px-2 py-2 font-medium">Active</th>
                     <th className="px-2 py-2 font-medium">Created</th>
                     <th className="px-2 py-2 font-medium">Created By</th>
@@ -90,30 +92,28 @@ export default function DatasetsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.datasets.map((dataset) => (
+                  {data.recordsets.map((recordset) => (
                     <tr
-                      key={dataset.dataset_id}
+                      key={recordset.recordset_id}
                       className="border-b border-black/5 dark:border-white/10"
                     >
-                      <td className="px-2 py-2">{dataset.dataset_id}</td>
-                      <td className="px-2 py-2">{dataset.dataset_doi}</td>
-                      <td className="px-2 py-2">{dataset.dataset_type}</td>
+                      <td className="px-2 py-2">{recordset.recordset_id}</td>
+                      <td className="px-2 py-2">{recordset.recordset_doi}</td>
+                      <td className="px-2 py-2">{recordset.dataset_id}</td>
+                      <td className="px-2 py-2">{recordset.license_id}</td>
+                      <td className="px-2 py-2">{recordset.recordset_type}</td>
+                      <td className="px-2 py-2">{recordset.recordset_title}</td>
                       <td className="px-2 py-2">
-                        {dataset.dataset_short_title}
-                      </td>
-                      <td className="px-2 py-2">{dataset.dataset_title}</td>
-                      <td className="px-2 py-2">{dataset.dataset_name}</td>
-                      <td className="px-2 py-2">
-                        {dataset.active ? "Yes" : "No"}
+                        {recordset.active ? "Yes" : "No"}
                       </td>
                       <td className="px-2 py-2">
-                        {new Date(dataset.when_created).toLocaleString()}
+                        {new Date(recordset.when_created).toLocaleString()}
                       </td>
-                      <td className="px-2 py-2">{dataset.who_created}</td>
+                      <td className="px-2 py-2">{recordset.who_created}</td>
                       <td className="px-2 py-2">
-                        {new Date(dataset.when_updated).toLocaleString()}
+                        {new Date(recordset.when_updated).toLocaleString()}
                       </td>
-                      <td className="px-2 py-2">{dataset.who_updated}</td>
+                      <td className="px-2 py-2">{recordset.who_updated}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -124,7 +124,7 @@ export default function DatasetsPage() {
 
         <button
           type="button"
-          onClick={() => void loadDatasets()}
+          onClick={() => void loadRecordsets()}
           className="mt-4 rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
           Refresh

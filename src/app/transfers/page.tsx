@@ -2,46 +2,46 @@
 
 import { useEffect, useState } from "react";
 
-type Dataset = {
-  dataset_id: number;
-  dataset_doi: string;
-  dataset_type: string;
-  dataset_short_title: string;
-  dataset_title: string;
-  dataset_name: string;
-  active: boolean;
+type Transfer = {
+  dataset_release_transfer_id: number;
+  dataset_release_id: number;
+  destination_id: number;
+  transfer_name: string;
+  transfer_mode: string;
+  transfer_status: string;
+  transfer_notes: string;
   when_created: string;
-  when_updated: string;
   who_created: string;
+  when_updated: string;
   who_updated: string;
 };
 
-type DatasetsResponse = {
-  datasets: Dataset[];
+type TransfersResponse = {
+  transfers: Transfer[];
   total: number;
   timestamp: string;
 };
 
-export default function DatasetsPage() {
-  const [data, setData] = useState<DatasetsResponse | null>(null);
+export default function TransfersPage() {
+  const [data, setData] = useState<TransfersResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadDatasets() {
+  async function loadTransfers() {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch("/api/datasets", { cache: "no-store" });
+      const response = await fetch("/api/transfers", { cache: "no-store" });
 
       if (!response.ok) {
         throw new Error("Request failed");
       }
 
-      const json = (await response.json()) as DatasetsResponse;
+      const json = (await response.json()) as TransfersResponse;
       setData(json);
     } catch {
-      setError("Could not load datasets.");
+      setError("Could not load transfers.");
       setData(null);
     } finally {
       setIsLoading(false);
@@ -49,14 +49,15 @@ export default function DatasetsPage() {
   }
 
   useEffect(() => {
-    void loadDatasets();
+    void loadTransfers();
   }, []);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Datasets</h1>
+    <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
+      <h1 className="text-3xl font-semibold tracking-tight">Transfers</h1>
       <p className="mt-2 text-zinc-600 dark:text-zinc-300">
-        This page calls <code>/api/datasets</code> and renders dataset records.
+        This page calls <code>/api/transfers</code> and renders dataset release
+        transfer records.
       </p>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
@@ -69,7 +70,7 @@ export default function DatasetsPage() {
         {!isLoading && data && (
           <div className="space-y-4">
             <p className="text-sm text-zinc-600 dark:text-zinc-300">
-              Total datasets: <span className="font-medium">{data.total}</span>
+              Total transfers: <span className="font-medium">{data.total}</span>
             </p>
 
             <div className="overflow-x-auto">
@@ -77,12 +78,14 @@ export default function DatasetsPage() {
                 <thead>
                   <tr className="border-b border-black/10 dark:border-white/15">
                     <th className="px-2 py-2 font-medium">ID</th>
-                    <th className="px-2 py-2 font-medium">DOI</th>
-                    <th className="px-2 py-2 font-medium">Type</th>
-                    <th className="px-2 py-2 font-medium">Short Title</th>
-                    <th className="px-2 py-2 font-medium">Title</th>
+                    <th className="px-2 py-2 font-medium">
+                      Dataset Release ID
+                    </th>
+                    <th className="px-2 py-2 font-medium">Destination ID</th>
                     <th className="px-2 py-2 font-medium">Name</th>
-                    <th className="px-2 py-2 font-medium">Active</th>
+                    <th className="px-2 py-2 font-medium">Mode</th>
+                    <th className="px-2 py-2 font-medium">Status</th>
+                    <th className="px-2 py-2 font-medium">Notes</th>
                     <th className="px-2 py-2 font-medium">Created</th>
                     <th className="px-2 py-2 font-medium">Created By</th>
                     <th className="px-2 py-2 font-medium">Updated</th>
@@ -90,30 +93,30 @@ export default function DatasetsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.datasets.map((dataset) => (
+                  {data.transfers.map((transfer) => (
                     <tr
-                      key={dataset.dataset_id}
+                      key={transfer.dataset_release_transfer_id}
                       className="border-b border-black/5 dark:border-white/10"
                     >
-                      <td className="px-2 py-2">{dataset.dataset_id}</td>
-                      <td className="px-2 py-2">{dataset.dataset_doi}</td>
-                      <td className="px-2 py-2">{dataset.dataset_type}</td>
                       <td className="px-2 py-2">
-                        {dataset.dataset_short_title}
-                      </td>
-                      <td className="px-2 py-2">{dataset.dataset_title}</td>
-                      <td className="px-2 py-2">{dataset.dataset_name}</td>
-                      <td className="px-2 py-2">
-                        {dataset.active ? "Yes" : "No"}
+                        {transfer.dataset_release_transfer_id}
                       </td>
                       <td className="px-2 py-2">
-                        {new Date(dataset.when_created).toLocaleString()}
+                        {transfer.dataset_release_id}
                       </td>
-                      <td className="px-2 py-2">{dataset.who_created}</td>
+                      <td className="px-2 py-2">{transfer.destination_id}</td>
+                      <td className="px-2 py-2">{transfer.transfer_name}</td>
+                      <td className="px-2 py-2">{transfer.transfer_mode}</td>
+                      <td className="px-2 py-2">{transfer.transfer_status}</td>
+                      <td className="px-2 py-2">{transfer.transfer_notes}</td>
                       <td className="px-2 py-2">
-                        {new Date(dataset.when_updated).toLocaleString()}
+                        {new Date(transfer.when_created).toLocaleString()}
                       </td>
-                      <td className="px-2 py-2">{dataset.who_updated}</td>
+                      <td className="px-2 py-2">{transfer.who_created}</td>
+                      <td className="px-2 py-2">
+                        {new Date(transfer.when_updated).toLocaleString()}
+                      </td>
+                      <td className="px-2 py-2">{transfer.who_updated}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -124,7 +127,7 @@ export default function DatasetsPage() {
 
         <button
           type="button"
-          onClick={() => void loadDatasets()}
+          onClick={() => void loadTransfers()}
           className="mt-4 rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
           Refresh
