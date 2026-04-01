@@ -118,3 +118,7 @@ export function getReleaseById(id: number): ReleaseByIdResult {
 
   return null;
 }
+
+export function getDatasetReleasesByDatasetId(datasetId: number) {
+  return datasetReleases.filter((release) => release.dataset_id === datasetId);
+}

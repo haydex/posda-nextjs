@@ -57,3 +57,7 @@ export const recordsets: Recordset[] = [
 export function getRecordsetById(id: number) {
   return recordsets.find((recordset) => recordset.recordset_id === id) ?? null;
 }
+
+export function getRecordsetsByDatasetId(datasetId: number) {
+  return recordsets.filter((recordset) => recordset.dataset_id === datasetId);
+}
