@@ -1,11 +1,11 @@
 import Link from "next/link";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/api-demo", label: "API Demo" },
-  { href: "/collections", label: "Collections" },
+  // { href: "/", label: "Home" },
+  // { href: "/about", label: "About" },
+  // { href: "/dashboard", label: "Dashboard" },
+  // { href: "/api-demo", label: "API Demo" },
+  // { href: "/collections", label: "Collections" },
   { href: "/datasets", label: "Datasets" },
   { href: "/recordsets", label: "Recordsets" },
   { href: "/transfers", label: "Transfers" },
