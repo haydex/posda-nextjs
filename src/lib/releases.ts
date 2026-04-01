@@ -122,3 +122,9 @@ export function getReleaseById(id: number): ReleaseByIdResult {
 export function getDatasetReleasesByDatasetId(datasetId: number) {
   return datasetReleases.filter((release) => release.dataset_id === datasetId);
 }
+
+export function getRecordsetReleasesByRecordsetId(recordsetId: number) {
+  return recordsetReleases.filter(
+    (release) => release.recordset_id === recordsetId,
+  );
+}

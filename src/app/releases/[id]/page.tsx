@@ -183,12 +183,21 @@ export default function ReleaseByIdPage({ params }: PageProps) {
           </dl>
         )}
 
-        <Link
-          href="/releases"
-          className="mt-4 inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-        >
-          Back to Releases
-        </Link>
+        <div className="mt-4 flex gap-3">
+          <Link
+            href={releaseId ? `/releases/${releaseId}/recordsets` : "/releases"}
+            className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+          >
+            View Related Recordsets
+          </Link>
+
+          <Link
+            href="/releases"
+            className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          >
+            Back to Releases
+          </Link>
+        </div>
       </section>
     </main>
   );

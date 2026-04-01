@@ -53,3 +53,7 @@ export const drafts: Draft[] = [
 export function getDraftById(id: number) {
   return drafts.find((draft) => draft.dataset_release_draft_id === id) ?? null;
 }
+
+export function getDraftsByDatasetId(datasetId: number) {
+  return drafts.filter((draft) => draft.dataset_id === datasetId);
+}
