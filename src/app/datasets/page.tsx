@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Dataset = {
   dataset_id: number;
@@ -23,6 +24,7 @@ type DatasetsResponse = {
 };
 
 export default function DatasetsPage() {
+  const searchParams = useSearchParams();
   const [data, setData] = useState<DatasetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,27 @@ export default function DatasetsPage() {
     setError(null);
 
     try {
-      const response = await fetch("/api/datasets", { cache: "no-store" });
+      const apiParams = new URLSearchParams();
+      const search = searchParams.get("search");
+      const activeOnly = searchParams.get("active_only");
+      const type = searchParams.get("type");
+
+      if (search) {
+        apiParams.set("search", search);
+      }
+
+      if (activeOnly) {
+        apiParams.set("active_only", activeOnly);
+      }
+
+      if (type) {
+        apiParams.set("type", type);
+      }
+
+      const query = apiParams.toString();
+      const endpoint = query ? `/api/datasets?${query}` : "/api/datasets";
+
+      const response = await fetch(endpoint, { cache: "no-store" });
 
       if (!response.ok) {
         throw new Error("Request failed");
@@ -50,7 +72,7 @@ export default function DatasetsPage() {
 
   useEffect(() => {
     void loadDatasets();
-  }, []);
+  }, [searchParams]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">

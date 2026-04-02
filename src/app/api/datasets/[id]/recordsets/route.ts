@@ -9,9 +9,26 @@ type RouteContext = {
   }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   const { id } = await context.params;
   const datasetId = Number.parseInt(id, 10);
+  const { searchParams } = new URL(request.url);
+  const activeOnlyRaw = searchParams.get("active_only")?.trim().toLowerCase();
+
+  let activeFilter: boolean | null = null;
+  if (
+    activeOnlyRaw === "true" ||
+    activeOnlyRaw === "1" ||
+    activeOnlyRaw === "yes"
+  ) {
+    activeFilter = true;
+  } else if (
+    activeOnlyRaw === "false" ||
+    activeOnlyRaw === "0" ||
+    activeOnlyRaw === "no"
+  ) {
+    activeFilter = false;
+  }
 
   if (!Number.isInteger(datasetId)) {
     return NextResponse.json(
@@ -30,11 +47,17 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   const datasetRecordsets = getRecordsetsByDatasetId(datasetId);
+  const filteredRecordsets =
+    activeFilter === null
+      ? datasetRecordsets
+      : datasetRecordsets.filter(
+          (recordset) => recordset.active === activeFilter,
+        );
 
   return NextResponse.json({
     dataset,
-    recordsets: datasetRecordsets,
-    total: datasetRecordsets.length,
+    recordsets: filteredRecordsets,
+    total: filteredRecordsets.length,
     timestamp: new Date().toISOString(),
   });
 }

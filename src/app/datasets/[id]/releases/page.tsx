@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Dataset = {
@@ -47,6 +48,8 @@ export default function DatasetReleasesPage({ params }: PageProps) {
   const [data, setData] = useState<DatasetReleasesResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const latestOnlyParam = searchParams.get("latest_only");
 
   useEffect(() => {
     let isMounted = true;
@@ -63,7 +66,17 @@ export default function DatasetReleasesPage({ params }: PageProps) {
       setDatasetId(id);
 
       try {
-        const response = await fetch(`/api/datasets/${id}/releases`, {
+        const apiParams = new URLSearchParams();
+        if (latestOnlyParam !== null) {
+          apiParams.set("latest_only", latestOnlyParam);
+        }
+
+        const apiUrl =
+          apiParams.size > 0
+            ? `/api/datasets/${id}/releases?${apiParams.toString()}`
+            : `/api/datasets/${id}/releases`;
+
+        const response = await fetch(apiUrl, {
           cache: "no-store",
         });
 
@@ -109,7 +122,7 @@ export default function DatasetReleasesPage({ params }: PageProps) {
     return () => {
       isMounted = false;
     };
-  }, [params]);
+  }, [params, latestOnlyParam]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">

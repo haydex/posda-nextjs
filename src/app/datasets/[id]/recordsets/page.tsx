@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Dataset = {
   dataset_id: number;
@@ -45,6 +46,7 @@ type PageProps = {
 };
 
 export default function DatasetRecordsetsPage({ params }: PageProps) {
+  const searchParams = useSearchParams();
   const [datasetId, setDatasetId] = useState<string | null>(null);
   const [data, setData] = useState<DatasetRecordsetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +67,19 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
       setDatasetId(id);
 
       try {
-        const response = await fetch(`/api/datasets/${id}/recordsets`, {
+        const apiParams = new URLSearchParams();
+        const activeOnly = searchParams.get("active_only");
+
+        if (activeOnly) {
+          apiParams.set("active_only", activeOnly);
+        }
+
+        const query = apiParams.toString();
+        const endpoint = query
+          ? `/api/datasets/${id}/recordsets?${query}`
+          : `/api/datasets/${id}/recordsets`;
+
+        const response = await fetch(endpoint, {
           cache: "no-store",
         });
 
@@ -111,7 +125,7 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
     return () => {
       isMounted = false;
     };
-  }, [params]);
+  }, [params, searchParams]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">

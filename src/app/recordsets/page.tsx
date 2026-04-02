@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Recordset = {
@@ -26,13 +27,29 @@ export default function RecordsetsPage() {
   const [data, setData] = useState<RecordsetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   async function loadRecordsets() {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch("/api/recordsets", { cache: "no-store" });
+      const apiParams = new URLSearchParams();
+      const supportedFilters = ["dataset_id", "search", "active_only"];
+
+      for (const key of supportedFilters) {
+        const value = searchParams.get(key);
+        if (value !== null) {
+          apiParams.set(key, value);
+        }
+      }
+
+      const apiUrl =
+        apiParams.size > 0
+          ? `/api/recordsets?${apiParams.toString()}`
+          : "/api/recordsets";
+
+      const response = await fetch(apiUrl, { cache: "no-store" });
 
       if (!response.ok) {
         throw new Error("Request failed");
@@ -50,7 +67,7 @@ export default function RecordsetsPage() {
 
   useEffect(() => {
     void loadRecordsets();
-  }, []);
+  }, [searchParams]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
