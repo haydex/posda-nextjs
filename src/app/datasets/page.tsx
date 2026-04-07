@@ -12,8 +12,6 @@ type Dataset = {
   active: boolean;
   when_created: string;
   when_updated: string;
-  who_created: string;
-  who_updated: string;
 };
 
 type DatasetsResponse = {
@@ -28,10 +26,6 @@ type DatasetRelease = {
   release_number: number;
   release_date: string;
   release_notes: string;
-  when_created: string;
-  who_created: string;
-  when_updated: string;
-  who_updated: string;
 };
 
 type DatasetReleasesResponse = {
@@ -222,33 +216,31 @@ export default function DatasetsPage() {
 
   useEffect(() => {
     void loadDatasets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Datasets</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-300">
-        This page calls <code>/api/datasets</code> and renders dataset records.
-      </p>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
         <form
           onSubmit={applyFilters}
-          className="grid grid-cols-1 gap-4 md:grid-cols-4"
+          className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_12rem_auto_auto_auto] md:items-center"
         >
-          <label className="flex flex-col gap-1 text-sm md:col-span-2">
-            <span className="font-medium">Search</span>
+          <label className="text-sm">
+            <span className="sr-only">Search</span>
             <input
               type="text"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="DOI, title, or name"
-              className="rounded-md border border-black/15 bg-transparent px-3 py-2 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20"
+              className="h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20"
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">Type</span>
+          <label className="text-sm">
+            <span className="sr-only">Type</span>
             <select
               value={typeInput}
               onChange={(event) =>
@@ -256,7 +248,7 @@ export default function DatasetsPage() {
                   event.target.value as "" | "collection" | "analysis_result",
                 )
               }
-              className="rounded-md border border-black/15 bg-transparent px-3 py-2 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20"
+              className="h-10 w-full rounded-md border border-black/15 bg-white px-3 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100"
             >
               <option value="">All</option>
               <option value="collection">collection</option>
@@ -264,7 +256,7 @@ export default function DatasetsPage() {
             </select>
           </label>
 
-          <label className="mt-6 flex items-center gap-2 text-sm">
+          <label className="flex h-10 items-center gap-2 text-sm">
             <input
               type="checkbox"
               checked={activeOnlyInput}
@@ -274,21 +266,20 @@ export default function DatasetsPage() {
             <span>active_only</span>
           </label>
 
-          <div className="md:col-span-4 flex gap-3">
-            <button
-              type="submit"
-              className="rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-            >
-              Apply Filters
-            </button>
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-            >
-              Clear
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="h-10 rounded-md bg-black px-4 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          >
+            Search
+          </button>
+
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="h-10 rounded-md border border-black/15 px-4 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+          >
+            Clear
+          </button>
         </form>
       </section>
 
@@ -310,16 +301,12 @@ export default function DatasetsPage() {
                 <thead>
                   <tr className="border-b border-black/10 dark:border-white/15">
                     <th className="px-2 py-2 font-medium">ID</th>
+                    <th className="px-2 py-2 font-medium">Name</th>
                     <th className="px-2 py-2 font-medium">DOI</th>
                     <th className="px-2 py-2 font-medium">Type</th>
-                    <th className="px-2 py-2 font-medium">Short Title</th>
-                    <th className="px-2 py-2 font-medium">Title</th>
-                    <th className="px-2 py-2 font-medium">Name</th>
                     <th className="px-2 py-2 font-medium">Active</th>
                     <th className="px-2 py-2 font-medium">Created</th>
-                    <th className="px-2 py-2 font-medium">Created By</th>
                     <th className="px-2 py-2 font-medium">Updated</th>
-                    <th className="px-2 py-2 font-medium">Updated By</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -334,24 +321,18 @@ export default function DatasetsPage() {
                       }`}
                     >
                       <td className="px-2 py-2">{dataset.dataset_id}</td>
+                      <td className="px-2 py-2">{dataset.dataset_name}</td>
                       <td className="px-2 py-2">{dataset.dataset_doi}</td>
                       <td className="px-2 py-2">{dataset.dataset_type}</td>
-                      <td className="px-2 py-2">
-                        {dataset.dataset_short_title}
-                      </td>
-                      <td className="px-2 py-2">{dataset.dataset_title}</td>
-                      <td className="px-2 py-2">{dataset.dataset_name}</td>
                       <td className="px-2 py-2">
                         {dataset.active ? "Yes" : "No"}
                       </td>
                       <td className="px-2 py-2">
                         {new Date(dataset.when_created).toLocaleString()}
                       </td>
-                      <td className="px-2 py-2">{dataset.who_created}</td>
                       <td className="px-2 py-2">
                         {new Date(dataset.when_updated).toLocaleString()}
                       </td>
-                      <td className="px-2 py-2">{dataset.who_updated}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -386,12 +367,10 @@ export default function DatasetsPage() {
                       <table className="min-w-full border-collapse text-left text-sm">
                         <thead>
                           <tr className="border-b border-black/10 dark:border-white/15">
-                            <th className="px-2 py-2 font-medium">Release ID</th>
-                            <th className="px-2 py-2 font-medium">Release #</th>
-                            <th className="px-2 py-2 font-medium">Release Date</th>
-                            <th className="px-2 py-2 font-medium">Release Notes</th>
-                            <th className="px-2 py-2 font-medium">Created By</th>
-                            <th className="px-2 py-2 font-medium">Updated By</th>
+                            <th className="px-2 py-2 font-medium">ID</th>
+                            <th className="px-2 py-2 font-medium">Version</th>
+                            <th className="px-2 py-2 font-medium">Date</th>
+                            <th className="px-2 py-2 font-medium">Notes</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -406,8 +385,6 @@ export default function DatasetsPage() {
                                 {new Date(release.release_date).toLocaleDateString()}
                               </td>
                               <td className="px-2 py-2">{release.release_notes}</td>
-                              <td className="px-2 py-2">{release.who_created}</td>
-                              <td className="px-2 py-2">{release.who_updated}</td>
                             </tr>
                           ))}
                         </tbody>
