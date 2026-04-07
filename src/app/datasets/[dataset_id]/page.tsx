@@ -18,13 +18,14 @@ type Dataset = {
 };
 
 type DatasetResponse = {
-  dataset: Dataset;
+  dataset?: Dataset;
+  data?: Dataset;
   timestamp: string;
 };
 
 type PageProps = {
   params: Promise<{
-    id: string;
+    dataset_id: string;
   }>;
 };
 
@@ -41,8 +42,16 @@ export default function DatasetByIdPage({ params }: PageProps) {
       setIsLoading(true);
       setError(null);
 
-      const { id } = await params;
+      const { dataset_id } = await params;
+      const id = dataset_id;
       if (!isMounted) {
+        return;
+      }
+
+      if (!id) {
+        setError("Could not load dataset id.");
+        setData(null);
+        setIsLoading(false);
         return;
       }
 
@@ -70,7 +79,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
           return;
         }
 
-        setData(json);
+        setData({ ...json, dataset: json.dataset ?? json.data });
       } catch (caughtError) {
         if (!isMounted) {
           return;
@@ -97,6 +106,8 @@ export default function DatasetByIdPage({ params }: PageProps) {
     };
   }, [params]);
 
+  const dataset = data?.dataset ?? data?.data ?? null;
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Dataset Details</h1>
@@ -111,51 +122,51 @@ export default function DatasetByIdPage({ params }: PageProps) {
           <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         )}
 
-        {!isLoading && data && (
+        {!isLoading && dataset && (
           <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="font-medium">Dataset ID</dt>
-              <dd>{data.dataset.dataset_id}</dd>
+              <dd>{dataset.dataset_id}</dd>
             </div>
             <div>
               <dt className="font-medium">DOI</dt>
-              <dd>{data.dataset.dataset_doi}</dd>
+              <dd>{dataset.dataset_doi}</dd>
             </div>
             <div>
               <dt className="font-medium">Type</dt>
-              <dd>{data.dataset.dataset_type}</dd>
+              <dd>{dataset.dataset_type}</dd>
             </div>
             <div>
               <dt className="font-medium">Short Title</dt>
-              <dd>{data.dataset.dataset_short_title}</dd>
+              <dd>{dataset.dataset_short_title}</dd>
             </div>
             <div className="col-span-full">
               <dt className="font-medium">Title</dt>
-              <dd>{data.dataset.dataset_title}</dd>
+              <dd>{dataset.dataset_title}</dd>
             </div>
             <div className="col-span-full">
               <dt className="font-medium">Name</dt>
-              <dd>{data.dataset.dataset_name}</dd>
+              <dd>{dataset.dataset_name}</dd>
             </div>
             <div>
               <dt className="font-medium">Active</dt>
-              <dd>{data.dataset.active ? "Yes" : "No"}</dd>
+              <dd>{dataset.active ? "Yes" : "No"}</dd>
             </div>
             <div>
               <dt className="font-medium">Created By</dt>
-              <dd>{data.dataset.who_created}</dd>
+              <dd>{dataset.who_created}</dd>
             </div>
             <div>
               <dt className="font-medium">Created At</dt>
-              <dd>{new Date(data.dataset.when_created).toLocaleString()}</dd>
+              <dd>{new Date(dataset.when_created).toLocaleString()}</dd>
             </div>
             <div>
               <dt className="font-medium">Updated By</dt>
-              <dd>{data.dataset.who_updated}</dd>
+              <dd>{dataset.who_updated}</dd>
             </div>
             <div>
               <dt className="font-medium">Updated At</dt>
-              <dd>{new Date(data.dataset.when_updated).toLocaleString()}</dd>
+              <dd>{new Date(dataset.when_updated).toLocaleString()}</dd>
             </div>
           </dl>
         )}
