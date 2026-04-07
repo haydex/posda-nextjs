@@ -22,6 +22,38 @@ type TransfersResponse = {
   timestamp: string;
 };
 
+function normalizeTransfersResponse(payload: unknown): TransfersResponse {
+  const source = payload as
+    | {
+        transfers?: Transfer[];
+        total?: number;
+        timestamp?: string;
+        data?: Transfer[];
+        meta?: { count?: number };
+      }
+    | undefined;
+
+  const transfers = Array.isArray(source?.transfers)
+    ? source.transfers
+    : Array.isArray(source?.data)
+      ? source.data
+      : [];
+
+  return {
+    transfers,
+    total:
+      typeof source?.total === "number"
+        ? source.total
+        : typeof source?.meta?.count === "number"
+          ? source.meta.count
+          : transfers.length,
+    timestamp:
+      typeof source?.timestamp === "string"
+        ? source.timestamp
+        : new Date().toISOString(),
+  };
+}
+
 export default function TransfersPage() {
   const [data, setData] = useState<TransfersResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,8 +70,8 @@ export default function TransfersPage() {
         throw new Error("Request failed");
       }
 
-      const json = (await response.json()) as TransfersResponse;
-      setData(json);
+      const json = (await response.json()) as unknown;
+      setData(normalizeTransfersResponse(json));
     } catch {
       setError("Could not load transfers.");
       setData(null);

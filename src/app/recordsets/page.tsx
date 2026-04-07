@@ -23,6 +23,38 @@ type RecordsetsResponse = {
   timestamp: string;
 };
 
+function normalizeRecordsetsResponse(payload: unknown): RecordsetsResponse {
+  const source = payload as
+    | {
+        recordsets?: Recordset[];
+        total?: number;
+        timestamp?: string;
+        data?: Recordset[];
+        meta?: { count?: number };
+      }
+    | undefined;
+
+  const recordsets = Array.isArray(source?.recordsets)
+    ? source.recordsets
+    : Array.isArray(source?.data)
+      ? source.data
+      : [];
+
+  return {
+    recordsets,
+    total:
+      typeof source?.total === "number"
+        ? source.total
+        : typeof source?.meta?.count === "number"
+          ? source.meta.count
+          : recordsets.length,
+    timestamp:
+      typeof source?.timestamp === "string"
+        ? source.timestamp
+        : new Date().toISOString(),
+  };
+}
+
 export default function RecordsetsPage() {
   const [data, setData] = useState<RecordsetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,8 +87,8 @@ export default function RecordsetsPage() {
         throw new Error("Request failed");
       }
 
-      const json = (await response.json()) as RecordsetsResponse;
-      setData(json);
+      const json = (await response.json()) as unknown;
+      setData(normalizeRecordsetsResponse(json));
     } catch {
       setError("Could not load recordsets.");
       setData(null);
