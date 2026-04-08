@@ -221,7 +221,9 @@ export default function DatasetsPage() {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Datasets</h1>
+      <h1 className="border-b-2 border-black pb-2 text-3xl font-semibold tracking-tight dark:border-white">
+        Datasets
+      </h1>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
         <form
@@ -345,8 +347,8 @@ export default function DatasetsPage() {
 
             {selectedDataset && (
               <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
-                <h2 className="text-lg font-semibold tracking-tight">
-                  Releases for dataset {selectedDataset.dataset_id}
+                <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
+                  Releases
                 </h2>
 
                 {isLoadingReleases && <p className="mt-3 text-sm">Loading releases...</p>}
