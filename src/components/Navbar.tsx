@@ -8,8 +8,8 @@ const navLinks = [
   { href: "/datasets", label: "Datasets" },
   { href: "/recordsets", label: "Recordsets" },
   { href: "/transfers", label: "Transfers" },
-  { href: "/releases", label: "Releases" },
-  { href: "/drafts", label: "Drafts" },
+  // { href: "/releases", label: "Releases" },
+  // { href: "/drafts", label: "Drafts" },
 ];
 
 export default function Navbar() {
