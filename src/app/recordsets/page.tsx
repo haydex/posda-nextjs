@@ -463,8 +463,8 @@ export default function RecordsetsPage() {
             </p>
 
             {selectedRecordset && (
-              <div className="space-y-4">
-                <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+              <div className="flex flex-col gap-4">
+                <div className="order-2 rounded-lg border border-black/10 p-4 dark:border-white/15">
                   <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
                     Releases
                   </h2>
@@ -516,7 +516,7 @@ export default function RecordsetsPage() {
                   )}
                 </div>
 
-                <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+                <div className="order-1 rounded-lg border border-black/10 p-4 dark:border-white/15">
                   <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
                     Drafts
                   </h2>
