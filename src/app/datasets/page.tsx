@@ -66,7 +66,9 @@ function normalizeDatasetsResponse(payload: unknown): DatasetsResponse {
   };
 }
 
-function normalizeDatasetReleasesResponse(payload: unknown): DatasetReleasesResponse {
+function normalizeDatasetReleasesResponse(
+  payload: unknown,
+): DatasetReleasesResponse {
   const source = payload as
     | {
         releases?: DatasetRelease[];
@@ -101,7 +103,9 @@ function normalizeDatasetReleasesResponse(payload: unknown): DatasetReleasesResp
 export default function DatasetsPage() {
   const [searchInput, setSearchInput] = useState("");
   const [activeOnlyInput, setActiveOnlyInput] = useState(false);
-  const [typeInput, setTypeInput] = useState<"" | "collection" | "analysis_result">("");
+  const [typeInput, setTypeInput] = useState<
+    "" | "collection" | "analysis_result"
+  >("");
 
   const [filters, setFilters] = useState<{
     search: string;
@@ -118,7 +122,8 @@ export default function DatasetsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
-  const [releasesData, setReleasesData] = useState<DatasetReleasesResponse | null>(null);
+  const [releasesData, setReleasesData] =
+    useState<DatasetReleasesResponse | null>(null);
   const [isLoadingReleases, setIsLoadingReleases] = useState(false);
   const [releasesError, setReleasesError] = useState<string | null>(null);
 
@@ -178,9 +183,12 @@ export default function DatasetsPage() {
     setReleasesError(null);
 
     try {
-      const response = await fetch(`/api/datasets/${dataset.dataset_id}/releases`, {
-        cache: "no-store",
-      });
+      const response = await fetch(
+        `/api/datasets/${dataset.dataset_id}/releases`,
+        {
+          cache: "no-store",
+        },
+      );
 
       if (!response.ok) {
         throw new Error("Request failed");
@@ -346,55 +354,132 @@ export default function DatasetsPage() {
             </p>
 
             {selectedDataset && (
-              <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
-                <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
-                  Releases
-                </h2>
+              <>
+                <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+                  <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
+                    Dataset Details
+                  </h2>
 
-                {isLoadingReleases && <p className="mt-3 text-sm">Loading releases...</p>}
-
-                {!isLoadingReleases && releasesError && (
-                  <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-                    {releasesError}
-                  </p>
-                )}
-
-                {!isLoadingReleases && !releasesError && releasesData && (
-                  <div className="mt-3 space-y-3">
-                    <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                      Total releases: <span className="font-medium">{releasesData.total}</span>
-                    </p>
-
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border-collapse text-left text-sm">
-                        <thead>
-                          <tr className="border-b border-black/10 dark:border-white/15">
-                            <th className="px-2 py-2 font-medium">ID</th>
-                            <th className="px-2 py-2 font-medium">Version</th>
-                            <th className="px-2 py-2 font-medium">Date</th>
-                            <th className="px-2 py-2 font-medium">Notes</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {releasesData.releases.map((release) => (
-                            <tr
-                              key={release.dataset_release_id}
-                              className="border-b border-black/5 dark:border-white/10"
-                            >
-                              <td className="px-2 py-2">{release.dataset_release_id}</td>
-                              <td className="px-2 py-2">{release.release_number}</td>
-                              <td className="px-2 py-2">
-                                {new Date(release.release_date).toLocaleDateString()}
-                              </td>
-                              <td className="px-2 py-2">{release.release_notes}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                    <div>
+                      <dt className="font-medium">Dataset ID</dt>
+                      <dd>{selectedDataset.dataset_id}</dd>
                     </div>
+                    <div>
+                      <dt className="font-medium">DOI</dt>
+                      <dd>{selectedDataset.dataset_doi}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium">Type</dt>
+                      <dd>{selectedDataset.dataset_type}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium">Short Title</dt>
+                      <dd>{selectedDataset.dataset_short_title}</dd>
+                    </div>
+                    <div className="col-span-full">
+                      <dt className="font-medium">Title</dt>
+                      <dd>{selectedDataset.dataset_title}</dd>
+                    </div>
+                    <div className="col-span-full">
+                      <dt className="font-medium">Name</dt>
+                      <dd>{selectedDataset.dataset_name}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium">Active</dt>
+                      <dd>{selectedDataset.active ? "Yes" : "No"}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium">Created</dt>
+                      <dd>
+                        {new Date(
+                          selectedDataset.when_created,
+                        ).toLocaleString()}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium">Updated</dt>
+                      <dd>
+                        {new Date(
+                          selectedDataset.when_updated,
+                        ).toLocaleString()}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div className="mt-4">
+                    <a
+                      href={`/datasets/${selectedDataset.dataset_id}/edit`}
+                      className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                    >
+                      Edit Dataset
+                    </a>
                   </div>
-                )}
-              </div>
+                </div>
+
+                <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+                  <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
+                    Releases
+                  </h2>
+
+                  {isLoadingReleases && (
+                    <p className="mt-3 text-sm">Loading releases...</p>
+                  )}
+
+                  {!isLoadingReleases && releasesError && (
+                    <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                      {releasesError}
+                    </p>
+                  )}
+
+                  {!isLoadingReleases && !releasesError && releasesData && (
+                    <div className="mt-3 space-y-3">
+                      <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                        Total releases:{" "}
+                        <span className="font-medium">
+                          {releasesData.total}
+                        </span>
+                      </p>
+
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full border-collapse text-left text-sm">
+                          <thead>
+                            <tr className="border-b border-black/10 dark:border-white/15">
+                              <th className="px-2 py-2 font-medium">ID</th>
+                              <th className="px-2 py-2 font-medium">Version</th>
+                              <th className="px-2 py-2 font-medium">Date</th>
+                              <th className="px-2 py-2 font-medium">Notes</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {releasesData.releases.map((release) => (
+                              <tr
+                                key={release.dataset_release_id}
+                                className="border-b border-black/5 dark:border-white/10"
+                              >
+                                <td className="px-2 py-2">
+                                  {release.dataset_release_id}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {release.release_number}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {new Date(
+                                    release.release_date,
+                                  ).toLocaleDateString()}
+                                </td>
+                                <td className="px-2 py-2">
+                                  {release.release_notes}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         )}
