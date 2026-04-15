@@ -48,6 +48,26 @@ export default function RecordsetEditPage({ params }: PageProps) {
     active: false,
   });
 
+  function getErrorMessage(payload: unknown, fallbackMessage: string) {
+    if (!payload || typeof payload !== "object") {
+      return fallbackMessage;
+    }
+
+    const errorPayload = payload as {
+      error?: string | { message?: string; details?: unknown };
+    };
+
+    if (typeof errorPayload.error === "string") {
+      return errorPayload.error;
+    }
+
+    if (errorPayload.error?.message) {
+      return errorPayload.error.message;
+    }
+
+    return fallbackMessage;
+  }
+
   useEffect(() => {
     let isMounted = true;
 
@@ -98,7 +118,10 @@ export default function RecordsetEditPage({ params }: PageProps) {
         if (recordset) {
           setFormData({
             dataset_id: String(recordset.dataset_id),
-            recordset_doi: recordset.recordset_doi ?? "",
+            recordset_doi:
+              recordset.recordset_doi && recordset.recordset_doi !== "-"
+                ? recordset.recordset_doi
+                : "",
             license_id: String(recordset.license_id),
             recordset_name: recordset.recordset_name ?? "",
             recordset_type: recordset.recordset_type,
@@ -151,7 +174,9 @@ export default function RecordsetEditPage({ params }: PageProps) {
         },
         body: JSON.stringify({
           dataset_id: Number(formData.dataset_id),
-          recordset_doi: formData.recordset_doi,
+          ...(formData.recordset_doi.trim()
+            ? { recordset_doi: formData.recordset_doi.trim() }
+            : {}),
           license_id: Number(formData.license_id),
           recordset_name: formData.recordset_name,
           recordset_type: formData.recordset_type,
@@ -164,8 +189,8 @@ export default function RecordsetEditPage({ params }: PageProps) {
         const fallbackMessage = `Could not save recordset ${recordsetId}.`;
 
         try {
-          const json = (await response.json()) as { error?: string };
-          throw new Error(json.error ?? fallbackMessage);
+          const json = (await response.json()) as unknown;
+          throw new Error(getErrorMessage(json, fallbackMessage));
         } catch {
           throw new Error(fallbackMessage);
         }
