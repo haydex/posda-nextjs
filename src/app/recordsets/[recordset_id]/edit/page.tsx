@@ -9,6 +9,7 @@ type Recordset = {
   recordset_doi: string;
   dataset_id: number;
   license_id: number;
+  recordset_name?: string;
   recordset_type: string;
   recordset_title: string;
   active: boolean;
