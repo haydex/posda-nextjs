@@ -18,7 +18,8 @@ type Recordset = {
 };
 
 type RecordsetResponse = {
-  recordset: Recordset;
+  recordset?: Recordset;
+  data?: Recordset;
   timestamp: string;
 };
 
@@ -41,8 +42,16 @@ export default function RecordsetByIdPage({ params }: PageProps) {
       setIsLoading(true);
       setError(null);
 
-      const { id } = await params;
+      const { recordset_id } = await params;
+      const id = recordset_id;
       if (!isMounted) {
+        return;
+      }
+
+      if (!id) {
+        setError("Could not load recordset id.");
+        setData(null);
+        setIsLoading(false);
         return;
       }
 
@@ -115,54 +124,61 @@ export default function RecordsetByIdPage({ params }: PageProps) {
           <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         )}
 
-        {!isLoading && data && (
-          <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="font-medium">Recordset ID</dt>
-              <dd>{data.recordset.recordset_id}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">DOI</dt>
-              <dd>{data.recordset.recordset_doi}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Dataset ID</dt>
-              <dd>{data.recordset.dataset_id}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">License ID</dt>
-              <dd>{data.recordset.license_id}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Type</dt>
-              <dd>{data.recordset.recordset_type}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Active</dt>
-              <dd>{data.recordset.active ? "Yes" : "No"}</dd>
-            </div>
-            <div className="col-span-full">
-              <dt className="font-medium">Title</dt>
-              <dd>{data.recordset.recordset_title}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Created By</dt>
-              <dd>{data.recordset.who_created}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Created At</dt>
-              <dd>{new Date(data.recordset.when_created).toLocaleString()}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Updated By</dt>
-              <dd>{data.recordset.who_updated}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Updated At</dt>
-              <dd>{new Date(data.recordset.when_updated).toLocaleString()}</dd>
-            </div>
-          </dl>
-        )}
+        {!isLoading &&
+          data &&
+          (data.recordset ?? data.data) &&
+          (() => {
+            const recordset = data.recordset ?? data.data;
+
+            return (
+              <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="font-medium">Recordset ID</dt>
+                  <dd>{recordset.recordset_id}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">DOI</dt>
+                  <dd>{recordset.recordset_doi}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Dataset ID</dt>
+                  <dd>{recordset.dataset_id}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">License ID</dt>
+                  <dd>{recordset.license_id}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Type</dt>
+                  <dd>{recordset.recordset_type}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Active</dt>
+                  <dd>{recordset.active ? "Yes" : "No"}</dd>
+                </div>
+                <div className="col-span-full">
+                  <dt className="font-medium">Title</dt>
+                  <dd>{recordset.recordset_title}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Created By</dt>
+                  <dd>{recordset.who_created}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Created At</dt>
+                  <dd>{new Date(recordset.when_created).toLocaleString()}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Updated By</dt>
+                  <dd>{recordset.who_updated}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium">Updated At</dt>
+                  <dd>{new Date(recordset.when_updated).toLocaleString()}</dd>
+                </div>
+              </dl>
+            );
+          })()}
 
         <div className="mt-4 flex gap-3">
           <Link
