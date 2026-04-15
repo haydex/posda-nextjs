@@ -407,7 +407,14 @@ export default function DatasetsPage() {
                     </div>
                   </dl>
 
-                  <div className="mt-4">
+                  <div className="mt-4 flex gap-3">
+                    <a
+                      href={`/datasets/${selectedDataset.dataset_id}`}
+                      className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+                    >
+                      View Dataset
+                    </a>
+
                     <a
                       href={`/datasets/${selectedDataset.dataset_id}/edit`}
                       className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
