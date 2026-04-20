@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type DatasetRecordset = {
@@ -74,10 +75,9 @@ function formatDateTime(value?: string) {
 }
 
 export default function DatasetRecordsetsPage({ params }: PageProps) {
+  const router = useRouter();
   const [datasetId, setDatasetId] = useState<string | null>(null);
   const [data, setData] = useState<RecordsetsResponse | null>(null);
-  const [selectedRecordset, setSelectedRecordset] =
-    useState<DatasetRecordset | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,7 +97,6 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
       if (!id) {
         setError("Could not load dataset id.");
         setData(null);
-        setSelectedRecordset(null);
         setIsLoading(false);
         return;
       }
@@ -128,17 +127,6 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
 
         const normalized = normalizeRecordsetsResponse(payload);
         setData(normalized);
-        setSelectedRecordset((previous) => {
-          if (!previous) {
-            return null;
-          }
-
-          return (
-            normalized.recordsets.find(
-              (recordset) => recordset.recordset_id === previous.recordset_id,
-            ) ?? null
-          );
-        });
       } catch (caughtError) {
         if (!isMounted) {
           return;
@@ -151,7 +139,6 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
         }
 
         setData(null);
-        setSelectedRecordset(null);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -207,20 +194,16 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
                       <th className="px-2 py-2 font-medium">Type</th>
                       <th className="px-2 py-2 font-medium">Active</th>
                       <th className="px-2 py-2 font-medium">Updated</th>
-                      <th className="px-2 py-2 font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.recordsets.map((recordset) => (
                       <tr
                         key={recordset.recordset_id}
-                        onClick={() => setSelectedRecordset(recordset)}
-                        className={`cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10 ${
-                          selectedRecordset?.recordset_id ===
-                          recordset.recordset_id
-                            ? "bg-black/5 dark:bg-white/10"
-                            : ""
-                        }`}
+                        onClick={() =>
+                          router.push(`/recordsets/${recordset.recordset_id}`)
+                        }
+                        className="cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
                       >
                         <td className="px-2 py-2">{recordset.recordset_id}</td>
                         <td className="px-2 py-2">
@@ -241,15 +224,6 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
                         <td className="px-2 py-2">
                           {formatDateTime(recordset.when_updated)}
                         </td>
-                        <td className="px-2 py-2">
-                          <Link
-                            href={`/recordsets/${recordset.recordset_id}`}
-                            onClick={(event) => event.stopPropagation()}
-                            className="inline-flex rounded-md border border-black/15 px-2 py-1 text-xs font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-                          >
-                            View
-                          </Link>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -261,73 +235,6 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Click a recordset row to view its details.
               </p>
-            )}
-
-            {selectedRecordset && (
-              <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
-                <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
-                  Recordset Details
-                </h2>
-
-                <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                  <div>
-                    <dt className="font-medium">Recordset ID</dt>
-                    <dd>{selectedRecordset.recordset_id}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">Dataset ID</dt>
-                    <dd>{selectedRecordset.dataset_id}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">DOI</dt>
-                    <dd>{selectedRecordset.recordset_doi ?? "-"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">License ID</dt>
-                    <dd>{selectedRecordset.license_id}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">Type</dt>
-                    <dd>{selectedRecordset.recordset_type}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">Active</dt>
-                    <dd>{selectedRecordset.active ? "Yes" : "No"}</dd>
-                  </div>
-                  <div className="col-span-full">
-                    <dt className="font-medium">Name</dt>
-                    <dd>{selectedRecordset.recordset_name ?? "-"}</dd>
-                  </div>
-                  <div className="col-span-full">
-                    <dt className="font-medium">Title</dt>
-                    <dd>{selectedRecordset.recordset_title}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">Created At</dt>
-                    <dd>{formatDateTime(selectedRecordset.when_created)}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium">Updated At</dt>
-                    <dd>{formatDateTime(selectedRecordset.when_updated)}</dd>
-                  </div>
-                </dl>
-
-                <div className="mt-4 flex gap-3">
-                  <Link
-                    href={`/recordsets/${selectedRecordset.recordset_id}`}
-                    className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-                  >
-                    View Recordset
-                  </Link>
-
-                  <Link
-                    href={`/recordsets/${selectedRecordset.recordset_id}/edit`}
-                    className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                  >
-                    Edit Recordset
-                  </Link>
-                </div>
-              </div>
             )}
           </div>
         )}
