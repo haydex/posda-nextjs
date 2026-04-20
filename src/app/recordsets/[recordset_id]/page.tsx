@@ -23,9 +23,108 @@ type RecordsetResponse = {
   timestamp: string;
 };
 
+type RecordsetRelease = {
+  recordset_release_id: number;
+  recordset_id: number;
+  release_number: number;
+  release_date: string;
+  release_notes: string;
+  file_count: number;
+};
+
+type RecordsetReleasesResponse = {
+  releases: RecordsetRelease[];
+  total: number;
+  timestamp: string;
+};
+
+type RecordsetDraft = {
+  recordset_draft_id: number;
+  recordset_id: number;
+  cloned_from_release_id: number | null;
+  draft_name: string;
+  draft_status: string;
+  draft_notes: string;
+  file_count: number;
+};
+
+type RecordsetDraftsResponse = {
+  drafts: RecordsetDraft[];
+  total: number;
+  timestamp: string;
+};
+
+function normalizeRecordsetReleasesResponse(
+  payload: unknown,
+): RecordsetReleasesResponse {
+  const source = payload as
+    | {
+        releases?: RecordsetRelease[];
+        total?: number;
+        timestamp?: string;
+        data?: RecordsetRelease[];
+        meta?: { count?: number };
+      }
+    | undefined;
+
+  const releases = Array.isArray(source?.releases)
+    ? source.releases
+    : Array.isArray(source?.data)
+      ? source.data
+      : [];
+
+  return {
+    releases,
+    total:
+      typeof source?.total === "number"
+        ? source.total
+        : typeof source?.meta?.count === "number"
+          ? source.meta.count
+          : releases.length,
+    timestamp:
+      typeof source?.timestamp === "string"
+        ? source.timestamp
+        : new Date().toISOString(),
+  };
+}
+
+function normalizeRecordsetDraftsResponse(
+  payload: unknown,
+): RecordsetDraftsResponse {
+  const source = payload as
+    | {
+        drafts?: RecordsetDraft[];
+        total?: number;
+        timestamp?: string;
+        data?: RecordsetDraft[];
+        meta?: { count?: number };
+      }
+    | undefined;
+
+  const drafts = Array.isArray(source?.drafts)
+    ? source.drafts
+    : Array.isArray(source?.data)
+      ? source.data
+      : [];
+
+  return {
+    drafts,
+    total:
+      typeof source?.total === "number"
+        ? source.total
+        : typeof source?.meta?.count === "number"
+          ? source.meta.count
+          : drafts.length,
+    timestamp:
+      typeof source?.timestamp === "string"
+        ? source.timestamp
+        : new Date().toISOString(),
+  };
+}
+
 type PageProps = {
   params: Promise<{
-    id: string;
+    recordset_id: string;
   }>;
 };
 
@@ -34,6 +133,15 @@ export default function RecordsetByIdPage({ params }: PageProps) {
   const [data, setData] = useState<RecordsetResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [releasesData, setReleasesData] =
+    useState<RecordsetReleasesResponse | null>(null);
+  const [isLoadingReleases, setIsLoadingReleases] = useState(false);
+  const [releasesError, setReleasesError] = useState<string | null>(null);
+  const [draftsData, setDraftsData] = useState<RecordsetDraftsResponse | null>(
+    null,
+  );
+  const [isLoadingDrafts, setIsLoadingDrafts] = useState(false);
+  const [draftsError, setDraftsError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -41,6 +149,10 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     async function loadRecordset() {
       setIsLoading(true);
       setError(null);
+      setIsLoadingReleases(true);
+      setReleasesError(null);
+      setIsLoadingDrafts(true);
+      setDraftsError(null);
 
       const { recordset_id } = await params;
       const id = recordset_id;
@@ -52,6 +164,10 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         setError("Could not load recordset id.");
         setData(null);
         setIsLoading(false);
+        setReleasesData(null);
+        setDraftsData(null);
+        setIsLoadingReleases(false);
+        setIsLoadingDrafts(false);
         return;
       }
 
@@ -80,21 +196,71 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         }
 
         setData(json);
+
+        const releasesResponse = await fetch(`/api/recordsets/${id}/releases`, {
+          cache: "no-store",
+        });
+
+        if (!releasesResponse.ok) {
+          throw new Error(`Could not load releases for recordset ${id}.`);
+        }
+
+        const releasesJson = (await releasesResponse.json()) as unknown;
+
+        if (!isMounted) {
+          return;
+        }
+
+        setReleasesData(normalizeRecordsetReleasesResponse(releasesJson));
+
+        const draftsResponse = await fetch(`/api/recordsets/${id}/drafts`, {
+          cache: "no-store",
+        });
+
+        if (!draftsResponse.ok) {
+          throw new Error(`Could not load drafts for recordset ${id}.`);
+        }
+
+        const draftsJson = (await draftsResponse.json()) as unknown;
+
+        if (!isMounted) {
+          return;
+        }
+
+        setDraftsData(normalizeRecordsetDraftsResponse(draftsJson));
       } catch (caughtError) {
         if (!isMounted) {
           return;
         }
 
-        if (caughtError instanceof Error) {
-          setError(caughtError.message);
+        if (
+          caughtError instanceof Error &&
+          caughtError.message.includes("releases")
+        ) {
+          setReleasesData(null);
+          setReleasesError(caughtError.message);
+        } else if (
+          caughtError instanceof Error &&
+          caughtError.message.includes("drafts")
+        ) {
+          setDraftsData(null);
+          setDraftsError(caughtError.message);
         } else {
-          setError(`Could not load recordset ${id}.`);
-        }
+          if (caughtError instanceof Error) {
+            setError(caughtError.message);
+          } else {
+            setError(`Could not load recordset ${id}.`);
+          }
 
-        setData(null);
+          setData(null);
+          setReleasesData(null);
+          setDraftsData(null);
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
+          setIsLoadingReleases(false);
+          setIsLoadingDrafts(false);
         }
       }
     }
@@ -107,7 +273,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
   }, [params]);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
+    <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">
         Recordset Details
       </h1>
@@ -183,22 +349,11 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         <div className="mt-4 flex gap-3">
           <Link
             href={
-              recordsetId ? `/recordsets/${recordsetId}/drafts` : "/recordsets"
+              recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"
             }
-            className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+            className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            View Related Drafts
-          </Link>
-
-          <Link
-            href={
-              recordsetId
-                ? `/recordsets/${recordsetId}/releases`
-                : "/recordsets"
-            }
-            className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-          >
-            View Related Releases
+            Edit Recordset
           </Link>
 
           <Link
@@ -208,6 +363,134 @@ export default function RecordsetByIdPage({ params }: PageProps) {
             Back to Recordsets
           </Link>
         </div>
+
+        {!isLoading && (data?.recordset ?? data?.data) && (
+          <div className="mt-6 space-y-4">
+            <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+              <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
+                Drafts
+              </h2>
+
+              {isLoadingDrafts && (
+                <p className="mt-3 text-sm">Loading drafts...</p>
+              )}
+
+              {!isLoadingDrafts && draftsError && (
+                <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                  {draftsError}
+                </p>
+              )}
+
+              {!isLoadingDrafts && !draftsError && draftsData && (
+                <div className="mt-3 space-y-3">
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Total drafts:{" "}
+                    <span className="font-medium">{draftsData.total}</span>
+                  </p>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border-collapse text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-black/10 dark:border-white/15">
+                          <th className="px-2 py-2 font-medium">ID</th>
+                          <th className="px-2 py-2 font-medium">Name</th>
+                          <th className="px-2 py-2 font-medium">Status</th>
+                          <th className="px-2 py-2 font-medium">Notes</th>
+                          <th className="px-2 py-2 font-medium">File Count</th>
+                          <th className="px-2 py-2 font-medium">
+                            Cloned Release ID
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {draftsData.drafts.map((draft) => (
+                          <tr
+                            key={draft.recordset_draft_id}
+                            className="border-b border-black/5 dark:border-white/10"
+                          >
+                            <td className="px-2 py-2">
+                              {draft.recordset_draft_id}
+                            </td>
+                            <td className="px-2 py-2">{draft.draft_name}</td>
+                            <td className="px-2 py-2">{draft.draft_status}</td>
+                            <td className="px-2 py-2">{draft.draft_notes}</td>
+                            <td className="px-2 py-2">{draft.file_count}</td>
+                            <td className="px-2 py-2">
+                              {draft.cloned_from_release_id ?? "-"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+              <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
+                Releases
+              </h2>
+
+              {isLoadingReleases && (
+                <p className="mt-3 text-sm">Loading releases...</p>
+              )}
+
+              {!isLoadingReleases && releasesError && (
+                <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                  {releasesError}
+                </p>
+              )}
+
+              {!isLoadingReleases && !releasesError && releasesData && (
+                <div className="mt-3 space-y-3">
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Total releases:{" "}
+                    <span className="font-medium">{releasesData.total}</span>
+                  </p>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border-collapse text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-black/10 dark:border-white/15">
+                          <th className="px-2 py-2 font-medium">ID</th>
+                          <th className="px-2 py-2 font-medium">Version</th>
+                          <th className="px-2 py-2 font-medium">Date</th>
+                          <th className="px-2 py-2 font-medium">Notes</th>
+                          <th className="px-2 py-2 font-medium">File Count</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {releasesData.releases.map((release) => (
+                          <tr
+                            key={release.recordset_release_id}
+                            className="border-b border-black/5 dark:border-white/10"
+                          >
+                            <td className="px-2 py-2">
+                              {release.recordset_release_id}
+                            </td>
+                            <td className="px-2 py-2">
+                              {release.release_number}
+                            </td>
+                            <td className="px-2 py-2">
+                              {new Date(
+                                release.release_date,
+                              ).toLocaleDateString()}
+                            </td>
+                            <td className="px-2 py-2">
+                              {release.release_notes}
+                            </td>
+                            <td className="px-2 py-2">{release.file_count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );
