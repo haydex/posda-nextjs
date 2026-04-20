@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
 type Dataset = {
@@ -16,20 +17,6 @@ type Dataset = {
 
 type DatasetsResponse = {
   datasets: Dataset[];
-  total: number;
-  timestamp: string;
-};
-
-type DatasetRelease = {
-  dataset_release_id: number;
-  dataset_id: number;
-  release_number: number;
-  release_date: string;
-  release_notes: string;
-};
-
-type DatasetReleasesResponse = {
-  releases: DatasetRelease[];
   total: number;
   timestamp: string;
 };
@@ -66,41 +53,8 @@ function normalizeDatasetsResponse(payload: unknown): DatasetsResponse {
   };
 }
 
-function normalizeDatasetReleasesResponse(
-  payload: unknown,
-): DatasetReleasesResponse {
-  const source = payload as
-    | {
-        releases?: DatasetRelease[];
-        total?: number;
-        timestamp?: string;
-        data?: DatasetRelease[];
-        meta?: { count?: number };
-      }
-    | undefined;
-
-  const releases = Array.isArray(source?.releases)
-    ? source.releases
-    : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-  return {
-    releases,
-    total:
-      typeof source?.total === "number"
-        ? source.total
-        : typeof source?.meta?.count === "number"
-          ? source.meta.count
-          : releases.length,
-    timestamp:
-      typeof source?.timestamp === "string"
-        ? source.timestamp
-        : new Date().toISOString(),
-  };
-}
-
 export default function DatasetsPage() {
+  const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [activeOnlyInput, setActiveOnlyInput] = useState(false);
   const [typeInput, setTypeInput] = useState<
@@ -120,12 +74,6 @@ export default function DatasetsPage() {
   const [data, setData] = useState<DatasetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
-  const [releasesData, setReleasesData] =
-    useState<DatasetReleasesResponse | null>(null);
-  const [isLoadingReleases, setIsLoadingReleases] = useState(false);
-  const [releasesError, setReleasesError] = useState<string | null>(null);
 
   async function loadDatasets() {
     setIsLoading(true);
@@ -158,51 +106,11 @@ export default function DatasetsPage() {
       const json = (await response.json()) as unknown;
       const normalized = normalizeDatasetsResponse(json);
       setData(normalized);
-
-      if (
-        selectedDataset &&
-        !normalized.datasets.some(
-          (dataset) => dataset.dataset_id === selectedDataset.dataset_id,
-        )
-      ) {
-        setSelectedDataset(null);
-        setReleasesData(null);
-        setReleasesError(null);
-      }
     } catch {
       setError("Could not load datasets.");
       setData(null);
     } finally {
       setIsLoading(false);
-    }
-  }
-
-  async function loadDatasetReleases(dataset: Dataset) {
-    setSelectedDataset(dataset);
-    setIsLoadingReleases(true);
-    setReleasesError(null);
-
-    try {
-      const response = await fetch(
-        `/api/datasets/${dataset.dataset_id}/releases`,
-        {
-          cache: "no-store",
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Request failed");
-      }
-
-      const json = (await response.json()) as unknown;
-      setReleasesData(normalizeDatasetReleasesResponse(json));
-    } catch {
-      setReleasesData(null);
-      setReleasesError(
-        `Could not load releases for dataset ${dataset.dataset_id}.`,
-      );
-    } finally {
-      setIsLoadingReleases(false);
     }
   }
 
@@ -323,12 +231,10 @@ export default function DatasetsPage() {
                   {data.datasets.map((dataset) => (
                     <tr
                       key={dataset.dataset_id}
-                      onClick={() => void loadDatasetReleases(dataset)}
-                      className={`cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10 ${
-                        selectedDataset?.dataset_id === dataset.dataset_id
-                          ? "bg-black/5 dark:bg-white/10"
-                          : ""
-                      }`}
+                      onClick={() =>
+                        router.push(`/datasets/${dataset.dataset_id}`)
+                      }
+                      className="cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
                     >
                       <td className="px-2 py-2">{dataset.dataset_id}</td>
                       <td className="px-2 py-2">{dataset.dataset_name}</td>
@@ -350,144 +256,8 @@ export default function DatasetsPage() {
             </div>
 
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Click a dataset row to load related releases.
+              Click a dataset row to open details.
             </p>
-
-            {selectedDataset && (
-              <>
-                <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
-                  <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
-                    Dataset Details
-                  </h2>
-
-                  <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                    <div>
-                      <dt className="font-medium">Dataset ID</dt>
-                      <dd>{selectedDataset.dataset_id}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium">DOI</dt>
-                      <dd>{selectedDataset.dataset_doi}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium">Type</dt>
-                      <dd>{selectedDataset.dataset_type}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium">Short Title</dt>
-                      <dd>{selectedDataset.dataset_short_title}</dd>
-                    </div>
-                    <div className="col-span-full">
-                      <dt className="font-medium">Title</dt>
-                      <dd>{selectedDataset.dataset_title}</dd>
-                    </div>
-                    <div className="col-span-full">
-                      <dt className="font-medium">Name</dt>
-                      <dd>{selectedDataset.dataset_name}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium">Active</dt>
-                      <dd>{selectedDataset.active ? "Yes" : "No"}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium">Created</dt>
-                      <dd>
-                        {new Date(
-                          selectedDataset.when_created,
-                        ).toLocaleString()}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium">Updated</dt>
-                      <dd>
-                        {new Date(
-                          selectedDataset.when_updated,
-                        ).toLocaleString()}
-                      </dd>
-                    </div>
-                  </dl>
-
-                  <div className="mt-4 flex gap-3">
-                    <a
-                      href={`/datasets/${selectedDataset.dataset_id}`}
-                      className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-                    >
-                      View Dataset
-                    </a>
-
-                    <a
-                      href={`/datasets/${selectedDataset.dataset_id}/edit`}
-                      className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                    >
-                      Edit Dataset
-                    </a>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
-                  <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
-                    Releases
-                  </h2>
-
-                  {isLoadingReleases && (
-                    <p className="mt-3 text-sm">Loading releases...</p>
-                  )}
-
-                  {!isLoadingReleases && releasesError && (
-                    <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-                      {releasesError}
-                    </p>
-                  )}
-
-                  {!isLoadingReleases && !releasesError && releasesData && (
-                    <div className="mt-3 space-y-3">
-                      <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                        Total releases:{" "}
-                        <span className="font-medium">
-                          {releasesData.total}
-                        </span>
-                      </p>
-
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full border-collapse text-left text-sm">
-                          <thead>
-                            <tr className="border-b border-black/10 dark:border-white/15">
-                              <th className="px-2 py-2 font-medium">ID</th>
-                              <th className="px-2 py-2 font-medium">Version</th>
-                              <th className="px-2 py-2 font-medium">Date</th>
-                              <th className="px-2 py-2 font-medium">Notes</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {releasesData.releases.map((release) => (
-                              <tr
-                                key={release.dataset_release_id}
-                                className="border-b border-black/5 dark:border-white/10"
-                              >
-                                <td className="px-2 py-2">
-                                  {release.dataset_release_id}
-                                </td>
-                                <td className="px-2 py-2">
-                                  {release.release_number}
-                                </td>
-                                <td className="px-2 py-2">
-                                  {new Date(
-                                    release.release_date,
-                                  ).toLocaleDateString()}
-                                </td>
-                                <td className="px-2 py-2">
-                                  {release.release_notes}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
           </div>
         )}
 
