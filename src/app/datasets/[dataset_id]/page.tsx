@@ -284,7 +284,9 @@ export default function DatasetByIdPage({ params }: PageProps) {
               Releases
             </h2>
 
-            {isLoadingReleases && <p className="mt-3 text-sm">Loading releases...</p>}
+            {isLoadingReleases && (
+              <p className="mt-3 text-sm">Loading releases...</p>
+            )}
 
             {!isLoadingReleases && releasesError && (
               <p className="mt-3 text-sm text-red-600 dark:text-red-400">
@@ -295,7 +297,8 @@ export default function DatasetByIdPage({ params }: PageProps) {
             {!isLoadingReleases && !releasesError && releasesData && (
               <div className="mt-3 space-y-3">
                 <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                  Total releases: <span className="font-medium">{releasesData.total}</span>
+                  Total releases:{" "}
+                  <span className="font-medium">{releasesData.total}</span>
                 </p>
 
                 <div className="overflow-x-auto">
@@ -314,10 +317,16 @@ export default function DatasetByIdPage({ params }: PageProps) {
                           key={release.dataset_release_id}
                           className="border-b border-black/5 dark:border-white/10"
                         >
-                          <td className="px-2 py-2">{release.dataset_release_id}</td>
-                          <td className="px-2 py-2">{release.release_number}</td>
                           <td className="px-2 py-2">
-                            {new Date(release.release_date).toLocaleDateString()}
+                            {release.dataset_release_id}
+                          </td>
+                          <td className="px-2 py-2">
+                            {release.release_number}
+                          </td>
+                          <td className="px-2 py-2">
+                            {new Date(
+                              release.release_date,
+                            ).toLocaleDateString()}
                           </td>
                           <td className="px-2 py-2">{release.release_notes}</td>
                         </tr>
