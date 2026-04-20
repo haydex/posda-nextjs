@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Dataset = {
@@ -33,6 +34,25 @@ type DatasetRelease = {
 
 type DatasetReleasesResponse = {
   releases: DatasetRelease[];
+  total: number;
+  timestamp: string;
+};
+
+type DatasetRecordset = {
+  recordset_id: number;
+  recordset_doi: string | null;
+  dataset_id: number;
+  license_id: number;
+  recordset_type: string;
+  recordset_title: string;
+  recordset_name?: string;
+  active: boolean;
+  when_created?: string;
+  when_updated?: string;
+};
+
+type DatasetRecordsetsResponse = {
+  recordsets: DatasetRecordset[];
   total: number;
   timestamp: string;
 };
@@ -71,6 +91,53 @@ function normalizeDatasetReleasesResponse(
   };
 }
 
+function normalizeDatasetRecordsetsResponse(
+  payload: unknown,
+): DatasetRecordsetsResponse {
+  const source = payload as
+    | {
+        recordsets?: DatasetRecordset[];
+        total?: number;
+        timestamp?: string;
+        data?: DatasetRecordset[];
+        meta?: { count?: number };
+      }
+    | undefined;
+
+  const recordsets = Array.isArray(source?.recordsets)
+    ? source.recordsets
+    : Array.isArray(source?.data)
+      ? source.data
+      : [];
+
+  return {
+    recordsets,
+    total:
+      typeof source?.total === "number"
+        ? source.total
+        : typeof source?.meta?.count === "number"
+          ? source.meta.count
+          : recordsets.length,
+    timestamp:
+      typeof source?.timestamp === "string"
+        ? source.timestamp
+        : new Date().toISOString(),
+  };
+}
+
+function formatDateTime(value?: string) {
+  if (!value) {
+    return "-";
+  }
+
+  const parsed = Date.parse(value);
+  if (Number.isNaN(parsed)) {
+    return "-";
+  }
+
+  return new Date(parsed).toLocaleString();
+}
+
 type PageProps = {
   params: Promise<{
     dataset_id: string;
@@ -78,6 +145,7 @@ type PageProps = {
 };
 
 export default function DatasetByIdPage({ params }: PageProps) {
+  const router = useRouter();
   const [datasetId, setDatasetId] = useState<string | null>(null);
   const [data, setData] = useState<DatasetResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,6 +154,10 @@ export default function DatasetByIdPage({ params }: PageProps) {
     useState<DatasetReleasesResponse | null>(null);
   const [isLoadingReleases, setIsLoadingReleases] = useState(false);
   const [releasesError, setReleasesError] = useState<string | null>(null);
+  const [recordsetsData, setRecordsetsData] =
+    useState<DatasetRecordsetsResponse | null>(null);
+  const [isLoadingRecordsets, setIsLoadingRecordsets] = useState(false);
+  const [recordsetsError, setRecordsetsError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -95,6 +167,8 @@ export default function DatasetByIdPage({ params }: PageProps) {
       setError(null);
       setIsLoadingReleases(true);
       setReleasesError(null);
+      setIsLoadingRecordsets(true);
+      setRecordsetsError(null);
 
       const { dataset_id } = await params;
       const id = dataset_id;
@@ -108,6 +182,8 @@ export default function DatasetByIdPage({ params }: PageProps) {
         setIsLoading(false);
         setReleasesData(null);
         setIsLoadingReleases(false);
+        setRecordsetsData(null);
+        setIsLoadingRecordsets(false);
         return;
       }
 
@@ -137,6 +213,40 @@ export default function DatasetByIdPage({ params }: PageProps) {
 
         setData({ ...json, dataset: json.dataset ?? json.data });
 
+        try {
+          const query = new URLSearchParams({ dataset_id: id }).toString();
+          const recordsetsResponse = await fetch(`/api/recordsets?${query}`, {
+            cache: "no-store",
+          });
+
+          if (!recordsetsResponse.ok) {
+            throw new Error(`Could not load recordsets for dataset ${id}.`);
+          }
+
+          const recordsetsJson = (await recordsetsResponse.json()) as unknown;
+
+          if (!isMounted) {
+            return;
+          }
+
+          setRecordsetsData(normalizeDatasetRecordsetsResponse(recordsetsJson));
+        } catch (caughtError) {
+          if (!isMounted) {
+            return;
+          }
+
+          setRecordsetsData(null);
+          if (caughtError instanceof Error) {
+            setRecordsetsError(caughtError.message);
+          } else {
+            setRecordsetsError(`Could not load recordsets for dataset ${id}.`);
+          }
+        } finally {
+          if (isMounted) {
+            setIsLoadingRecordsets(false);
+          }
+        }
+
         const releasesResponse = await fetch(`/api/datasets/${id}/releases`, {
           cache: "no-store",
         });
@@ -163,6 +273,12 @@ export default function DatasetByIdPage({ params }: PageProps) {
         ) {
           setReleasesData(null);
           setReleasesError(caughtError.message);
+        } else if (
+          caughtError instanceof Error &&
+          caughtError.message.includes("recordsets")
+        ) {
+          setRecordsetsData(null);
+          setRecordsetsError(caughtError.message);
         } else {
           if (caughtError instanceof Error) {
             setError(caughtError.message);
@@ -172,11 +288,13 @@ export default function DatasetByIdPage({ params }: PageProps) {
 
           setData(null);
           setReleasesData(null);
+          setRecordsetsData(null);
         }
       } finally {
         if (isMounted) {
           setIsLoading(false);
           setIsLoadingReleases(false);
+          setIsLoadingRecordsets(false);
         }
       }
     }
@@ -264,13 +382,6 @@ export default function DatasetByIdPage({ params }: PageProps) {
           </Link>
 
           <Link
-            href={datasetId ? `/datasets/${datasetId}/recordsets` : "/datasets"}
-            className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-          >
-            View Related Recordsets
-          </Link>
-
-          <Link
             href="/datasets"
             className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
@@ -279,64 +390,150 @@ export default function DatasetByIdPage({ params }: PageProps) {
         </div>
 
         {!isLoading && dataset && (
-          <div className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-            <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
-              Releases
-            </h2>
+          <>
+            <div className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+              <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
+                Recordsets
+              </h2>
 
-            {isLoadingReleases && (
-              <p className="mt-3 text-sm">Loading releases...</p>
-            )}
+              {isLoadingRecordsets && (
+                <p className="mt-3 text-sm">Loading recordsets...</p>
+              )}
 
-            {!isLoadingReleases && releasesError && (
-              <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-                {releasesError}
-              </p>
-            )}
-
-            {!isLoadingReleases && !releasesError && releasesData && (
-              <div className="mt-3 space-y-3">
-                <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                  Total releases:{" "}
-                  <span className="font-medium">{releasesData.total}</span>
+              {!isLoadingRecordsets && recordsetsError && (
+                <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                  {recordsetsError}
                 </p>
+              )}
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border-collapse text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-black/10 dark:border-white/15">
-                        <th className="px-2 py-2 font-medium">ID</th>
-                        <th className="px-2 py-2 font-medium">Version</th>
-                        <th className="px-2 py-2 font-medium">Date</th>
-                        <th className="px-2 py-2 font-medium">Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {releasesData.releases.map((release) => (
-                        <tr
-                          key={release.dataset_release_id}
-                          className="border-b border-black/5 dark:border-white/10"
-                        >
-                          <td className="px-2 py-2">
-                            {release.dataset_release_id}
-                          </td>
-                          <td className="px-2 py-2">
-                            {release.release_number}
-                          </td>
-                          <td className="px-2 py-2">
-                            {new Date(
-                              release.release_date,
-                            ).toLocaleDateString()}
-                          </td>
-                          <td className="px-2 py-2">{release.release_notes}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {!isLoadingRecordsets && !recordsetsError && recordsetsData && (
+                <div className="mt-3 space-y-3">
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Total recordsets:{" "}
+                    <span className="font-medium">{recordsetsData.total}</span>
+                  </p>
+
+                  {recordsetsData.recordsets.length === 0 ? (
+                    <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                      No recordsets were found for this dataset.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full border-collapse text-left text-sm">
+                        <thead>
+                          <tr className="border-b border-black/10 dark:border-white/15">
+                            <th className="px-2 py-2 font-medium">ID</th>
+                            <th className="px-2 py-2 font-medium">Name</th>
+                            <th className="px-2 py-2 font-medium">Title</th>
+                            <th className="px-2 py-2 font-medium">DOI</th>
+                            <th className="px-2 py-2 font-medium">Type</th>
+                            <th className="px-2 py-2 font-medium">Active</th>
+                            <th className="px-2 py-2 font-medium">Updated</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {recordsetsData.recordsets.map((recordset) => (
+                            <tr
+                              key={recordset.recordset_id}
+                              onClick={() =>
+                                router.push(
+                                  `/recordsets/${recordset.recordset_id}`,
+                                )
+                              }
+                              className="cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
+                            >
+                              <td className="px-2 py-2">
+                                {recordset.recordset_id}
+                              </td>
+                              <td className="px-2 py-2">
+                                {recordset.recordset_name ?? "-"}
+                              </td>
+                              <td className="px-2 py-2">
+                                {recordset.recordset_title}
+                              </td>
+                              <td className="px-2 py-2">
+                                {recordset.recordset_doi ?? "-"}
+                              </td>
+                              <td className="px-2 py-2">
+                                {recordset.recordset_type}
+                              </td>
+                              <td className="px-2 py-2">
+                                {recordset.active ? "Yes" : "No"}
+                              </td>
+                              <td className="px-2 py-2">
+                                {formatDateTime(recordset.when_updated)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+
+            <div className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+              <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
+                Releases
+              </h2>
+
+              {isLoadingReleases && (
+                <p className="mt-3 text-sm">Loading releases...</p>
+              )}
+
+              {!isLoadingReleases && releasesError && (
+                <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                  {releasesError}
+                </p>
+              )}
+
+              {!isLoadingReleases && !releasesError && releasesData && (
+                <div className="mt-3 space-y-3">
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                    Total releases:{" "}
+                    <span className="font-medium">{releasesData.total}</span>
+                  </p>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border-collapse text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-black/10 dark:border-white/15">
+                          <th className="px-2 py-2 font-medium">ID</th>
+                          <th className="px-2 py-2 font-medium">Version</th>
+                          <th className="px-2 py-2 font-medium">Date</th>
+                          <th className="px-2 py-2 font-medium">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {releasesData.releases.map((release) => (
+                          <tr
+                            key={release.dataset_release_id}
+                            className="border-b border-black/5 dark:border-white/10"
+                          >
+                            <td className="px-2 py-2">
+                              {release.dataset_release_id}
+                            </td>
+                            <td className="px-2 py-2">
+                              {release.release_number}
+                            </td>
+                            <td className="px-2 py-2">
+                              {new Date(
+                                release.release_date,
+                              ).toLocaleDateString()}
+                            </td>
+                            <td className="px-2 py-2">
+                              {release.release_notes}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </section>
     </main>
