@@ -240,8 +240,8 @@ export default function RecordsetsPage() {
                 { key: "recordset_type", label: "Type" },
                 { key: "recordset_title", label: "Title" },
                 { key: "active", label: "Active" },
-                { key: "when_created", label: "When Created" },
-                { key: "when_updated", label: "When Updated" },
+                { key: "when_created", label: "Created" },
+                { key: "when_updated", label: "Updated" },
               ]}
               formatters={{
                 when_created: (value) => formatDateTime(value as string),

@@ -103,9 +103,9 @@ export default function ReleasesPage() {
                   { key: "release_number", label: "Release Number" },
                   { key: "release_date", label: "Release Date" },
                   { key: "release_notes", label: "Release Notes" },
-                  { key: "when_created", label: "When Created" },
+                  { key: "when_created", label: "Created" },
                   { key: "who_created", label: "Who Created" },
-                  { key: "when_updated", label: "When Updated" },
+                  { key: "when_updated", label: "Updated" },
                   { key: "who_updated", label: "Who Updated" },
                 ]}
                 formatters={{
@@ -144,9 +144,9 @@ export default function ReleasesPage() {
                   { key: "release_number", label: "Release Number" },
                   { key: "release_date", label: "Release Date" },
                   { key: "release_notes", label: "Release Notes" },
-                  { key: "when_created", label: "When Created" },
+                  { key: "when_created", label: "Created" },
                   { key: "who_created", label: "Who Created" },
-                  { key: "when_updated", label: "When Updated" },
+                  { key: "when_updated", label: "Updated" },
                   { key: "who_updated", label: "Who Updated" },
                 ]}
                 formatters={{
