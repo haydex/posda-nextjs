@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Table from "@/components/Table";
 
 type Transfer = {
   dataset_release_transfer_id: number;
@@ -105,55 +106,29 @@ export default function TransfersPage() {
               Total transfers: <span className="font-medium">{data.total}</span>
             </p>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-black/10 dark:border-white/15">
-                    <th className="px-2 py-2 font-medium">ID</th>
-                    <th className="px-2 py-2 font-medium">
-                      Dataset Release ID
-                    </th>
-                    <th className="px-2 py-2 font-medium">Destination ID</th>
-                    <th className="px-2 py-2 font-medium">Name</th>
-                    <th className="px-2 py-2 font-medium">Mode</th>
-                    <th className="px-2 py-2 font-medium">Status</th>
-                    <th className="px-2 py-2 font-medium">Notes</th>
-                    <th className="px-2 py-2 font-medium">Created</th>
-                    <th className="px-2 py-2 font-medium">Created By</th>
-                    <th className="px-2 py-2 font-medium">Updated</th>
-                    <th className="px-2 py-2 font-medium">Updated By</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.transfers.map((transfer) => (
-                    <tr
-                      key={transfer.dataset_release_transfer_id}
-                      className="border-b border-black/5 dark:border-white/10"
-                    >
-                      <td className="px-2 py-2">
-                        {transfer.dataset_release_transfer_id}
-                      </td>
-                      <td className="px-2 py-2">
-                        {transfer.dataset_release_id}
-                      </td>
-                      <td className="px-2 py-2">{transfer.destination_id}</td>
-                      <td className="px-2 py-2">{transfer.transfer_name}</td>
-                      <td className="px-2 py-2">{transfer.transfer_mode}</td>
-                      <td className="px-2 py-2">{transfer.transfer_status}</td>
-                      <td className="px-2 py-2">{transfer.transfer_notes}</td>
-                      <td className="px-2 py-2">
-                        {new Date(transfer.when_created).toLocaleString()}
-                      </td>
-                      <td className="px-2 py-2">{transfer.who_created}</td>
-                      <td className="px-2 py-2">
-                        {new Date(transfer.when_updated).toLocaleString()}
-                      </td>
-                      <td className="px-2 py-2">{transfer.who_updated}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table
+              rows={data.transfers}
+              columns={[
+                { key: "dataset_release_transfer_id", label: "ID" },
+                { key: "dataset_release_id", label: "Dataset Release ID" },
+                { key: "destination_id", label: "Destination ID" },
+                { key: "transfer_name", label: "Name" },
+                { key: "transfer_mode", label: "Mode" },
+                { key: "transfer_status", label: "Status" },
+                { key: "transfer_notes", label: "Notes" },
+                { key: "when_created", label: "Created" },
+                { key: "who_created", label: "Created By" },
+                { key: "when_updated", label: "Updated" },
+                { key: "who_updated", label: "Updated By" },
+              ]}
+              formatters={{
+                when_created: (value) =>
+                  new Date(String(value)).toLocaleString(),
+                when_updated: (value) =>
+                  new Date(String(value)).toLocaleString(),
+              }}
+              getRowKey={(row) => row.dataset_release_transfer_id}
+            />
           </div>
         )}
 

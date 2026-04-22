@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Table from "@/components/Table";
 
 type Dataset = {
   dataset_id: number;
@@ -418,56 +419,26 @@ export default function DatasetByIdPage({ params }: PageProps) {
                       No recordsets were found for this dataset.
                     </p>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border-collapse text-left text-sm">
-                        <thead>
-                          <tr className="border-b border-black/10 dark:border-white/15">
-                            <th className="px-2 py-2 font-medium">ID</th>
-                            <th className="px-2 py-2 font-medium">Name</th>
-                            <th className="px-2 py-2 font-medium">Title</th>
-                            <th className="px-2 py-2 font-medium">DOI</th>
-                            <th className="px-2 py-2 font-medium">Type</th>
-                            <th className="px-2 py-2 font-medium">Active</th>
-                            <th className="px-2 py-2 font-medium">Updated</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {recordsetsData.recordsets.map((recordset) => (
-                            <tr
-                              key={recordset.recordset_id}
-                              onClick={() =>
-                                router.push(
-                                  `/recordsets/${recordset.recordset_id}`,
-                                )
-                              }
-                              className="cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
-                            >
-                              <td className="px-2 py-2">
-                                {recordset.recordset_id}
-                              </td>
-                              <td className="px-2 py-2">
-                                {recordset.recordset_name ?? "-"}
-                              </td>
-                              <td className="px-2 py-2">
-                                {recordset.recordset_title}
-                              </td>
-                              <td className="px-2 py-2">
-                                {recordset.recordset_doi ?? "-"}
-                              </td>
-                              <td className="px-2 py-2">
-                                {recordset.recordset_type}
-                              </td>
-                              <td className="px-2 py-2">
-                                {recordset.active ? "Yes" : "No"}
-                              </td>
-                              <td className="px-2 py-2">
-                                {formatDateTime(recordset.when_updated)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    <Table
+                      rows={recordsetsData.recordsets}
+                      columns={[
+                        { key: "recordset_id", label: "ID" },
+                        { key: "recordset_name", label: "Name" },
+                        { key: "recordset_title", label: "Title" },
+                        { key: "recordset_doi", label: "DOI" },
+                        { key: "recordset_type", label: "Type" },
+                        { key: "active", label: "Active" },
+                        { key: "when_updated", label: "Updated" },
+                      ]}
+                      formatters={{
+                        when_updated: (value) =>
+                          formatDateTime(value as string),
+                      }}
+                      onRowClick={(row) =>
+                        router.push(`/recordsets/${row.recordset_id}`)
+                      }
+                      getRowKey={(row) => row.recordset_id}
+                    />
                   )}
                 </div>
               )}
@@ -495,41 +466,20 @@ export default function DatasetByIdPage({ params }: PageProps) {
                     <span className="font-medium">{releasesData.total}</span>
                   </p>
 
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full border-collapse text-left text-sm">
-                      <thead>
-                        <tr className="border-b border-black/10 dark:border-white/15">
-                          <th className="px-2 py-2 font-medium">ID</th>
-                          <th className="px-2 py-2 font-medium">Version</th>
-                          <th className="px-2 py-2 font-medium">Date</th>
-                          <th className="px-2 py-2 font-medium">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {releasesData.releases.map((release) => (
-                          <tr
-                            key={release.dataset_release_id}
-                            className="border-b border-black/5 dark:border-white/10"
-                          >
-                            <td className="px-2 py-2">
-                              {release.dataset_release_id}
-                            </td>
-                            <td className="px-2 py-2">
-                              {release.release_number}
-                            </td>
-                            <td className="px-2 py-2">
-                              {new Date(
-                                release.release_date,
-                              ).toLocaleDateString()}
-                            </td>
-                            <td className="px-2 py-2">
-                              {release.release_notes}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <Table
+                    rows={releasesData.releases}
+                    columns={[
+                      { key: "dataset_release_id", label: "ID" },
+                      { key: "release_number", label: "Version" },
+                      { key: "release_date", label: "Date" },
+                      { key: "release_notes", label: "Notes" },
+                    ]}
+                    formatters={{
+                      release_date: (value) =>
+                        new Date(String(value)).toLocaleDateString(),
+                    }}
+                    getRowKey={(row) => row.dataset_release_id}
+                  />
                 </div>
               )}
             </div>

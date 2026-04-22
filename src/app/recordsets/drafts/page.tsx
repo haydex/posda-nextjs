@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Table from "@/components/Table";
 
 type Draft = {
   dataset_release_draft_id: number;
@@ -71,41 +72,19 @@ export default function DraftsPage() {
               Total drafts: <span className="font-medium">{data.total}</span>
             </p>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-black/10 dark:border-white/15">
-                    <th className="px-2 py-2 font-medium">Draft ID</th>
-                    <th className="px-2 py-2 font-medium">Dataset ID</th>
-                    <th className="px-2 py-2 font-medium">Cloned Release ID</th>
-                    <th className="px-2 py-2 font-medium">Draft Name</th>
-                    <th className="px-2 py-2 font-medium">Status</th>
-                    <th className="px-2 py-2 font-medium">Notes</th>
-                    <th className="px-2 py-2 font-medium">Created By</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.drafts.map((draft) => (
-                    <tr
-                      key={draft.dataset_release_draft_id}
-                      className="border-b border-black/5 dark:border-white/10"
-                    >
-                      <td className="px-2 py-2">
-                        {draft.dataset_release_draft_id}
-                      </td>
-                      <td className="px-2 py-2">{draft.dataset_id}</td>
-                      <td className="px-2 py-2">
-                        {draft.cloned_from_release_id ?? "-"}
-                      </td>
-                      <td className="px-2 py-2">{draft.draft_name}</td>
-                      <td className="px-2 py-2">{draft.draft_status}</td>
-                      <td className="px-2 py-2">{draft.draft_notes}</td>
-                      <td className="px-2 py-2">{draft.who_created}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table
+              rows={data.drafts}
+              columns={[
+                { key: "dataset_release_draft_id", label: "Draft ID" },
+                { key: "dataset_id", label: "Dataset ID" },
+                { key: "cloned_from_release_id", label: "Cloned Release ID" },
+                { key: "draft_name", label: "Draft Name" },
+                { key: "draft_status", label: "Status" },
+                { key: "draft_notes", label: "Notes" },
+                { key: "who_created", label: "Created By" },
+              ]}
+              getRowKey={(row) => row.dataset_release_draft_id}
+            />
           </div>
         )}
 

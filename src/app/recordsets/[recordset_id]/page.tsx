@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Table from "@/components/Table";
 
 type Recordset = {
   recordset_id: number;
@@ -388,41 +389,21 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                     <span className="font-medium">{draftsData.total}</span>
                   </p>
 
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full border-collapse text-left text-sm">
-                      <thead>
-                        <tr className="border-b border-black/10 dark:border-white/15">
-                          <th className="px-2 py-2 font-medium">ID</th>
-                          <th className="px-2 py-2 font-medium">Name</th>
-                          <th className="px-2 py-2 font-medium">Status</th>
-                          <th className="px-2 py-2 font-medium">Notes</th>
-                          <th className="px-2 py-2 font-medium">File Count</th>
-                          <th className="px-2 py-2 font-medium">
-                            Cloned Release ID
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {draftsData.drafts.map((draft) => (
-                          <tr
-                            key={draft.recordset_draft_id}
-                            className="border-b border-black/5 dark:border-white/10"
-                          >
-                            <td className="px-2 py-2">
-                              {draft.recordset_draft_id}
-                            </td>
-                            <td className="px-2 py-2">{draft.draft_name}</td>
-                            <td className="px-2 py-2">{draft.draft_status}</td>
-                            <td className="px-2 py-2">{draft.draft_notes}</td>
-                            <td className="px-2 py-2">{draft.file_count}</td>
-                            <td className="px-2 py-2">
-                              {draft.cloned_from_release_id ?? "-"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <Table
+                    rows={draftsData.drafts}
+                    columns={[
+                      { key: "recordset_draft_id", label: "ID" },
+                      { key: "draft_name", label: "Name" },
+                      { key: "draft_status", label: "Status" },
+                      { key: "draft_notes", label: "Notes" },
+                      { key: "file_count", label: "File Count" },
+                      {
+                        key: "cloned_from_release_id",
+                        label: "Cloned Release ID",
+                      },
+                    ]}
+                    getRowKey={(row) => row.recordset_draft_id}
+                  />
                 </div>
               )}
             </div>
@@ -449,43 +430,21 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                     <span className="font-medium">{releasesData.total}</span>
                   </p>
 
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full border-collapse text-left text-sm">
-                      <thead>
-                        <tr className="border-b border-black/10 dark:border-white/15">
-                          <th className="px-2 py-2 font-medium">ID</th>
-                          <th className="px-2 py-2 font-medium">Version</th>
-                          <th className="px-2 py-2 font-medium">Date</th>
-                          <th className="px-2 py-2 font-medium">Notes</th>
-                          <th className="px-2 py-2 font-medium">File Count</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {releasesData.releases.map((release) => (
-                          <tr
-                            key={release.recordset_release_id}
-                            className="border-b border-black/5 dark:border-white/10"
-                          >
-                            <td className="px-2 py-2">
-                              {release.recordset_release_id}
-                            </td>
-                            <td className="px-2 py-2">
-                              {release.release_number}
-                            </td>
-                            <td className="px-2 py-2">
-                              {new Date(
-                                release.release_date,
-                              ).toLocaleDateString()}
-                            </td>
-                            <td className="px-2 py-2">
-                              {release.release_notes}
-                            </td>
-                            <td className="px-2 py-2">{release.file_count}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <Table
+                    rows={releasesData.releases}
+                    columns={[
+                      { key: "recordset_release_id", label: "ID" },
+                      { key: "release_number", label: "Version" },
+                      { key: "release_date", label: "Date" },
+                      { key: "release_notes", label: "Notes" },
+                      { key: "file_count", label: "File Count" },
+                    ]}
+                    formatters={{
+                      release_date: (value) =>
+                        new Date(String(value)).toLocaleDateString(),
+                    }}
+                    getRowKey={(row) => row.recordset_release_id}
+                  />
                 </div>
               )}
             </div>

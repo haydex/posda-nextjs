@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import Table from "@/components/Table";
 
 type Recordset = {
   recordset_id: number;
@@ -229,54 +230,28 @@ export default function RecordsetsPage() {
               <span className="font-medium">{data.total}</span>
             </p>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-black/10 dark:border-white/15">
-                    <th className="px-2 py-2 font-medium">ID</th>
-                    <th className="px-2 py-2 font-medium">DOI</th>
-                    <th className="px-2 py-2 font-medium">Dataset ID</th>
-                    <th className="px-2 py-2 font-medium">License</th>
-                    <th className="px-2 py-2 font-medium">Type</th>
-                    <th className="px-2 py-2 font-medium">Title</th>
-                    <th className="px-2 py-2 font-medium">Active</th>
-                    <th className="px-2 py-2 font-medium">When Created</th>
-                    <th className="px-2 py-2 font-medium">When Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.recordsets.map((recordset) => (
-                    <tr
-                      key={recordset.recordset_id}
-                      onClick={() =>
-                        router.push(`/recordsets/${recordset.recordset_id}`)
-                      }
-                      className="cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
-                    >
-                      <td className="px-2 py-2">{recordset.recordset_id}</td>
-                      <td className="px-2 py-2">
-                        {recordset.recordset_doi ?? "-"}
-                      </td>
-                      <td className="px-2 py-2">{recordset.dataset_id}</td>
-                      <td className="px-2 py-2">
-                        {recordset.license_label ?? "-"}
-                      </td>
-                      <td className="px-2 py-2">{recordset.recordset_type}</td>
-                      <td className="px-2 py-2">{recordset.recordset_title}</td>
-                      <td className="px-2 py-2">
-                        {recordset.active ? "Yes" : "No"}
-                      </td>
-                      <td className="px-2 py-2">
-                        {formatDateTime(recordset.when_created)}
-                      </td>
-                      <td className="px-2 py-2">
-                        {formatDateTime(recordset.when_updated)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table
+              rows={data.recordsets}
+              columns={[
+                { key: "recordset_id", label: "ID" },
+                { key: "recordset_doi", label: "DOI" },
+                { key: "dataset_id", label: "Dataset ID" },
+                { key: "license_label", label: "License" },
+                { key: "recordset_type", label: "Type" },
+                { key: "recordset_title", label: "Title" },
+                { key: "active", label: "Active" },
+                { key: "when_created", label: "When Created" },
+                { key: "when_updated", label: "When Updated" },
+              ]}
+              formatters={{
+                when_created: (value) => formatDateTime(value as string),
+                when_updated: (value) => formatDateTime(value as string),
+              }}
+              onRowClick={(row) =>
+                router.push(`/recordsets/${row.recordset_id}`)
+              }
+              getRowKey={(row) => row.recordset_id}
+            />
 
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Click a recordset row to open details.

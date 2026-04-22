@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Table from "@/components/Table";
 
 type DatasetRelease = {
   dataset_release_id: number;
@@ -94,49 +95,29 @@ export default function ReleasesPage() {
                 </p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-black/10 dark:border-white/15">
-                      <th className="px-2 py-2 font-medium">ID</th>
-                      <th className="px-2 py-2 font-medium">Dataset ID</th>
-                      <th className="px-2 py-2 font-medium">Release #</th>
-                      <th className="px-2 py-2 font-medium">Release Date</th>
-                      <th className="px-2 py-2 font-medium">Release Notes</th>
-                      <th className="px-2 py-2 font-medium">Created</th>
-                      <th className="px-2 py-2 font-medium">Created By</th>
-                      <th className="px-2 py-2 font-medium">Updated</th>
-                      <th className="px-2 py-2 font-medium">Updated By</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.datasetReleases.map((release) => (
-                      <tr
-                        key={release.dataset_release_id}
-                        className="border-b border-black/5 dark:border-white/10"
-                      >
-                        <td className="px-2 py-2">
-                          {release.dataset_release_id}
-                        </td>
-                        <td className="px-2 py-2">{release.dataset_id}</td>
-                        <td className="px-2 py-2">{release.release_number}</td>
-                        <td className="px-2 py-2">
-                          {new Date(release.release_date).toLocaleDateString()}
-                        </td>
-                        <td className="px-2 py-2">{release.release_notes}</td>
-                        <td className="px-2 py-2">
-                          {new Date(release.when_created).toLocaleString()}
-                        </td>
-                        <td className="px-2 py-2">{release.who_created}</td>
-                        <td className="px-2 py-2">
-                          {new Date(release.when_updated).toLocaleString()}
-                        </td>
-                        <td className="px-2 py-2">{release.who_updated}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table
+                rows={data.datasetReleases}
+                columns={[
+                  { key: "dataset_release_id", label: "Dataset Release ID" },
+                  { key: "dataset_id", label: "Dataset ID" },
+                  { key: "release_number", label: "Release Number" },
+                  { key: "release_date", label: "Release Date" },
+                  { key: "release_notes", label: "Release Notes" },
+                  { key: "when_created", label: "When Created" },
+                  { key: "who_created", label: "Who Created" },
+                  { key: "when_updated", label: "When Updated" },
+                  { key: "who_updated", label: "Who Updated" },
+                ]}
+                formatters={{
+                  release_date: (value) =>
+                    new Date(String(value)).toLocaleDateString(),
+                  when_created: (value) =>
+                    new Date(String(value)).toLocaleString(),
+                  when_updated: (value) =>
+                    new Date(String(value)).toLocaleString(),
+                }}
+                getRowKey={(row) => row.dataset_release_id}
+              />
             </div>
 
             <div className="space-y-4">
@@ -152,49 +133,32 @@ export default function ReleasesPage() {
                 </p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-black/10 dark:border-white/15">
-                      <th className="px-2 py-2 font-medium">ID</th>
-                      <th className="px-2 py-2 font-medium">Recordset ID</th>
-                      <th className="px-2 py-2 font-medium">Release #</th>
-                      <th className="px-2 py-2 font-medium">Release Date</th>
-                      <th className="px-2 py-2 font-medium">Release Notes</th>
-                      <th className="px-2 py-2 font-medium">Created</th>
-                      <th className="px-2 py-2 font-medium">Created By</th>
-                      <th className="px-2 py-2 font-medium">Updated</th>
-                      <th className="px-2 py-2 font-medium">Updated By</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.recordsetReleases.map((release) => (
-                      <tr
-                        key={release.recordset_release_id}
-                        className="border-b border-black/5 dark:border-white/10"
-                      >
-                        <td className="px-2 py-2">
-                          {release.recordset_release_id}
-                        </td>
-                        <td className="px-2 py-2">{release.recordset_id}</td>
-                        <td className="px-2 py-2">{release.release_number}</td>
-                        <td className="px-2 py-2">
-                          {new Date(release.release_date).toLocaleDateString()}
-                        </td>
-                        <td className="px-2 py-2">{release.release_notes}</td>
-                        <td className="px-2 py-2">
-                          {new Date(release.when_created).toLocaleString()}
-                        </td>
-                        <td className="px-2 py-2">{release.who_created}</td>
-                        <td className="px-2 py-2">
-                          {new Date(release.when_updated).toLocaleString()}
-                        </td>
-                        <td className="px-2 py-2">{release.who_updated}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table
+                rows={data.recordsetReleases}
+                columns={[
+                  {
+                    key: "recordset_release_id",
+                    label: "Recordset Release ID",
+                  },
+                  { key: "recordset_id", label: "Recordset ID" },
+                  { key: "release_number", label: "Release Number" },
+                  { key: "release_date", label: "Release Date" },
+                  { key: "release_notes", label: "Release Notes" },
+                  { key: "when_created", label: "When Created" },
+                  { key: "who_created", label: "Who Created" },
+                  { key: "when_updated", label: "When Updated" },
+                  { key: "who_updated", label: "Who Updated" },
+                ]}
+                formatters={{
+                  release_date: (value) =>
+                    new Date(String(value)).toLocaleDateString(),
+                  when_created: (value) =>
+                    new Date(String(value)).toLocaleString(),
+                  when_updated: (value) =>
+                    new Date(String(value)).toLocaleString(),
+                }}
+                getRowKey={(row) => row.recordset_release_id}
+              />
             </div>
           </div>
         )}

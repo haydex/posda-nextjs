@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import Table from "@/components/Table";
 
 type Dataset = {
   dataset_id: number;
@@ -214,46 +215,26 @@ export default function DatasetsPage() {
               Total datasets: <span className="font-medium">{data.total}</span>
             </p>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-black/10 dark:border-white/15">
-                    <th className="px-2 py-2 font-medium">ID</th>
-                    <th className="px-2 py-2 font-medium">Name</th>
-                    <th className="px-2 py-2 font-medium">DOI</th>
-                    <th className="px-2 py-2 font-medium">Type</th>
-                    <th className="px-2 py-2 font-medium">Active</th>
-                    <th className="px-2 py-2 font-medium">Created</th>
-                    <th className="px-2 py-2 font-medium">Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.datasets.map((dataset) => (
-                    <tr
-                      key={dataset.dataset_id}
-                      onClick={() =>
-                        router.push(`/datasets/${dataset.dataset_id}`)
-                      }
-                      className="cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
-                    >
-                      <td className="px-2 py-2">{dataset.dataset_id}</td>
-                      <td className="px-2 py-2">{dataset.dataset_name}</td>
-                      <td className="px-2 py-2">{dataset.dataset_doi}</td>
-                      <td className="px-2 py-2">{dataset.dataset_type}</td>
-                      <td className="px-2 py-2">
-                        {dataset.active ? "Yes" : "No"}
-                      </td>
-                      <td className="px-2 py-2">
-                        {new Date(dataset.when_created).toLocaleString()}
-                      </td>
-                      <td className="px-2 py-2">
-                        {new Date(dataset.when_updated).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table
+              rows={data.datasets}
+              columns={[
+                { key: "dataset_id", label: "ID" },
+                { key: "dataset_name", label: "Name" },
+                { key: "dataset_doi", label: "DOI" },
+                { key: "dataset_type", label: "Type" },
+                { key: "active", label: "Active" },
+                { key: "when_created", label: "Created" },
+                { key: "when_updated", label: "Updated" },
+              ]}
+              formatters={{
+                when_created: (value) =>
+                  new Date(String(value)).toLocaleString(),
+                when_updated: (value) =>
+                  new Date(String(value)).toLocaleString(),
+              }}
+              onRowClick={(row) => router.push(`/datasets/${row.dataset_id}`)}
+              getRowKey={(row) => row.dataset_id}
+            />
 
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Click a dataset row to open details.
