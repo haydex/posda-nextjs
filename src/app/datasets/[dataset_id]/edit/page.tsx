@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Form, { FormField } from "@/components/Form";
 
 type Dataset = {
   dataset_id: number;
@@ -181,6 +182,47 @@ export default function DatasetEditPage({ params }: PageProps) {
   }
 
   const dataset = data?.dataset ?? data?.data ?? null;
+  const fields: Array<FormField<typeof formData>> = [
+    {
+      key: "dataset_doi",
+      label: "DOI",
+      controlClassName:
+        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+    },
+    {
+      key: "dataset_type",
+      label: "Type",
+      type: "select",
+      options: [{ value: "collection" }, { value: "analysis_result" }],
+      controlClassName:
+        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
+    },
+    {
+      key: "dataset_short_title",
+      label: "Short Title",
+      controlClassName:
+        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+    },
+    {
+      key: "dataset_title",
+      label: "Title",
+      controlClassName:
+        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+    },
+    {
+      key: "dataset_name",
+      label: "Name",
+      controlClassName:
+        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+    },
+    {
+      key: "active",
+      label: "Active",
+      type: "checkbox",
+      className: "flex items-center gap-2",
+      controlClassName: "h-4 w-4",
+    },
+  ];
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
@@ -197,7 +239,7 @@ export default function DatasetEditPage({ params }: PageProps) {
         )}
 
         {!isLoading && dataset && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <>
             <div>
               <label className="block text-sm font-medium">Dataset ID</label>
               <input
@@ -209,133 +251,59 @@ export default function DatasetEditPage({ params }: PageProps) {
               <p className="mt-1 text-xs text-zinc-500">Read-only</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium">DOI</label>
-              <input
-                type="text"
-                value={formData.dataset_doi}
-                onChange={(e) =>
-                  setFormData({ ...formData, dataset_doi: e.target.value })
-                }
-                className="mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950"
-              />
-            </div>
+            <Form
+              onSubmit={handleSubmit}
+              values={formData}
+              onChange={setFormData}
+              fields={fields}
+              className="space-y-4"
+              actions={
+                <>
+                  <div className="space-y-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-900/50">
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                      <strong>Created:</strong>{" "}
+                      {new Date(dataset.when_created).toLocaleString()} by{" "}
+                      {dataset.who_created}
+                    </p>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                      <strong>Updated:</strong>{" "}
+                      {new Date(dataset.when_updated).toLocaleString()} by{" "}
+                      {dataset.who_updated}
+                    </p>
+                  </div>
 
-            <div>
-              <label className="block text-sm font-medium">Type</label>
-              <select
-                value={formData.dataset_type}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    dataset_type: e.target.value as
-                      | "collection"
-                      | "analysis_result",
-                  })
-                }
-                className="mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100"
-              >
-                <option value="collection">collection</option>
-                <option value="analysis_result">analysis_result</option>
-              </select>
-            </div>
+                  {saveError && (
+                    <p className="rounded-md bg-red-100 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                      {saveError}
+                    </p>
+                  )}
 
-            <div>
-              <label className="block text-sm font-medium">Short Title</label>
-              <input
-                type="text"
-                value={formData.dataset_short_title}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    dataset_short_title: e.target.value,
-                  })
-                }
-                className="mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950"
-              />
-            </div>
+                  {saveSuccess && (
+                    <p className="rounded-md bg-green-100 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                      Dataset saved successfully!
+                    </p>
+                  )}
 
-            <div>
-              <label className="block text-sm font-medium">Title</label>
-              <input
-                type="text"
-                value={formData.dataset_title}
-                onChange={(e) =>
-                  setFormData({ ...formData, dataset_title: e.target.value })
-                }
-                className="mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950"
-              />
-            </div>
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className="inline-flex rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                    >
+                      {isSaving ? "Saving..." : "Save Changes"}
+                    </button>
 
-            <div>
-              <label className="block text-sm font-medium">Name</label>
-              <input
-                type="text"
-                value={formData.dataset_name}
-                onChange={(e) =>
-                  setFormData({ ...formData, dataset_name: e.target.value })
-                }
-                className="mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950"
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="active"
-                checked={formData.active}
-                onChange={(e) =>
-                  setFormData({ ...formData, active: e.target.checked })
-                }
-                className="h-4 w-4"
-              />
-              <label htmlFor="active" className="text-sm font-medium">
-                Active
-              </label>
-            </div>
-
-            <div className="space-y-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-900/50">
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                <strong>Created:</strong>{" "}
-                {new Date(dataset.when_created).toLocaleString()} by{" "}
-                {dataset.who_created}
-              </p>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                <strong>Updated:</strong>{" "}
-                {new Date(dataset.when_updated).toLocaleString()} by{" "}
-                {dataset.who_updated}
-              </p>
-            </div>
-
-            {saveError && (
-              <p className="rounded-md bg-red-100 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
-                {saveError}
-              </p>
-            )}
-
-            {saveSuccess && (
-              <p className="rounded-md bg-green-100 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                Dataset saved successfully!
-              </p>
-            )}
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="inline-flex rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-              >
-                {isSaving ? "Saving..." : "Save Changes"}
-              </button>
-
-              <Link
-                href={`/datasets/${datasetId}`}
-                className="inline-flex rounded-md border border-black/15 px-4 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-              >
-                Cancel
-              </Link>
-            </div>
-          </form>
+                    <Link
+                      href={`/datasets/${datasetId}`}
+                      className="inline-flex rounded-md border border-black/15 px-4 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+                    >
+                      Cancel
+                    </Link>
+                  </div>
+                </>
+              }
+            />
+          </>
         )}
       </section>
     </main>

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import Form, { FormField } from "@/components/Form";
 import Table from "@/components/Table";
 
 type Recordset = {
@@ -26,6 +27,12 @@ type RecordsetsResponse = {
   recordsets: Recordset[];
   total: number;
   timestamp: string;
+};
+
+type RecordsetFilters = {
+  search: string;
+  activeOnly: boolean;
+  datasetId: string;
 };
 
 function normalizeRecordsetsResponse(payload: unknown): RecordsetsResponse {
@@ -75,15 +82,13 @@ function formatDateTime(value?: string) {
 
 export default function RecordsetsPage() {
   const router = useRouter();
-  const [searchInput, setSearchInput] = useState("");
-  const [activeOnlyInput, setActiveOnlyInput] = useState(false);
-  const [datasetIdInput, setDatasetIdInput] = useState("");
+  const [filtersInput, setFiltersInput] = useState<RecordsetFilters>({
+    search: "",
+    activeOnly: false,
+    datasetId: "",
+  });
 
-  const [filters, setFilters] = useState<{
-    search: string;
-    activeOnly: boolean;
-    datasetId: string;
-  }>({
+  const [filters, setFilters] = useState<RecordsetFilters>({
     search: "",
     activeOnly: false,
     datasetId: "",
@@ -136,19 +141,42 @@ export default function RecordsetsPage() {
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setFilters({
-      search: searchInput,
-      activeOnly: activeOnlyInput,
-      datasetId: datasetIdInput,
-    });
+    setFilters(filtersInput);
   }
 
   function clearFilters() {
-    setSearchInput("");
-    setActiveOnlyInput(false);
-    setDatasetIdInput("");
+    setFiltersInput({ search: "", activeOnly: false, datasetId: "" });
     setFilters({ search: "", activeOnly: false, datasetId: "" });
   }
+
+  const filterFields: Array<FormField<RecordsetFilters>> = [
+    {
+      key: "search",
+      label: "Search",
+      placeholder: "DOI, title, or type",
+      srOnlyLabel: true,
+      className: "text-sm",
+      controlClassName:
+        "h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20",
+    },
+    {
+      key: "datasetId",
+      label: "Dataset ID",
+      placeholder: "dataset_id",
+      inputMode: "numeric",
+      srOnlyLabel: true,
+      className: "text-sm",
+      controlClassName:
+        "h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20",
+    },
+    {
+      key: "activeOnly",
+      label: "active_only",
+      type: "checkbox",
+      className: "flex h-10 items-center gap-2 text-sm",
+      controlClassName: "h-4 w-4",
+    },
+  ];
 
   useEffect(() => {
     void loadRecordsets();
@@ -162,58 +190,31 @@ export default function RecordsetsPage() {
       </h1>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-        <form
+        <Form
           onSubmit={applyFilters}
+          values={filtersInput}
+          onChange={setFiltersInput}
+          fields={filterFields}
           className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_12rem_auto_auto_auto] md:items-center"
-        >
-          <label className="text-sm">
-            <span className="sr-only">Search</span>
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="DOI, title, or type"
-              className="h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20"
-            />
-          </label>
+          actions={
+            <>
+              <button
+                type="submit"
+                className="h-10 rounded-md bg-black px-4 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              >
+                Search
+              </button>
 
-          <label className="text-sm">
-            <span className="sr-only">Dataset ID</span>
-            <input
-              type="text"
-              value={datasetIdInput}
-              onChange={(event) => setDatasetIdInput(event.target.value)}
-              placeholder="dataset_id"
-              inputMode="numeric"
-              className="h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20"
-            />
-          </label>
-
-          <label className="flex h-10 items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={activeOnlyInput}
-              onChange={(event) => setActiveOnlyInput(event.target.checked)}
-              className="h-4 w-4"
-            />
-            <span>active_only</span>
-          </label>
-
-          <button
-            type="submit"
-            className="h-10 rounded-md bg-black px-4 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-          >
-            Search
-          </button>
-
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="h-10 rounded-md border border-black/15 px-4 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-          >
-            Clear
-          </button>
-        </form>
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="h-10 rounded-md border border-black/15 px-4 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+              >
+                Clear
+              </button>
+            </>
+          }
+        />
       </section>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
