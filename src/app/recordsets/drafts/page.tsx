@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Table from "@/components/Table";
+import DynamicTable from "@/components/DynamicTable";
 
 type Draft = {
   dataset_release_draft_id: number;
@@ -72,7 +72,7 @@ export default function DraftsPage() {
               Total drafts: <span className="font-medium">{data.total}</span>
             </p>
 
-            <Table
+            <DynamicTable
               rows={data.drafts}
               columns={[
                 { key: "dataset_release_draft_id", label: "Draft ID" },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Table from "@/components/Table";
+import DynamicTable from "@/components/DynamicTable";
 
 type Transfer = {
   dataset_release_transfer_id: number;
@@ -106,7 +106,7 @@ export default function TransfersPage() {
               Total transfers: <span className="font-medium">{data.total}</span>
             </p>
 
-            <Table
+            <DynamicTable
               rows={data.transfers}
               columns={[
                 { key: "dataset_release_transfer_id", label: "ID" },

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import DynamicSection, { DynamicSectionField } from "@/components/DynamicSection";
 
 type DatasetRelease = {
   dataset_release_id: number;
@@ -108,6 +109,52 @@ export default function ReleaseByIdPage({ params }: PageProps) {
     };
   }, [params]);
 
+  const release = data?.release ?? null;
+  const releaseFields: DynamicSectionField[] = release
+    ? [
+        {
+          label: "Release Type",
+          value: data?.releaseType === "dataset" ? "Dataset" : "Recordset",
+        },
+        {
+          label: "Release ID",
+          value:
+            data?.releaseType === "dataset"
+              ? (release as DatasetRelease).dataset_release_id
+              : (release as RecordsetRelease).recordset_release_id,
+        },
+        {
+          label:
+            data?.releaseType === "dataset" ? "Dataset ID" : "Recordset ID",
+          value:
+            data?.releaseType === "dataset"
+              ? (release as DatasetRelease).dataset_id
+              : (release as RecordsetRelease).recordset_id,
+        },
+        { label: "Release Number", value: release.release_number },
+        {
+          label: "Release Date",
+          value: new Date(release.release_date).toLocaleDateString(),
+        },
+        { label: "Created By", value: release.who_created },
+        {
+          label: "Created At",
+          value: new Date(release.when_created).toLocaleString(),
+        },
+        { label: "Updated By", value: release.who_updated },
+        {
+          label: "Updated At",
+          value: new Date(release.when_updated).toLocaleString(),
+        },
+        {
+          label: "Release Notes",
+          value: release.release_notes,
+          fullWidth: true,
+          valueClassName: "mt-1 whitespace-pre-wrap text-xs",
+        },
+      ]
+    : [];
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Release Details</h1>
@@ -115,90 +162,28 @@ export default function ReleaseByIdPage({ params }: PageProps) {
         {releaseId ? `Showing /releases/${releaseId}` : "Loading release id..."}
       </p>
 
-      <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-        {isLoading && <p className="text-sm">Loading...</p>}
+      <DynamicSection
+        isLoading={isLoading}
+        error={error}
+        fields={releaseFields}
+        actions={
+          <>
+            <Link
+              href={releaseId ? `/releases/${releaseId}/recordsets` : "/releases"}
+              className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+            >
+              View Related Recordsets
+            </Link>
 
-        {!isLoading && error && (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        )}
-
-        {!isLoading && data && (
-          <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="font-medium">Release Type</dt>
-              <dd>
-                {data.releaseType === "dataset" ? "Dataset" : "Recordset"}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-medium">Release ID</dt>
-              <dd>
-                {data.releaseType === "dataset"
-                  ? (data.release as DatasetRelease).dataset_release_id
-                  : (data.release as RecordsetRelease).recordset_release_id}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-medium">
-                {data.releaseType === "dataset" ? "Dataset ID" : "Recordset ID"}
-              </dt>
-              <dd>
-                {data.releaseType === "dataset"
-                  ? (data.release as DatasetRelease).dataset_id
-                  : (data.release as RecordsetRelease).recordset_id}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-medium">Release Number</dt>
-              <dd>{data.release.release_number}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Release Date</dt>
-              <dd>
-                {new Date(data.release.release_date).toLocaleDateString()}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-medium">Created By</dt>
-              <dd>{data.release.who_created}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Created At</dt>
-              <dd>{new Date(data.release.when_created).toLocaleString()}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Updated By</dt>
-              <dd>{data.release.who_updated}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Updated At</dt>
-              <dd>{new Date(data.release.when_updated).toLocaleString()}</dd>
-            </div>
-            <div className="col-span-full">
-              <dt className="font-medium">Release Notes</dt>
-              <dd className="mt-1 whitespace-pre-wrap text-xs">
-                {data.release.release_notes}
-              </dd>
-            </div>
-          </dl>
-        )}
-
-        <div className="mt-4 flex gap-3">
-          <Link
-            href={releaseId ? `/releases/${releaseId}/recordsets` : "/releases"}
-            className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-          >
-            View Related Recordsets
-          </Link>
-
-          <Link
-            href="/releases"
-            className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-          >
-            Back to Releases
-          </Link>
-        </div>
-      </section>
+            <Link
+              href="/releases"
+              className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            >
+              Back to Releases
+            </Link>
+          </>
+        }
+      />
     </main>
   );
 }

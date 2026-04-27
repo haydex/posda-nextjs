@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import DynamicSection, { DynamicSectionField } from "@/components/DynamicSection";
 
 type Draft = {
   dataset_release_draft_id: number;
@@ -96,6 +97,40 @@ export default function DraftByIdPage({ params }: PageProps) {
     };
   }, [params]);
 
+  const draft = data?.draft ?? null;
+  const draftFields: DynamicSectionField[] = draft
+    ? [
+        { label: "Draft ID", value: draft.dataset_release_draft_id },
+        { label: "Dataset ID", value: draft.dataset_id },
+        { label: "Draft Name", value: draft.draft_name },
+        { label: "Draft Status", value: draft.draft_status },
+        {
+          label: "Cloned From Release ID",
+          value: draft.cloned_from_release_id ?? "N/A",
+        },
+        { label: "Created By", value: draft.who_created },
+        {
+          label: "Created At",
+          value: new Date(draft.when_created).toLocaleString(),
+        },
+        { label: "Updated By", value: draft.who_updated },
+        {
+          label: "Updated At",
+          value: new Date(draft.when_updated).toLocaleString(),
+        },
+        ...(draft.draft_notes
+          ? [
+              {
+                label: "Notes",
+                value: draft.draft_notes,
+                fullWidth: true,
+                valueClassName: "mt-1 whitespace-pre-wrap text-xs",
+              },
+            ]
+          : []),
+      ]
+    : [];
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Draft Details</h1>
@@ -103,69 +138,19 @@ export default function DraftByIdPage({ params }: PageProps) {
         {draftId ? `Showing /drafts/${draftId}` : "Loading draft id..."}
       </p>
 
-      <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-        {isLoading && <p className="text-sm">Loading...</p>}
-
-        {!isLoading && error && (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        )}
-
-        {!isLoading && data && (
-          <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="font-medium">Draft ID</dt>
-              <dd>{data.draft.dataset_release_draft_id}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Dataset ID</dt>
-              <dd>{data.draft.dataset_id}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Draft Name</dt>
-              <dd>{data.draft.draft_name}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Draft Status</dt>
-              <dd>{data.draft.draft_status}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Cloned From Release ID</dt>
-              <dd>{data.draft.cloned_from_release_id ?? "N/A"}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Created By</dt>
-              <dd>{data.draft.who_created}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Created At</dt>
-              <dd>{new Date(data.draft.when_created).toLocaleString()}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Updated By</dt>
-              <dd>{data.draft.who_updated}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Updated At</dt>
-              <dd>{new Date(data.draft.when_updated).toLocaleString()}</dd>
-            </div>
-            {data.draft.draft_notes && (
-              <div className="col-span-full">
-                <dt className="font-medium">Notes</dt>
-                <dd className="mt-1 whitespace-pre-wrap text-xs">
-                  {data.draft.draft_notes}
-                </dd>
-              </div>
-            )}
-          </dl>
-        )}
-
-        <Link
-          href="/drafts"
-          className="mt-4 inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-        >
-          Back to Drafts
-        </Link>
-      </section>
+      <DynamicSection
+        isLoading={isLoading}
+        error={error}
+        fields={draftFields}
+        actions={
+          <Link
+            href="/drafts"
+            className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          >
+            Back to Drafts
+          </Link>
+        }
+      />
     </main>
   );
 }

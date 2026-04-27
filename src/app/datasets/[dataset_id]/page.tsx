@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Table from "@/components/Table";
+import DynamicSection, { DynamicSectionField } from "@/components/DynamicSection";
+import DynamicTable from "@/components/DynamicTable";
 
 type Dataset = {
   dataset_id: number;
@@ -308,6 +309,27 @@ export default function DatasetByIdPage({ params }: PageProps) {
   }, [params]);
 
   const dataset = data?.dataset ?? data?.data ?? null;
+  const datasetFields: DynamicSectionField[] = dataset
+    ? [
+        { label: "Dataset ID", value: dataset.dataset_id },
+        { label: "DOI", value: dataset.dataset_doi },
+        { label: "Type", value: dataset.dataset_type },
+        { label: "Short Title", value: dataset.dataset_short_title },
+        { label: "Title", value: dataset.dataset_title, fullWidth: true },
+        { label: "Name", value: dataset.dataset_name, fullWidth: true },
+        { label: "Active", value: dataset.active ? "Yes" : "No" },
+        { label: "Created By", value: dataset.who_created },
+        {
+          label: "Created At",
+          value: new Date(dataset.when_created).toLocaleString(),
+        },
+        { label: "Updated By", value: dataset.who_updated },
+        {
+          label: "Updated At",
+          value: new Date(dataset.when_updated).toLocaleString(),
+        },
+      ]
+    : [];
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
@@ -316,80 +338,28 @@ export default function DatasetByIdPage({ params }: PageProps) {
         {datasetId ? `Showing /datasets/${datasetId}` : "Loading dataset id..."}
       </p>
 
-      <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-        {isLoading && <p className="text-sm">Loading...</p>}
-
-        {!isLoading && error && (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        )}
-
-        {!isLoading && dataset && (
+      <DynamicSection
+        isLoading={isLoading}
+        error={error}
+        fields={datasetFields}
+        actions={
           <>
-            <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-              <div>
-                <dt className="font-medium">Dataset ID</dt>
-                <dd>{dataset.dataset_id}</dd>
-              </div>
-              <div>
-                <dt className="font-medium">DOI</dt>
-                <dd>{dataset.dataset_doi}</dd>
-              </div>
-              <div>
-                <dt className="font-medium">Type</dt>
-                <dd>{dataset.dataset_type}</dd>
-              </div>
-              <div>
-                <dt className="font-medium">Short Title</dt>
-                <dd>{dataset.dataset_short_title}</dd>
-              </div>
-              <div className="col-span-full">
-                <dt className="font-medium">Title</dt>
-                <dd>{dataset.dataset_title}</dd>
-              </div>
-              <div className="col-span-full">
-                <dt className="font-medium">Name</dt>
-                <dd>{dataset.dataset_name}</dd>
-              </div>
-              <div>
-                <dt className="font-medium">Active</dt>
-                <dd>{dataset.active ? "Yes" : "No"}</dd>
-              </div>
-              <div>
-                <dt className="font-medium">Created By</dt>
-                <dd>{dataset.who_created}</dd>
-              </div>
-              <div>
-                <dt className="font-medium">Created At</dt>
-                <dd>{new Date(dataset.when_created).toLocaleString()}</dd>
-              </div>
-              <div>
-                <dt className="font-medium">Updated By</dt>
-                <dd>{dataset.who_updated}</dd>
-              </div>
-              <div>
-                <dt className="font-medium">Updated At</dt>
-                <dd>{new Date(dataset.when_updated).toLocaleString()}</dd>
-              </div>
-            </dl>
+            <Link
+              href={datasetId ? `/datasets/${datasetId}/edit` : "/datasets"}
+              className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            >
+              Edit Dataset
+            </Link>
+
+            <Link
+              href="/datasets"
+              className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            >
+              Back to Datasets
+            </Link>
           </>
-        )}
-
-        <div className="mt-4 flex gap-3">
-          <Link
-            href={datasetId ? `/datasets/${datasetId}/edit` : "/datasets"}
-            className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-          >
-            Edit Dataset
-          </Link>
-
-          <Link
-            href="/datasets"
-            className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-          >
-            Back to Datasets
-          </Link>
-        </div>
-
+        }
+      >
         {!isLoading && dataset && (
           <>
             <div className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
@@ -419,7 +389,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
                       No recordsets were found for this dataset.
                     </p>
                   ) : (
-                    <Table
+                    <DynamicTable
                       rows={recordsetsData.recordsets}
                       columns={[
                         { key: "recordset_id", label: "ID" },
@@ -466,7 +436,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
                     <span className="font-medium">{releasesData.total}</span>
                   </p>
 
-                  <Table
+                  <DynamicTable
                     rows={releasesData.releases}
                     columns={[
                       { key: "dataset_release_id", label: "ID" },
@@ -485,7 +455,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
             </div>
           </>
         )}
-      </section>
+      </DynamicSection>
     </main>
   );
 }

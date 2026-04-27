@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Table from "@/components/Table";
+import DynamicTable from "@/components/DynamicTable";
 
 type DatasetRelease = {
   dataset_release_id: number;
@@ -95,7 +95,7 @@ export default function ReleasesPage() {
                 </p>
               </div>
 
-              <Table
+              <DynamicTable
                 rows={data.datasetReleases}
                 columns={[
                   { key: "dataset_release_id", label: "Dataset Release ID" },
@@ -133,7 +133,7 @@ export default function ReleasesPage() {
                 </p>
               </div>
 
-              <Table
+              <DynamicTable
                 rows={data.recordsetReleases}
                 columns={[
                   {

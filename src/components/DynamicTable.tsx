@@ -2,15 +2,15 @@ import { ReactNode } from "react";
 
 type RowLike = Record<string, unknown>;
 
-export type TableColumn<T extends RowLike> = {
+export type DynamicTableColumn<T extends RowLike> = {
   key: keyof T & string;
   label?: string;
   render?: (value: unknown, row: T) => ReactNode;
 };
 
-type TableProps<T extends RowLike> = {
+type DynamicTableProps<T extends RowLike> = {
   rows: T[];
-  columns?: Array<TableColumn<T>>;
+  columns?: Array<DynamicTableColumn<T>>;
   emptyMessage?: string;
   formatters?: Partial<
     Record<keyof T & string, (value: unknown, row: T) => ReactNode>
@@ -38,7 +38,7 @@ function defaultFormat(value: unknown): ReactNode {
   return String(value);
 }
 
-export default function Table<T extends RowLike>({
+export default function DynamicTable<T extends RowLike>({
   rows,
   columns,
   emptyMessage = "No rows.",
@@ -46,7 +46,7 @@ export default function Table<T extends RowLike>({
   excludeKeys,
   onRowClick,
   getRowKey,
-}: TableProps<T>) {
+}: DynamicTableProps<T>) {
   if (rows.length === 0) {
     return (
       <p className="text-sm text-zinc-600 dark:text-zinc-300">{emptyMessage}</p>
@@ -54,12 +54,12 @@ export default function Table<T extends RowLike>({
   }
 
   const blocked = new Set<string>(excludeKeys ?? []);
-  const inferredColumns: Array<TableColumn<T>> = (
+  const inferredColumns: Array<DynamicTableColumn<T>> = (
     Object.keys(rows[0]).filter((key) => !blocked.has(key)) as Array<
       keyof T & string
     >
   ).map((key) => ({ key }));
-  const resolvedColumns: Array<TableColumn<T>> = columns ?? inferredColumns;
+  const resolvedColumns: Array<DynamicTableColumn<T>> = columns ?? inferredColumns;
 
   return (
     <div className="overflow-x-auto">

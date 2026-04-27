@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import Form, { FormField } from "@/components/Form";
-import Table from "@/components/Table";
+import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import DynamicTable from "@/components/DynamicTable";
 
 type Dataset = {
   dataset_id: number;
@@ -128,7 +128,7 @@ export default function DatasetsPage() {
     setFilters({ search: "", activeOnly: false, type: "" });
   }
 
-  const filterFields: Array<FormField<DatasetFilters>> = [
+  const filterFields: Array<DynamicFormField<DatasetFilters>> = [
     {
       key: "search",
       label: "Search",
@@ -173,7 +173,7 @@ export default function DatasetsPage() {
       </h1>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-        <Form
+        <DynamicForm
           onSubmit={applyFilters}
           values={filtersInput}
           onChange={setFiltersInput}
@@ -213,7 +213,7 @@ export default function DatasetsPage() {
               Total datasets: <span className="font-medium">{data.total}</span>
             </p>
 
-            <Table
+            <DynamicTable
               rows={data.datasets}
               columns={[
                 { key: "dataset_id", label: "ID" },

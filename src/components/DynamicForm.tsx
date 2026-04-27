@@ -2,18 +2,18 @@
 
 import { FormEvent, ReactNode } from "react";
 
-type FormValues = Record<string, unknown>;
+type DynamicFormValues = Record<string, unknown>;
 
-export type FormOption = {
+export type DynamicFormOption = {
   value: string;
   label?: string;
 };
 
-export type FormField<T extends FormValues> = {
+export type DynamicFormField<T extends DynamicFormValues> = {
   key: keyof T & string;
   label: string;
   type?: "text" | "number" | "select" | "checkbox";
-  options?: FormOption[];
+  options?: DynamicFormOption[];
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
@@ -32,9 +32,9 @@ export type FormField<T extends FormValues> = {
   srOnlyLabel?: boolean;
 };
 
-type FormProps<T extends FormValues> = {
+type DynamicFormProps<T extends DynamicFormValues> = {
   values: T;
-  fields: Array<FormField<T>>;
+  fields: Array<DynamicFormField<T>>;
   onChange: (next: T) => void;
   onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
   className?: string;
@@ -42,7 +42,7 @@ type FormProps<T extends FormValues> = {
   idPrefix?: string;
 };
 
-export default function Form<T extends FormValues>({
+export default function DynamicForm<T extends DynamicFormValues>({
   values,
   fields,
   onChange,
@@ -50,7 +50,7 @@ export default function Form<T extends FormValues>({
   className,
   actions,
   idPrefix = "form-field",
-}: FormProps<T>) {
+}: DynamicFormProps<T>) {
   function setValue(key: keyof T & string, nextValue: unknown) {
     onChange({
       ...values,

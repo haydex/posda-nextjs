@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Form, { FormField } from "@/components/Form";
+import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 
 type Recordset = {
   recordset_id: number;
@@ -212,7 +212,7 @@ export default function RecordsetEditPage({ params }: PageProps) {
   }
 
   const recordset = data?.recordset ?? data?.data ?? null;
-  const fields: Array<FormField<typeof formData>> = [
+  const fields: Array<DynamicFormField<typeof formData>> = [
     {
       key: "dataset_id",
       label: "Dataset ID",
@@ -290,7 +290,7 @@ export default function RecordsetEditPage({ params }: PageProps) {
               <p className="mt-1 text-xs text-zinc-500">Read-only</p>
             </div>
 
-            <Form
+            <DynamicForm
               onSubmit={handleSubmit}
               values={formData}
               onChange={setFormData}

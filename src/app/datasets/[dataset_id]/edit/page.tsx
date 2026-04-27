@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Form, { FormField } from "@/components/Form";
+import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 
 type Dataset = {
   dataset_id: number;
@@ -182,7 +182,7 @@ export default function DatasetEditPage({ params }: PageProps) {
   }
 
   const dataset = data?.dataset ?? data?.data ?? null;
-  const fields: Array<FormField<typeof formData>> = [
+  const fields: Array<DynamicFormField<typeof formData>> = [
     {
       key: "dataset_doi",
       label: "DOI",
@@ -251,7 +251,7 @@ export default function DatasetEditPage({ params }: PageProps) {
               <p className="mt-1 text-xs text-zinc-500">Read-only</p>
             </div>
 
-            <Form
+            <DynamicForm
               onSubmit={handleSubmit}
               values={formData}
               onChange={setFormData}

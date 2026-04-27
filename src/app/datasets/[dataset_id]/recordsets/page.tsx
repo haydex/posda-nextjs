@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Table from "@/components/Table";
+import DynamicTable from "@/components/DynamicTable";
 
 type DatasetRecordset = {
   recordset_id: number;
@@ -184,7 +184,7 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
                 No recordsets were found for this dataset.
               </p>
             ) : (
-              <Table
+              <DynamicTable
                 rows={data.recordsets}
                 columns={[
                   { key: "recordset_id", label: "ID" },

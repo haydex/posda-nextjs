@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Table from "@/components/Table";
+import DynamicSection, { DynamicSectionField } from "@/components/DynamicSection";
+import DynamicTable from "@/components/DynamicTable";
 
 type Recordset = {
   recordset_id: number;
@@ -273,6 +274,29 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     };
   }, [params]);
 
+  const recordset = data?.recordset ?? data?.data ?? null;
+  const recordsetFields: DynamicSectionField[] = recordset
+    ? [
+        { label: "Recordset ID", value: recordset.recordset_id },
+        { label: "DOI", value: recordset.recordset_doi },
+        { label: "Dataset ID", value: recordset.dataset_id },
+        { label: "License ID", value: recordset.license_id },
+        { label: "Type", value: recordset.recordset_type },
+        { label: "Active", value: recordset.active ? "Yes" : "No" },
+        { label: "Title", value: recordset.recordset_title, fullWidth: true },
+        { label: "Created By", value: recordset.who_created },
+        {
+          label: "Created At",
+          value: new Date(recordset.when_created).toLocaleString(),
+        },
+        { label: "Updated By", value: recordset.who_updated },
+        {
+          label: "Updated At",
+          value: new Date(recordset.when_updated).toLocaleString(),
+        },
+      ]
+    : [];
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">
@@ -284,88 +308,31 @@ export default function RecordsetByIdPage({ params }: PageProps) {
           : "Loading recordset id..."}
       </p>
 
-      <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-        {isLoading && <p className="text-sm">Loading...</p>}
+      <DynamicSection
+        isLoading={isLoading}
+        error={error}
+        fields={recordsetFields}
+        actions={
+          <>
+            <Link
+              href={
+                recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"
+              }
+              className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            >
+              Edit Recordset
+            </Link>
 
-        {!isLoading && error && (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        )}
-
-        {!isLoading &&
-          data &&
-          (data.recordset ?? data.data) &&
-          (() => {
-            const recordset = data.recordset ?? data.data;
-
-            return (
-              <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                <div>
-                  <dt className="font-medium">Recordset ID</dt>
-                  <dd>{recordset.recordset_id}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">DOI</dt>
-                  <dd>{recordset.recordset_doi}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Dataset ID</dt>
-                  <dd>{recordset.dataset_id}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">License ID</dt>
-                  <dd>{recordset.license_id}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Type</dt>
-                  <dd>{recordset.recordset_type}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Active</dt>
-                  <dd>{recordset.active ? "Yes" : "No"}</dd>
-                </div>
-                <div className="col-span-full">
-                  <dt className="font-medium">Title</dt>
-                  <dd>{recordset.recordset_title}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Created By</dt>
-                  <dd>{recordset.who_created}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Created At</dt>
-                  <dd>{new Date(recordset.when_created).toLocaleString()}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Updated By</dt>
-                  <dd>{recordset.who_updated}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium">Updated At</dt>
-                  <dd>{new Date(recordset.when_updated).toLocaleString()}</dd>
-                </div>
-              </dl>
-            );
-          })()}
-
-        <div className="mt-4 flex gap-3">
-          <Link
-            href={
-              recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"
-            }
-            className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-          >
-            Edit Recordset
-          </Link>
-
-          <Link
-            href="/recordsets"
-            className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-          >
-            Back to Recordsets
-          </Link>
-        </div>
-
-        {!isLoading && (data?.recordset ?? data?.data) && (
+            <Link
+              href="/recordsets"
+              className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            >
+              Back to Recordsets
+            </Link>
+          </>
+        }
+      >
+        {!isLoading && recordset && (
           <div className="mt-6 space-y-4">
             <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
               <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
@@ -389,7 +356,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                     <span className="font-medium">{draftsData.total}</span>
                   </p>
 
-                  <Table
+                  <DynamicTable
                     rows={draftsData.drafts}
                     columns={[
                       { key: "recordset_draft_id", label: "ID" },
@@ -430,7 +397,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                     <span className="font-medium">{releasesData.total}</span>
                   </p>
 
-                  <Table
+                  <DynamicTable
                     rows={releasesData.releases}
                     columns={[
                       { key: "recordset_release_id", label: "ID" },
@@ -450,7 +417,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
             </div>
           </div>
         )}
-      </section>
+      </DynamicSection>
     </main>
   );
 }
