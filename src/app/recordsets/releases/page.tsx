@@ -97,6 +97,7 @@ export default function ReleasesPage() {
 
               <DynamicTable
                 rows={data.datasetReleases}
+                defaultItemsPerPage={6}
                 columns={[
                   { key: "dataset_release_id", label: "Dataset Release ID" },
                   { key: "dataset_id", label: "Dataset ID" },
@@ -135,6 +136,7 @@ export default function ReleasesPage() {
 
               <DynamicTable
                 rows={data.recordsetReleases}
+                defaultItemsPerPage={6}
                 columns={[
                   {
                     key: "recordset_release_id",

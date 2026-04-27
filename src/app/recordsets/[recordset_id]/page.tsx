@@ -360,6 +360,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
                   <DynamicTable
                     rows={draftsData.drafts}
+                    defaultItemsPerPage={4}
                     columns={[
                       { key: "recordset_draft_id", label: "ID" },
                       { key: "draft_name", label: "Name" },
@@ -401,6 +402,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
                   <DynamicTable
                     rows={releasesData.releases}
+                    defaultItemsPerPage={6}
                     columns={[
                       { key: "recordset_release_id", label: "ID" },
                       { key: "release_number", label: "Version" },

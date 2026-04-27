@@ -215,6 +215,7 @@ export default function DatasetsPage() {
 
             <DynamicTable
               rows={data.datasets}
+              defaultItemsPerPage={6}
               columns={[
                 { key: "dataset_id", label: "ID" },
                 { key: "dataset_name", label: "Name" },

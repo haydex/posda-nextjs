@@ -74,6 +74,7 @@ export default function DraftsPage() {
 
             <DynamicTable
               rows={data.drafts}
+              defaultItemsPerPage={4}
               columns={[
                 { key: "dataset_release_draft_id", label: "Draft ID" },
                 { key: "dataset_id", label: "Dataset ID" },

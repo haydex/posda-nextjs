@@ -186,6 +186,7 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
             ) : (
               <DynamicTable
                 rows={data.recordsets}
+                defaultItemsPerPage={4}
                 columns={[
                   { key: "recordset_id", label: "ID" },
                   { key: "recordset_name", label: "Name" },

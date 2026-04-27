@@ -233,6 +233,7 @@ export default function RecordsetsPage() {
 
             <DynamicTable
               rows={data.recordsets}
+              defaultItemsPerPage={8}
               columns={[
                 { key: "recordset_id", label: "ID" },
                 { key: "recordset_doi", label: "DOI" },

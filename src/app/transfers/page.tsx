@@ -108,6 +108,7 @@ export default function TransfersPage() {
 
             <DynamicTable
               rows={data.transfers}
+              defaultItemsPerPage={6}
               columns={[
                 { key: "dataset_release_transfer_id", label: "ID" },
                 { key: "dataset_release_id", label: "Dataset Release ID" },
