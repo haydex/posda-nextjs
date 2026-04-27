@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import DynamicSection, { DynamicSectionField } from "@/components/DynamicSection";
+import DynamicSection, {
+  DynamicSectionField,
+} from "@/components/DynamicSection";
 
 type Draft = {
   dataset_release_draft_id: number;

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import DynamicSection, { DynamicSectionField } from "@/components/DynamicSection";
+import DynamicSection, {
+  DynamicSectionField,
+} from "@/components/DynamicSection";
 
 type DatasetRelease = {
   dataset_release_id: number;
@@ -169,7 +171,9 @@ export default function ReleaseByIdPage({ params }: PageProps) {
         actions={
           <>
             <Link
-              href={releaseId ? `/releases/${releaseId}/recordsets` : "/releases"}
+              href={
+                releaseId ? `/releases/${releaseId}/recordsets` : "/releases"
+              }
               className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
             >
               View Related Recordsets

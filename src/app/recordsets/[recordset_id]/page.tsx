@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import DynamicSection, { DynamicSectionField } from "@/components/DynamicSection";
+import DynamicSection, {
+  DynamicSectionField,
+} from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
 
 type Recordset = {

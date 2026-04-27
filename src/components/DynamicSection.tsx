@@ -27,7 +27,8 @@ export default function DynamicSection({
   return (
     <section
       className={
-        className ?? "mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15"
+        className ??
+        "mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15"
       }
     >
       {isLoading && <p className="text-sm">Loading...</p>}

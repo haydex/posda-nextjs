@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import DynamicSection, { DynamicSectionField } from "@/components/DynamicSection";
+import DynamicSection, {
+  DynamicSectionField,
+} from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
 
 type Dataset = {
