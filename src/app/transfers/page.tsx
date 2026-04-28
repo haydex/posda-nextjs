@@ -59,13 +59,21 @@ export default function TransfersPage() {
   const [data, setData] = useState<TransfersResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
 
   async function loadTransfers() {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch("/api/transfers", { cache: "no-store" });
+      const query = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(itemsPerPage),
+      }).toString();
+      const response = await fetch(`/api/transfers?${query}`, {
+        cache: "no-store",
+      });
 
       if (!response.ok) {
         throw new Error("Request failed");
@@ -83,7 +91,7 @@ export default function TransfersPage() {
 
   useEffect(() => {
     void loadTransfers();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
@@ -109,6 +117,15 @@ export default function TransfersPage() {
             <DynamicTable
               rows={data.transfers}
               defaultItemsPerPage={6}
+              totalItems={data.total}
+              currentPage={currentPage}
+              currentItemsPerPage={itemsPerPage}
+              paginateRows={false}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(nextItemsPerPage) => {
+                setItemsPerPage(nextItemsPerPage);
+                setCurrentPage(1);
+              }}
               columns={[
                 { key: "dataset_release_transfer_id", label: "ID" },
                 { key: "dataset_release_id", label: "Dataset Release ID" },

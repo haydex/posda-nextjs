@@ -16,6 +16,12 @@ type DynamicTableProps<T extends RowLike> = {
   emptyMessage?: string;
   defaultItemsPerPage?: number;
   itemsPerPageOptions?: number[];
+  totalItems?: number;
+  currentPage?: number;
+  currentItemsPerPage?: number;
+  paginateRows?: boolean;
+  onPageChange?: (page: number) => void;
+  onItemsPerPageChange?: (itemsPerPage: number) => void;
   formatters?: Partial<
     Record<keyof T & string, (value: unknown, row: T) => ReactNode>
   >;
@@ -48,6 +54,12 @@ export default function DynamicTable<T extends RowLike>({
   emptyMessage = "No rows.",
   defaultItemsPerPage = 4,
   itemsPerPageOptions,
+  totalItems,
+  currentPage,
+  currentItemsPerPage,
+  paginateRows = true,
+  onPageChange,
+  onItemsPerPageChange,
   formatters,
   excludeKeys,
   onRowClick,
@@ -77,7 +89,7 @@ export default function DynamicTable<T extends RowLike>({
     const source =
       itemsPerPageOptions && itemsPerPageOptions.length > 0
         ? itemsPerPageOptions
-        : [4, 10, 25, 50];
+        : [4, 10, 25, 50, 100];
 
     const cleaned = source
       .filter((value) => Number.isFinite(value) && value > 0)
@@ -92,33 +104,51 @@ export default function DynamicTable<T extends RowLike>({
     return uniqueSorted;
   }, [itemsPerPageOptions, safeDefaultItemsPerPage]);
 
-  const [itemsPerPage, setItemsPerPage] = useState<number>(
+  const [internalItemsPerPage, setInternalItemsPerPage] = useState<number>(
     safeDefaultItemsPerPage,
   );
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [internalCurrentPage, setInternalCurrentPage] = useState<number>(1);
 
-  const totalPages = Math.max(1, Math.ceil(rows.length / itemsPerPage));
-  const currentPageSafe = Math.min(currentPage, totalPages);
-  const startIndex = (currentPageSafe - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const visibleRows = rows.slice(startIndex, endIndex);
+  const resolvedItemsPerPage = currentItemsPerPage ?? internalItemsPerPage;
+  const resolvedCurrentPage = currentPage ?? internalCurrentPage;
+  const resolvedTotalItems = totalItems ?? rows.length;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(resolvedTotalItems / resolvedItemsPerPage),
+  );
+  const currentPageSafe = Math.min(resolvedCurrentPage, totalPages);
+  const startIndex = (currentPageSafe - 1) * resolvedItemsPerPage;
+  const endIndex = startIndex + resolvedItemsPerPage;
+  const visibleRows = paginateRows ? rows.slice(startIndex, endIndex) : rows;
+
+  function updatePage(nextPage: number) {
+    const clampedPage = Math.max(1, Math.min(totalPages, nextPage));
+    setInternalCurrentPage(clampedPage);
+    onPageChange?.(clampedPage);
+  }
+
+  function updateItemsPerPage(nextItemsPerPage: number) {
+    setInternalItemsPerPage(nextItemsPerPage);
+    setInternalCurrentPage(1);
+    onItemsPerPageChange?.(nextItemsPerPage);
+    onPageChange?.(1);
+  }
 
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-300">
         <p>
-          Showing {startIndex + 1}-{Math.min(endIndex, rows.length)} of{" "}
-          {rows.length}
+          Showing {startIndex + 1}-{Math.min(endIndex, resolvedTotalItems)} of{" "}
+          {resolvedTotalItems}
         </p>
 
         <label className="inline-flex items-center gap-2">
           <span>Items per page</span>
           <select
-            value={itemsPerPage}
+            value={resolvedItemsPerPage}
             onChange={(event) => {
               const nextSize = Number(event.target.value);
-              setItemsPerPage(nextSize);
-              setCurrentPage(1);
+              updateItemsPerPage(nextSize);
             }}
             className="rounded-md border border-black/15 bg-transparent px-2 py-1 text-sm dark:border-white/20"
           >
@@ -183,7 +213,7 @@ export default function DynamicTable<T extends RowLike>({
         <div className="inline-flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setCurrentPage(Math.max(1, currentPageSafe - 1))}
+            onClick={() => updatePage(currentPageSafe - 1)}
             disabled={currentPageSafe <= 1}
             className="rounded-md border border-black/15 px-3 py-1.5 transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
           >
@@ -191,9 +221,7 @@ export default function DynamicTable<T extends RowLike>({
           </button>
           <button
             type="button"
-            onClick={() =>
-              setCurrentPage(Math.min(totalPages, currentPageSafe + 1))
-            }
+            onClick={() => updatePage(currentPageSafe + 1)}
             disabled={currentPageSafe >= totalPages}
             className="rounded-md border border-black/15 px-3 py-1.5 transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
           >

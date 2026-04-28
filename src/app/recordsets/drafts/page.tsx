@@ -26,13 +26,21 @@ export default function DraftsPage() {
   const [data, setData] = useState<DraftsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(4);
 
   async function loadDrafts() {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch("/api/drafts", { cache: "no-store" });
+      const query = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(itemsPerPage),
+      }).toString();
+      const response = await fetch(`/api/drafts?${query}`, {
+        cache: "no-store",
+      });
 
       if (!response.ok) {
         throw new Error("Request failed");
@@ -50,7 +58,7 @@ export default function DraftsPage() {
 
   useEffect(() => {
     void loadDrafts();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
@@ -75,6 +83,15 @@ export default function DraftsPage() {
             <DynamicTable
               rows={data.drafts}
               defaultItemsPerPage={4}
+              totalItems={data.total}
+              currentPage={currentPage}
+              currentItemsPerPage={itemsPerPage}
+              paginateRows={false}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(nextItemsPerPage) => {
+                setItemsPerPage(nextItemsPerPage);
+                setCurrentPage(1);
+              }}
               columns={[
                 { key: "dataset_release_draft_id", label: "Draft ID" },
                 { key: "dataset_id", label: "Dataset ID" },

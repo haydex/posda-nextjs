@@ -3,7 +3,7 @@ import { PapiHttpError, papiRequest, type PapiRequestOptions } from "@/lib/papi"
 
 type RouteContext = { params: Promise<{ path?: string[] }> };
 
-const ALLOWED_ROOTS = new Set(["datasets", "recordsets", "transfers"]);
+const ALLOWED_ROOTS = new Set(["datasets", "recordsets", "releases", "transfers"]);
 const FORWARDABLE_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
 
 function buildUpstreamPath(path?: string[]) {
@@ -62,6 +62,67 @@ async function readOptionalJsonBody(request: Request): Promise<unknown | undefin
   }
 }
 
+function parsePositiveInteger(value: string | null): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return Math.floor(parsed);
+}
+
+function applyPagination<T>(payload: T, request: Request): T {
+  const query = new URL(request.url).searchParams;
+  const limit =
+    parsePositiveInteger(query.get("limit")) ??
+    parsePositiveInteger(query.get("page_size")) ??
+    parsePositiveInteger(query.get("items_per_page"));
+
+  if (!limit) {
+    return payload;
+  }
+
+  const page = parsePositiveInteger(query.get("page")) ?? 1;
+  const offsetFromQuery = parsePositiveInteger(query.get("offset"));
+  const offset =
+    offsetFromQuery !== null ? offsetFromQuery : Math.max(0, (page - 1) * limit);
+
+  if (Array.isArray(payload)) {
+    return payload.slice(offset, offset + limit) as T;
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return payload;
+  }
+
+  const prioritizedKeys = [
+    "data",
+    "datasets",
+    "recordsets",
+    "releases",
+    "drafts",
+    "transfers",
+  ];
+
+  const record = payload as Record<string, unknown>;
+  const targetKey =
+    prioritizedKeys.find((key) => Array.isArray(record[key])) ??
+    Object.keys(record).find((key) => Array.isArray(record[key]));
+
+  if (!targetKey) {
+    return payload;
+  }
+
+  return {
+    ...record,
+    [targetKey]: (record[targetKey] as unknown[]).slice(offset, offset + limit),
+  } as T;
+}
+
 async function forwardFromRequest(request: Request, path: string, fallbackMessage: string) {
   const method = request.method.toUpperCase();
   if (!FORWARDABLE_METHODS.has(method)) {
@@ -91,7 +152,7 @@ async function forwardFromRequest(request: Request, path: string, fallbackMessag
 
   try {
     const response = await papiRequest(path, options);
-    return NextResponse.json(response);
+    return NextResponse.json(applyPagination(response, request));
   } catch (error) {
     return toPapiErrorResponse(error, fallbackMessage);
   }

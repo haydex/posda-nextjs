@@ -78,6 +78,8 @@ export default function DatasetsPage() {
   const [data, setData] = useState<DatasetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
 
   async function loadDatasets() {
     setIsLoading(true);
@@ -97,6 +99,9 @@ export default function DatasetsPage() {
       if (filters.type) {
         apiParams.set("type", filters.type);
       }
+
+      apiParams.set("page", String(currentPage));
+      apiParams.set("limit", String(itemsPerPage));
 
       const query = apiParams.toString();
       const endpoint = query ? `/api/datasets?${query}` : "/api/datasets";
@@ -120,11 +125,13 @@ export default function DatasetsPage() {
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setCurrentPage(1);
     setFilters(filtersInput);
   }
 
   function clearFilters() {
     setFiltersInput({ search: "", activeOnly: false, type: "" });
+    setCurrentPage(1);
     setFilters({ search: "", activeOnly: false, type: "" });
   }
 
@@ -164,7 +171,7 @@ export default function DatasetsPage() {
   useEffect(() => {
     void loadDatasets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, currentPage, itemsPerPage]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
@@ -216,6 +223,15 @@ export default function DatasetsPage() {
             <DynamicTable
               rows={data.datasets}
               defaultItemsPerPage={6}
+              totalItems={data.total}
+              currentPage={currentPage}
+              currentItemsPerPage={itemsPerPage}
+              paginateRows={false}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(nextItemsPerPage) => {
+                setItemsPerPage(nextItemsPerPage);
+                setCurrentPage(1);
+              }}
               columns={[
                 { key: "dataset_id", label: "ID" },
                 { key: "dataset_name", label: "Name" },

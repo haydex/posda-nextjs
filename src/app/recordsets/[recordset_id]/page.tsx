@@ -137,6 +137,10 @@ export default function RecordsetByIdPage({ params }: PageProps) {
   const [data, setData] = useState<RecordsetResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [draftsPage, setDraftsPage] = useState(1);
+  const [draftsItemsPerPage, setDraftsItemsPerPage] = useState(4);
+  const [releasesPage, setReleasesPage] = useState(1);
+  const [releasesItemsPerPage, setReleasesItemsPerPage] = useState(6);
   const [releasesData, setReleasesData] =
     useState<RecordsetReleasesResponse | null>(null);
   const [isLoadingReleases, setIsLoadingReleases] = useState(false);
@@ -201,9 +205,16 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
         setData(json);
 
-        const releasesResponse = await fetch(`/api/recordsets/${id}/releases`, {
-          cache: "no-store",
-        });
+        const releasesQuery = new URLSearchParams({
+          page: String(releasesPage),
+          limit: String(releasesItemsPerPage),
+        }).toString();
+        const releasesResponse = await fetch(
+          `/api/recordsets/${id}/releases?${releasesQuery}`,
+          {
+            cache: "no-store",
+          },
+        );
 
         if (!releasesResponse.ok) {
           throw new Error(`Could not load releases for recordset ${id}.`);
@@ -217,9 +228,16 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
         setReleasesData(normalizeRecordsetReleasesResponse(releasesJson));
 
-        const draftsResponse = await fetch(`/api/recordsets/${id}/drafts`, {
-          cache: "no-store",
-        });
+        const draftsQuery = new URLSearchParams({
+          page: String(draftsPage),
+          limit: String(draftsItemsPerPage),
+        }).toString();
+        const draftsResponse = await fetch(
+          `/api/recordsets/${id}/drafts?${draftsQuery}`,
+          {
+            cache: "no-store",
+          },
+        );
 
         if (!draftsResponse.ok) {
           throw new Error(`Could not load drafts for recordset ${id}.`);
@@ -274,7 +292,13 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     return () => {
       isMounted = false;
     };
-  }, [params]);
+  }, [
+    params,
+    draftsPage,
+    draftsItemsPerPage,
+    releasesPage,
+    releasesItemsPerPage,
+  ]);
 
   const recordset = data?.recordset ?? data?.data ?? null;
   const recordsetFields: DynamicSectionField[] = recordset
@@ -361,6 +385,15 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   <DynamicTable
                     rows={draftsData.drafts}
                     defaultItemsPerPage={4}
+                    totalItems={draftsData.total}
+                    currentPage={draftsPage}
+                    currentItemsPerPage={draftsItemsPerPage}
+                    paginateRows={false}
+                    onPageChange={setDraftsPage}
+                    onItemsPerPageChange={(nextItemsPerPage) => {
+                      setDraftsItemsPerPage(nextItemsPerPage);
+                      setDraftsPage(1);
+                    }}
                     columns={[
                       { key: "recordset_draft_id", label: "ID" },
                       { key: "draft_name", label: "Name" },
@@ -403,6 +436,15 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   <DynamicTable
                     rows={releasesData.releases}
                     defaultItemsPerPage={6}
+                    totalItems={releasesData.total}
+                    currentPage={releasesPage}
+                    currentItemsPerPage={releasesItemsPerPage}
+                    paginateRows={false}
+                    onPageChange={setReleasesPage}
+                    onItemsPerPageChange={(nextItemsPerPage) => {
+                      setReleasesItemsPerPage(nextItemsPerPage);
+                      setReleasesPage(1);
+                    }}
                     columns={[
                       { key: "recordset_release_id", label: "ID" },
                       { key: "release_number", label: "Version" },

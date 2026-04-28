@@ -97,6 +97,8 @@ export default function RecordsetsPage() {
   const [data, setData] = useState<RecordsetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(8);
 
   async function loadRecordsets() {
     setIsLoading(true);
@@ -116,6 +118,9 @@ export default function RecordsetsPage() {
       if (filters.datasetId.trim()) {
         apiParams.set("dataset_id", filters.datasetId.trim());
       }
+
+      apiParams.set("page", String(currentPage));
+      apiParams.set("limit", String(itemsPerPage));
 
       const apiUrl =
         apiParams.size > 0
@@ -141,11 +146,13 @@ export default function RecordsetsPage() {
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setCurrentPage(1);
     setFilters(filtersInput);
   }
 
   function clearFilters() {
     setFiltersInput({ search: "", activeOnly: false, datasetId: "" });
+    setCurrentPage(1);
     setFilters({ search: "", activeOnly: false, datasetId: "" });
   }
 
@@ -181,7 +188,7 @@ export default function RecordsetsPage() {
   useEffect(() => {
     void loadRecordsets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, currentPage, itemsPerPage]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
@@ -234,6 +241,15 @@ export default function RecordsetsPage() {
             <DynamicTable
               rows={data.recordsets}
               defaultItemsPerPage={8}
+              totalItems={data.total}
+              currentPage={currentPage}
+              currentItemsPerPage={itemsPerPage}
+              paginateRows={false}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(nextItemsPerPage) => {
+                setItemsPerPage(nextItemsPerPage);
+                setCurrentPage(1);
+              }}
               columns={[
                 { key: "recordset_id", label: "ID" },
                 { key: "recordset_doi", label: "DOI" },

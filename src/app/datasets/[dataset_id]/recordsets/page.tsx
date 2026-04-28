@@ -81,6 +81,8 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
   const [data, setData] = useState<RecordsetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(4);
 
   useEffect(() => {
     let isMounted = true;
@@ -105,7 +107,11 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
       setDatasetId(id);
 
       try {
-        const query = new URLSearchParams({ dataset_id: id }).toString();
+        const query = new URLSearchParams({
+          dataset_id: id,
+          page: String(currentPage),
+          limit: String(itemsPerPage),
+        }).toString();
         const response = await fetch(`/api/recordsets?${query}`, {
           cache: "no-store",
         });
@@ -152,7 +158,7 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
     return () => {
       isMounted = false;
     };
-  }, [params]);
+  }, [params, currentPage, itemsPerPage]);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
@@ -187,6 +193,15 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
               <DynamicTable
                 rows={data.recordsets}
                 defaultItemsPerPage={4}
+                totalItems={data.total}
+                currentPage={currentPage}
+                currentItemsPerPage={itemsPerPage}
+                paginateRows={false}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={(nextItemsPerPage) => {
+                  setItemsPerPage(nextItemsPerPage);
+                  setCurrentPage(1);
+                }}
                 columns={[
                   { key: "recordset_id", label: "ID" },
                   { key: "recordset_name", label: "Name" },

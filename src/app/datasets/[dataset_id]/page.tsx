@@ -154,6 +154,10 @@ export default function DatasetByIdPage({ params }: PageProps) {
   const [data, setData] = useState<DatasetResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [recordsetsPage, setRecordsetsPage] = useState(1);
+  const [recordsetsItemsPerPage, setRecordsetsItemsPerPage] = useState(5);
+  const [releasesPage, setReleasesPage] = useState(1);
+  const [releasesItemsPerPage, setReleasesItemsPerPage] = useState(4);
   const [releasesData, setReleasesData] =
     useState<DatasetReleasesResponse | null>(null);
   const [isLoadingReleases, setIsLoadingReleases] = useState(false);
@@ -218,10 +222,17 @@ export default function DatasetByIdPage({ params }: PageProps) {
         setData({ ...json, dataset: json.dataset ?? json.data });
 
         try {
-          const query = new URLSearchParams({ dataset_id: id }).toString();
-          const recordsetsResponse = await fetch(`/api/recordsets?${query}`, {
-            cache: "no-store",
-          });
+          const recordsetsQuery = new URLSearchParams({
+            dataset_id: id,
+            page: String(recordsetsPage),
+            limit: String(recordsetsItemsPerPage),
+          }).toString();
+          const recordsetsResponse = await fetch(
+            `/api/recordsets?${recordsetsQuery}`,
+            {
+              cache: "no-store",
+            },
+          );
 
           if (!recordsetsResponse.ok) {
             throw new Error(`Could not load recordsets for dataset ${id}.`);
@@ -251,9 +262,16 @@ export default function DatasetByIdPage({ params }: PageProps) {
           }
         }
 
-        const releasesResponse = await fetch(`/api/datasets/${id}/releases`, {
-          cache: "no-store",
-        });
+        const releasesQuery = new URLSearchParams({
+          page: String(releasesPage),
+          limit: String(releasesItemsPerPage),
+        }).toString();
+        const releasesResponse = await fetch(
+          `/api/datasets/${id}/releases?${releasesQuery}`,
+          {
+            cache: "no-store",
+          },
+        );
 
         if (!releasesResponse.ok) {
           throw new Error(`Could not load releases for dataset ${id}.`);
@@ -308,7 +326,13 @@ export default function DatasetByIdPage({ params }: PageProps) {
     return () => {
       isMounted = false;
     };
-  }, [params]);
+  }, [
+    params,
+    recordsetsPage,
+    recordsetsItemsPerPage,
+    releasesPage,
+    releasesItemsPerPage,
+  ]);
 
   const dataset = data?.dataset ?? data?.data ?? null;
   const datasetFields: DynamicSectionField[] = dataset
@@ -394,6 +418,15 @@ export default function DatasetByIdPage({ params }: PageProps) {
                     <DynamicTable
                       rows={recordsetsData.recordsets}
                       defaultItemsPerPage={5}
+                      totalItems={recordsetsData.total}
+                      currentPage={recordsetsPage}
+                      currentItemsPerPage={recordsetsItemsPerPage}
+                      paginateRows={false}
+                      onPageChange={setRecordsetsPage}
+                      onItemsPerPageChange={(nextItemsPerPage) => {
+                        setRecordsetsItemsPerPage(nextItemsPerPage);
+                        setRecordsetsPage(1);
+                      }}
                       columns={[
                         { key: "recordset_id", label: "ID" },
                         { key: "recordset_name", label: "Name" },
@@ -442,6 +475,15 @@ export default function DatasetByIdPage({ params }: PageProps) {
                   <DynamicTable
                     rows={releasesData.releases}
                     defaultItemsPerPage={4}
+                    totalItems={releasesData.total}
+                    currentPage={releasesPage}
+                    currentItemsPerPage={releasesItemsPerPage}
+                    paginateRows={false}
+                    onPageChange={setReleasesPage}
+                    onItemsPerPageChange={(nextItemsPerPage) => {
+                      setReleasesItemsPerPage(nextItemsPerPage);
+                      setReleasesPage(1);
+                    }}
                     columns={[
                       { key: "dataset_release_id", label: "ID" },
                       { key: "release_number", label: "Version" },
