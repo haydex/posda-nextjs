@@ -150,13 +150,13 @@ export default function TransfersPage() {
           </div>
         )}
 
-        <button
+        {/* <button
           type="button"
           onClick={() => void loadTransfers()}
           className="mt-4 rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
           Refresh
-        </button>
+        </button> */}
       </section>
     </main>
   );

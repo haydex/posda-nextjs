@@ -377,10 +377,10 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
               {!isLoadingDrafts && !draftsError && draftsData && (
                 <div className="mt-3 space-y-3">
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     Total drafts:{" "}
                     <span className="font-medium">{draftsData.total}</span>
-                  </p>
+                  </p> */}
 
                   <DynamicTable
                     rows={draftsData.drafts}
@@ -428,10 +428,10 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
               {!isLoadingReleases && !releasesError && releasesData && (
                 <div className="mt-3 space-y-3">
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     Total releases:{" "}
                     <span className="font-medium">{releasesData.total}</span>
-                  </p>
+                  </p> */}
 
                   <DynamicTable
                     rows={releasesData.releases}

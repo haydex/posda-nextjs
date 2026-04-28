@@ -126,12 +126,12 @@ export default function ReleasesPage() {
                 <h2 className="text-xl font-semibold tracking-tight">
                   Recordset Releases
                 </h2>
-                <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
                   Total recordset releases:{" "}
                   <span className="font-medium">
                     {data.totalRecordsetReleases}
                   </span>
-                </p>
+                </p> */}
               </div>
 
               <DynamicTable
@@ -165,13 +165,13 @@ export default function ReleasesPage() {
           </div>
         )}
 
-        <button
+        {/* <button
           type="button"
           onClick={() => void loadReleases()}
           className="mt-4 rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
           Refresh
-        </button>
+        </button> */}
       </section>
     </main>
   );

@@ -233,10 +233,10 @@ export default function RecordsetsPage() {
 
         {!isLoading && data && (
           <div className="space-y-4">
-            <p className="text-sm text-zinc-600 dark:text-zinc-300">
+            {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
               Total recordsets:{" "}
               <span className="font-medium">{data.total}</span>
-            </p>
+            </p> */}
 
             <DynamicTable
               rows={data.recordsets}
@@ -271,19 +271,19 @@ export default function RecordsetsPage() {
               getRowKey={(row) => row.recordset_id}
             />
 
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            {/* <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Click a recordset row to open details.
-            </p>
+            </p> */}
           </div>
         )}
 
-        <button
+        {/* <button
           type="button"
           onClick={() => void loadRecordsets()}
           className="mt-4 rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
         >
           Refresh
-        </button>
+        </button> */}
       </section>
     </main>
   );

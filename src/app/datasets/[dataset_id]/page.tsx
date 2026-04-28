@@ -405,10 +405,10 @@ export default function DatasetByIdPage({ params }: PageProps) {
 
               {!isLoadingRecordsets && !recordsetsError && recordsetsData && (
                 <div className="mt-3 space-y-3">
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     Total recordsets:{" "}
                     <span className="font-medium">{recordsetsData.total}</span>
-                  </p>
+                  </p> */}
 
                   {recordsetsData.recordsets.length === 0 ? (
                     <p className="text-sm text-zinc-600 dark:text-zinc-300">
@@ -467,10 +467,10 @@ export default function DatasetByIdPage({ params }: PageProps) {
 
               {!isLoadingReleases && !releasesError && releasesData && (
                 <div className="mt-3 space-y-3">
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     Total releases:{" "}
                     <span className="font-medium">{releasesData.total}</span>
-                  </p>
+                  </p> */}
 
                   <DynamicTable
                     rows={releasesData.releases}

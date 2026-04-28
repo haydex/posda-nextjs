@@ -180,10 +180,10 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
 
         {!isLoading && data && (
           <div className="space-y-4">
-            <p className="text-sm text-zinc-600 dark:text-zinc-300">
+            {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
               Total recordsets:{" "}
               <span className="font-medium">{data.total}</span>
-            </p>
+            </p> */}
 
             {data.recordsets.length === 0 ? (
               <p className="text-sm text-zinc-600 dark:text-zinc-300">
@@ -221,11 +221,11 @@ export default function DatasetRecordsetsPage({ params }: PageProps) {
               />
             )}
 
-            {data.recordsets.length > 0 && (
+            {/* {data.recordsets.length > 0 && (
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Click a recordset row to view its details.
               </p>
-            )}
+            )} */}
           </div>
         )}
 

@@ -175,6 +175,7 @@ export default function DynamicTable<T extends RowLike>({
           <tbody>
             {visibleRows.map((row, index) => (
               <tr
+                title={onRowClick ? "Click to view details" : undefined}
                 key={
                   getRowKey
                     ? getRowKey(row, startIndex + index)
