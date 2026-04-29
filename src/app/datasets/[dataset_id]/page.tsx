@@ -359,17 +359,10 @@ export default function DatasetByIdPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Dataset Details</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-300">
-        {datasetId ? `Showing /datasets/${datasetId}` : "Loading dataset id..."}
-      </p>
-
-      <DynamicSection
-        isLoading={isLoading}
-        error={error}
-        fields={datasetFields}
-        actions={
-          <>
+      <div className="border-b-2 border-black pb-4 dark:border-white">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-3xl font-semibold tracking-tight">Dataset Details</h1>
+          <div className="flex gap-3">
             <Link
               href={datasetId ? `/datasets/${datasetId}/edit` : "/datasets"}
               className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
@@ -379,11 +372,20 @@ export default function DatasetByIdPage({ params }: PageProps) {
 
             <Link
               href="/datasets"
-              className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
             >
               Back to Datasets
             </Link>
-          </>
+          </div>
+        </div>
+      </div>
+
+      <DynamicSection
+        isLoading={isLoading}
+        error={error}
+        fields={datasetFields}
+        actions={
+          <></>
         }
       >
         {!isLoading && dataset && (
