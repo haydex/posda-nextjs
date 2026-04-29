@@ -325,21 +325,12 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        Recordset Details
-      </h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-300">
-        {recordsetId
-          ? `Showing /recordsets/${recordsetId}`
-          : "Loading recordset id..."}
-      </p>
-
-      <DynamicSection
-        isLoading={isLoading}
-        error={error}
-        fields={recordsetFields}
-        actions={
-          <>
+      <div className="border-b-2 border-black pb-4 dark:border-white">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Recordset Details
+          </h1>
+          <div className="flex gap-3">
             <Link
               href={
                 recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"
@@ -351,11 +342,20 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
             <Link
               href="/recordsets"
-              className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
             >
               Back to Recordsets
             </Link>
-          </>
+          </div>
+        </div>
+      </div>
+
+      <DynamicSection
+        isLoading={isLoading}
+        error={error}
+        fields={recordsetFields}
+        actions={
+          <></>
         }
       >
         {!isLoading && recordset && (

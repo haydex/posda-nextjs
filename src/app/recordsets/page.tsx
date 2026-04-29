@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
@@ -192,9 +193,19 @@ export default function RecordsetsPage() {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
-      <h1 className="border-b-2 border-black pb-2 text-3xl font-semibold tracking-tight dark:border-white">
-        Recordsets
-      </h1>
+      <div className="border-b-2 border-black pb-4 dark:border-white">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Recordsets
+          </h1>
+          <Link
+            href="/recordsets/create"
+            className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          >
+            New Recordset
+          </Link>
+        </div>
+      </div>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
         <DynamicForm

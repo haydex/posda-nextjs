@@ -263,12 +263,9 @@ export default function RecordsetEditPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Edit Recordset</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-300">
-        {recordsetId
-          ? `Editing /recordsets/${recordsetId}`
-          : "Loading recordset id..."}
-      </p>
+      <div className="border-b-2 border-black pb-4 dark:border-white">
+        <h1 className="text-3xl font-semibold tracking-tight">Edit Recordset</h1>
+      </div>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
         {isLoading && <p className="text-sm">Loading...</p>}
