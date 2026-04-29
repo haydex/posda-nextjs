@@ -119,8 +119,10 @@ export default function DatasetCreatePage() {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Create Dataset</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-300">
+      <div className="border-b-2 border-black pb-4 dark:border-white">
+        <h1 className="text-3xl font-semibold tracking-tight">Create Dataset</h1>
+      </div>
+      <p className="mt-4 text-zinc-600 dark:text-zinc-300">
         Add a new dataset to the system.
       </p>
 
