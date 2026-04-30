@@ -389,9 +389,19 @@ export default function DatasetByIdPage({ params }: PageProps) {
         {!isLoading && dataset && (
           <>
             <div className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-              <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
-                Recordsets
-              </h2>
+              <div className="flex items-center justify-between border-b-2 border-black pb-2 dark:border-white">
+                <h2 className="text-lg font-semibold tracking-tight">Recordsets</h2>
+                <Link
+                  href={
+                    datasetId
+                      ? `/recordsets/create?dataset_id=${datasetId}`
+                      : "/recordsets/create"
+                  }
+                  className="inline-flex rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                >
+                  New Recordset
+                </Link>
+              </div>
 
               {isLoadingRecordsets && (
                 <p className="mt-3 text-sm">Loading recordsets...</p>
@@ -451,9 +461,19 @@ export default function DatasetByIdPage({ params }: PageProps) {
             </div>
 
             <div className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-              <h2 className="border-b-2 border-black pb-2 text-lg font-semibold tracking-tight dark:border-white">
-                Releases
-              </h2>
+              <div className="flex items-center justify-between border-b-2 border-black pb-2 dark:border-white">
+                <h2 className="text-lg font-semibold tracking-tight">Releases</h2>
+                <Link
+                  href={
+                    datasetId
+                      ? `/datasets/releases?dataset_id=${datasetId}`
+                      : "/datasets/releases"
+                  }
+                  className="inline-flex rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                >
+                  New Release
+                </Link>
+              </div>
 
               {isLoadingReleases && (
                 <p className="mt-3 text-sm">Loading releases...</p>
