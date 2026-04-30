@@ -50,7 +50,7 @@ export default function DatasetCreatePage() {
     dataset_doi: "",
     dataset_type_id: "",
     dataset_name: "",
-    active: false,
+    active: true,
   });
 
   useEffect(() => {

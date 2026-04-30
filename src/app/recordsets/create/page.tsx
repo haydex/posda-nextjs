@@ -65,7 +65,7 @@ export default function RecordsetCreatePage() {
     license_id: "",
     recordset_name: "",
     recordset_type_id: "",
-    active: false,
+    active: true,
   });
 
   useEffect(() => {
