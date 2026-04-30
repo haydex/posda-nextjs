@@ -46,9 +46,10 @@ type DatasetRecordset = {
   recordset_doi: string | null;
   dataset_id: number;
   license_id: number;
-  recordset_type: string;
-  recordset_title: string;
-  recordset_name?: string;
+  license_label: string;
+  recordset_type_id: number;
+  recordset_type_name: string;
+  recordset_name: string;
   active: boolean;
   when_created?: string;
   when_updated?: string;
@@ -429,9 +430,9 @@ export default function DatasetByIdPage({ params }: PageProps) {
                       columns={[
                         { key: "recordset_id", label: "ID" },
                         { key: "recordset_name", label: "Name" },
-                        { key: "recordset_title", label: "Title" },
+                        { key: "recordset_type_name", label: "Type" },
+                        { key: "license_label", label: "License" },
                         { key: "recordset_doi", label: "DOI" },
-                        { key: "recordset_type", label: "Type" },
                         { key: "active", label: "Active" },
                         { key: "when_updated", label: "Updated" },
                       ]}
