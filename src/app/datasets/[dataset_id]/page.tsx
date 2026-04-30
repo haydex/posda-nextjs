@@ -466,8 +466,8 @@ export default function DatasetByIdPage({ params }: PageProps) {
                 <Link
                   href={
                     datasetId
-                      ? `/datasets/releases?dataset_id=${datasetId}`
-                      : "/datasets/releases"
+                      ? `/datasets/releases/create?dataset_id=${datasetId}`
+                      : "/datasets/releases/create"
                   }
                   className="inline-flex rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                 >
@@ -514,6 +514,9 @@ export default function DatasetByIdPage({ params }: PageProps) {
                       release_date: (value) =>
                         new Date(String(value)).toLocaleDateString(),
                     }}
+                    onRowClick={(row) =>
+                      router.push(`/datasets/releases/${row.dataset_release_id}`)
+                    }
                     getRowKey={(row) => row.dataset_release_id}
                   />
                 </div>

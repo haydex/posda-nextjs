@@ -12,7 +12,7 @@ export type DynamicFormOption = {
 export type DynamicFormField<T extends DynamicFormValues> = {
   key: keyof T & string;
   label: string;
-  type?: "text" | "number" | "select" | "checkbox";
+  type?: "text" | "number" | "select" | "checkbox" | "date" | "textarea";
   options?: DynamicFormOption[];
   placeholder?: string;
   disabled?: boolean;
@@ -30,6 +30,7 @@ export type DynamicFormField<T extends DynamicFormValues> = {
   controlClassName?: string;
   helperText?: string;
   srOnlyLabel?: boolean;
+  rows?: number;
 };
 
 type DynamicFormProps<T extends DynamicFormValues> = {
@@ -120,6 +121,42 @@ export default function DynamicForm<T extends DynamicFormValues>({
               </select>
               {field.helperText && (
                 <p className="mt-1 text-xs text-zinc-500">{field.helperText}</p>
+              )}
+            </label>
+          );
+        }
+
+        if (field.type === "textarea") {
+          return (
+            <label
+              key={field.key}
+              htmlFor={id}
+              className={field.className ?? "text-sm"}
+            >
+              <span
+                className={
+                  field.srOnlyLabel ? "sr-only" : "block text-sm font-medium"
+                }
+              >
+                {field.label}
+              </span>
+              <textarea
+                id={id}
+                value={String(rawValue ?? "")}
+                onChange={(event) => setValue(field.key, event.target.value)}
+                placeholder={field.placeholder}
+                disabled={field.disabled}
+                required={field.required}
+                rows={field.rows}
+                className={
+                  field.controlClassName ??
+                  "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100"
+                }
+              />
+              {field.helperText && (
+                <p className="mt-1 text-xs text-zinc-500">
+                  {field.helperText}
+                </p>
               )}
             </label>
           );
