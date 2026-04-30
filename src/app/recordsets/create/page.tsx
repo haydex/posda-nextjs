@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 
@@ -51,6 +51,7 @@ function extractArray<T>(payload: unknown, keys: string[]): T[] {
 
 export default function RecordsetCreatePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -122,6 +123,22 @@ export default function RecordsetCreatePage() {
 
     void loadOptions();
   }, []);
+
+  useEffect(() => {
+    const datasetIdFromQuery = searchParams.get("dataset_id");
+    if (!datasetIdFromQuery) {
+      return;
+    }
+
+    setFormData((prev) =>
+      prev.dataset_id
+        ? prev
+        : {
+            ...prev,
+            dataset_id: datasetIdFromQuery,
+          },
+    );
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
