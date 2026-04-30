@@ -6,6 +6,7 @@ type RouteContext = { params: Promise<{ path?: string[] }> };
 const ALLOWED_ROOTS = new Set([
   "lookups",
   "datasets",
+  "releases",
   "recordsets",
   "transfers",
 ]);

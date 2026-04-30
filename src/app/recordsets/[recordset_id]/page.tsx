@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicSection, {
   DynamicSectionField,
@@ -136,6 +137,7 @@ type PageProps = {
 };
 
 export default function RecordsetByIdPage({ params }: PageProps) {
+  const router = useRouter();
   const [recordsetId, setRecordsetId] = useState<string | null>(null);
   const [data, setData] = useState<RecordsetResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -369,8 +371,8 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                 <Link
                   href={
                     recordsetId
-                      ? `/recordsets/drafts?recordset_id=${recordsetId}`
-                      : "/recordsets/drafts"
+                      ? `/recordsets/drafts/create?recordset_id=${recordsetId}`
+                      : "/recordsets/drafts/create"
                   }
                   className="inline-flex rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
                 >
@@ -418,6 +420,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                         label: "Cloned Release ID",
                       },
                     ]}
+                    onRowClick={(row) =>
+                      router.push(`/recordsets/drafts/${row.recordset_draft_id}`)
+                    }
                     getRowKey={(row) => row.recordset_draft_id}
                   />
                 </div>
@@ -427,16 +432,6 @@ export default function RecordsetByIdPage({ params }: PageProps) {
             <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
               <div className="flex items-center justify-between border-b-2 border-black pb-2 dark:border-white">
                 <h2 className="text-lg font-semibold tracking-tight">Releases</h2>
-                <Link
-                  href={
-                    recordsetId
-                      ? `/recordsets/releases?recordset_id=${recordsetId}`
-                      : "/recordsets/releases"
-                  }
-                  className="inline-flex rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-                >
-                  New Release
-                </Link>
               </div>
 
               {isLoadingReleases && (
@@ -479,6 +474,11 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                       release_date: (value) =>
                         new Date(String(value)).toLocaleDateString(),
                     }}
+                    onRowClick={(row) =>
+                      router.push(
+                        `/recordsets/releases/${row.recordset_release_id}`,
+                      )
+                    }
                     getRowKey={(row) => row.recordset_release_id}
                   />
                 </div>
