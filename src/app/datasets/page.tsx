@@ -188,7 +188,7 @@ export default function DatasetsPage() {
     {
       key: "search",
       label: "Search",
-      placeholder: "DOI, title, or name",
+      placeholder: "DOI, name, or type",
       srOnlyLabel: true,
       className: "text-sm",
       controlClassName:
@@ -200,7 +200,7 @@ export default function DatasetsPage() {
       type: "select",
       srOnlyLabel: true,
       options: [
-        { value: "", label: "--- Select a value ---" },
+        { value: "", label: "--- Select a Type ---" },
         ...datasetTypes.map((datasetType) => ({
           value: String(datasetType.dataset_type_id),
           label: datasetType.dataset_type_name,
@@ -208,7 +208,11 @@ export default function DatasetsPage() {
       ],
       className: "text-sm",
       controlClassName:
-        "h-10 w-full rounded-md border border-black/15 bg-white px-3 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
+        `h-10 w-full rounded-md border border-black/15 bg-white px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 ${
+          filtersInput.datasetTypeId
+            ? "text-zinc-900 dark:text-zinc-100"
+            : "text-zinc-500 dark:text-zinc-400"
+        }`,
     },
     {
       key: "activeOnly",

@@ -37,6 +37,32 @@ type RecordsetFilters = {
   datasetId: string;
 };
 
+type Dataset = {
+  dataset_id: number;
+  dataset_name: string;
+};
+
+function extractArray<T>(payload: unknown, keys: string[]): T[] {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const source = payload as Record<string, unknown>;
+
+  for (const key of keys) {
+    const value = source[key];
+    if (Array.isArray(value)) {
+      return value as T[];
+    }
+  }
+
+  return [];
+}
+
 function normalizeRecordsetsResponse(payload: unknown): RecordsetsResponse {
   const source = payload as
     | {
@@ -84,6 +110,7 @@ function formatDateTime(value?: string) {
 
 export default function RecordsetsPage() {
   const router = useRouter();
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [filtersInput, setFiltersInput] = useState<RecordsetFilters>({
     search: "",
     activeOnly: false,
@@ -117,8 +144,8 @@ export default function RecordsetsPage() {
         apiParams.set("active_only", "true");
       }
 
-      if (filters.datasetId.trim()) {
-        apiParams.set("dataset_id", filters.datasetId.trim());
+      if (filters.datasetId) {
+        apiParams.set("dataset_id", filters.datasetId);
       }
 
       apiParams.set("page", String(currentPage));
@@ -170,13 +197,23 @@ export default function RecordsetsPage() {
     },
     {
       key: "datasetId",
-      label: "Dataset ID",
-      placeholder: "dataset_id",
-      inputMode: "numeric",
+      label: "Dataset",
       srOnlyLabel: true,
+      type: "select",
+      options: [
+        { value: "", label: "--- Select a Dataset ---" },
+        ...datasets.map((dataset) => ({
+          value: String(dataset.dataset_id),
+          label: `${dataset.dataset_id} - ${dataset.dataset_name}`,
+        })),
+      ],
       className: "text-sm",
       controlClassName:
-        "h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20",
+        `h-10 w-full rounded-md border border-black/15 bg-white px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 ${
+          filtersInput.datasetId
+            ? "text-zinc-900 dark:text-zinc-100"
+            : "text-zinc-500 dark:text-zinc-400"
+        }`,
     },
     {
       key: "activeOnly",
@@ -191,6 +228,34 @@ export default function RecordsetsPage() {
     void loadRecordsets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    async function loadDatasets() {
+      try {
+        const response = await fetch("/api/datasets?limit=1000", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          setDatasets([]);
+          return;
+        }
+
+        const json = (await response.json()) as unknown;
+        const datasetsArray = extractArray<Dataset>(json, [
+          "datasets",
+          "data",
+          "items",
+          "results",
+        ]);
+        setDatasets(datasetsArray);
+      } catch {
+        setDatasets([]);
+      }
+    }
+
+    void loadDatasets();
+  }, []);
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
