@@ -299,12 +299,9 @@ export default function DatasetsPage() {
                 { key: "dataset_doi", label: "DOI" },
                 { key: "dataset_type_name", label: "Type" },
                 { key: "active", label: "Active" },
-                { key: "when_created", label: "Created" },
                 { key: "when_updated", label: "Updated" },
               ]}
               formatters={{
-                when_created: (value) =>
-                  new Date(String(value)).toLocaleString(),
                 when_updated: (value) =>
                   new Date(String(value)).toLocaleString(),
               }}

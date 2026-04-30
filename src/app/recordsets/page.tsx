@@ -270,11 +270,9 @@ export default function RecordsetsPage() {
                 { key: "recordset_type_name", label: "Type" },
                 { key: "recordset_name", label: "Name" },
                 { key: "active", label: "Active" },
-                { key: "when_created", label: "Created" },
                 { key: "when_updated", label: "Updated" },
               ]}
               formatters={{
-                when_created: (value) => formatDateTime(value as string),
                 when_updated: (value) => formatDateTime(value as string),
               }}
               onRowClick={(row) =>
