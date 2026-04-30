@@ -41,6 +41,7 @@ type DynamicFormProps<T extends DynamicFormValues> = {
   className?: string;
   actions?: ReactNode;
   idPrefix?: string;
+  errors?: Record<string, string | undefined>;
 };
 
 export default function DynamicForm<T extends DynamicFormValues>({
@@ -51,7 +52,28 @@ export default function DynamicForm<T extends DynamicFormValues>({
   className,
   actions,
   idPrefix = "form-field",
+  errors = {},
 }: DynamicFormProps<T>) {
+  function getControlClassName(
+    defaultClassName: string,
+    errorClassName: string,
+    customClassName?: string,
+  ) {
+    return [customClassName ?? defaultClassName, errorClassName]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  function getErrorStyle(hasError: boolean) {
+    return hasError
+      ? {
+          borderColor: "#ef4444",
+          borderWidth: 2,
+          boxShadow: "0 0 0 1px #ef4444 inset",
+        }
+      : undefined;
+  }
+
   function setValue(key: keyof T & string, nextValue: unknown) {
     onChange({
       ...values,
@@ -60,10 +82,12 @@ export default function DynamicForm<T extends DynamicFormValues>({
   }
 
   return (
-    <form onSubmit={onSubmit} className={className}>
+    <form onSubmit={onSubmit} className={className} noValidate>
       {fields.map((field) => {
         const id = `${idPrefix}-${field.key}`;
         const rawValue = values[field.key];
+        const fieldError = errors[field.key];
+        const hasError = Boolean(fieldError);
 
         if (field.type === "checkbox") {
           return (
@@ -81,9 +105,23 @@ export default function DynamicForm<T extends DynamicFormValues>({
                 onChange={(event) => setValue(field.key, event.target.checked)}
                 disabled={field.disabled}
                 required={field.required}
-                className={field.controlClassName ?? "h-4 w-4"}
+                className={getControlClassName(
+                  "h-4 w-4",
+                  hasError
+                    ? "accent-red-600 ring-2 ring-red-500 ring-offset-1"
+                    : "",
+                  field.controlClassName,
+                )}
+                style={hasError ? { accentColor: "#ef4444" } : undefined}
               />
-              <span>{field.label}</span>
+              <span className={hasError ? "text-red-600" : undefined}>
+                {field.label}
+              </span>
+              {hasError && (
+                <span className="ml-2 text-xs font-medium text-red-600">
+                  {fieldError}
+                </span>
+              )}
             </label>
           );
         }
@@ -95,12 +133,11 @@ export default function DynamicForm<T extends DynamicFormValues>({
               htmlFor={id}
               className={field.className ?? "text-sm"}
             >
-              <span
-                className={
-                  field.srOnlyLabel ? "sr-only" : "block text-sm font-medium"
-                }
-              >
+              <span className={field.srOnlyLabel ? "sr-only" : undefined}>
                 {field.label}
+                {field.required && !field.srOnlyLabel && (
+                  <span className="ml-1 text-red-500">*</span>
+                )}
               </span>
               <select
                 id={id}
@@ -108,10 +145,12 @@ export default function DynamicForm<T extends DynamicFormValues>({
                 onChange={(event) => setValue(field.key, event.target.value)}
                 disabled={field.disabled}
                 required={field.required}
-                className={
-                  field.controlClassName ??
-                  "mt-1 h-10 w-full rounded-md border border-black/15 bg-white px-3 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100"
-                }
+                className={getControlClassName(
+                  "mt-1 h-10 w-full rounded-md border border-black/15 bg-white px-3 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
+                  hasError ? "border-2 border-red-500 focus:ring-red-400" : "",
+                  field.controlClassName,
+                )}
+                style={getErrorStyle(hasError)}
               >
                 {(field.options ?? []).map((option) => (
                   <option key={option.value} value={option.value}>
@@ -119,9 +158,13 @@ export default function DynamicForm<T extends DynamicFormValues>({
                   </option>
                 ))}
               </select>
-              {field.helperText && (
+              {hasError ? (
+                <p className="mt-1 text-xs font-medium text-red-600">
+                  {fieldError}
+                </p>
+              ) : field.helperText ? (
                 <p className="mt-1 text-xs text-zinc-500">{field.helperText}</p>
-              )}
+              ) : null}
             </label>
           );
         }
@@ -133,12 +176,11 @@ export default function DynamicForm<T extends DynamicFormValues>({
               htmlFor={id}
               className={field.className ?? "text-sm"}
             >
-              <span
-                className={
-                  field.srOnlyLabel ? "sr-only" : "block text-sm font-medium"
-                }
-              >
+              <span className={field.srOnlyLabel ? "sr-only" : undefined}>
                 {field.label}
+                {field.required && !field.srOnlyLabel && (
+                  <span className="ml-1 text-red-500">*</span>
+                )}
               </span>
               <textarea
                 id={id}
@@ -148,16 +190,20 @@ export default function DynamicForm<T extends DynamicFormValues>({
                 disabled={field.disabled}
                 required={field.required}
                 rows={field.rows}
-                className={
-                  field.controlClassName ??
-                  "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100"
-                }
+                className={getControlClassName(
+                  "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
+                  hasError ? "border-2 border-red-500 focus:ring-red-400" : "",
+                  field.controlClassName,
+                )}
+                style={getErrorStyle(hasError)}
               />
-              {field.helperText && (
-                <p className="mt-1 text-xs text-zinc-500">
-                  {field.helperText}
+              {hasError ? (
+                <p className="mt-1 text-xs font-medium text-red-600">
+                  {fieldError}
                 </p>
-              )}
+              ) : field.helperText ? (
+                <p className="mt-1 text-xs text-zinc-500">{field.helperText}</p>
+              ) : null}
             </label>
           );
         }
@@ -168,12 +214,11 @@ export default function DynamicForm<T extends DynamicFormValues>({
             htmlFor={id}
             className={field.className ?? "text-sm"}
           >
-            <span
-              className={
-                field.srOnlyLabel ? "sr-only" : "block text-sm font-medium"
-              }
-            >
+            <span className={field.srOnlyLabel ? "sr-only" : undefined}>
               {field.label}
+              {field.required && !field.srOnlyLabel && (
+                <span className="ml-1 text-red-500">*</span>
+              )}
             </span>
             <input
               id={id}
@@ -184,14 +229,22 @@ export default function DynamicForm<T extends DynamicFormValues>({
               disabled={field.disabled}
               required={field.required}
               inputMode={field.inputMode}
-              className={
-                field.controlClassName ??
-                "mt-1 h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20"
-              }
+              className={getControlClassName(
+                "mt-1 h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20",
+                hasError
+                  ? "border-2 border-red-500 focus:ring-red-400 dark:border-red-500"
+                  : "",
+                field.controlClassName,
+              )}
+              style={getErrorStyle(hasError)}
             />
-            {field.helperText && (
+            {hasError ? (
+              <p className="mt-1 text-xs font-medium text-red-600">
+                {fieldError}
+              </p>
+            ) : field.helperText ? (
               <p className="mt-1 text-xs text-zinc-500">{field.helperText}</p>
-            )}
+            ) : null}
           </label>
         );
       })}

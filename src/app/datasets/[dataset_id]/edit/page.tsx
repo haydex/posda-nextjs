@@ -66,6 +66,7 @@ export default function DatasetEditPage({ params }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     dataset_doi: "",
@@ -86,7 +87,9 @@ export default function DatasetEditPage({ params }: PageProps) {
         }
 
         const json = (await response.json()) as unknown;
-        setDatasetTypes(extractArray<DatasetType>(json, ["data", "dataset_types"]));
+        setDatasetTypes(
+          extractArray<DatasetType>(json, ["data", "dataset_types"]),
+        );
       } catch {
         setDatasetTypes([]);
       }
@@ -180,6 +183,27 @@ export default function DatasetEditPage({ params }: PageProps) {
     e.preventDefault();
     setSaveError(null);
     setSaveSuccess(false);
+    setFieldErrors({});
+
+    const nextFieldErrors: Record<string, string> = {};
+
+    if (!formData.dataset_doi.trim()) {
+      nextFieldErrors.dataset_doi = "DOI is required.";
+    }
+
+    if (!formData.dataset_type_id) {
+      nextFieldErrors.dataset_type_id = "Type is required.";
+    }
+
+    if (!formData.dataset_name.trim()) {
+      nextFieldErrors.dataset_name = "Name is required.";
+    }
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setSaveError("Please fix the highlighted fields.");
+      return;
+    }
 
     if (!datasetId) {
       setSaveError("Could not save dataset: missing dataset id.");
@@ -232,6 +256,7 @@ export default function DatasetEditPage({ params }: PageProps) {
     {
       key: "dataset_doi",
       label: "DOI",
+      required: true,
       controlClassName:
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
@@ -239,6 +264,7 @@ export default function DatasetEditPage({ params }: PageProps) {
       key: "dataset_type_id",
       label: "Type",
       type: "select",
+      required: true,
       options: [
         { value: "", label: "--- Select a value ---" },
         ...datasetTypes.map((datasetType) => ({
@@ -252,6 +278,7 @@ export default function DatasetEditPage({ params }: PageProps) {
     {
       key: "dataset_name",
       label: "Name",
+      required: true,
       controlClassName:
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
@@ -299,9 +326,14 @@ export default function DatasetEditPage({ params }: PageProps) {
             <DynamicForm
               onSubmit={handleSubmit}
               values={formData}
-              onChange={setFormData}
+              onChange={(next) => {
+                setFormData(next);
+                setFieldErrors({});
+                setSaveError(null);
+              }}
               fields={fields}
               className="space-y-4"
+              errors={fieldErrors}
               actions={
                 <>
                   <div className="space-y-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-900/50">
