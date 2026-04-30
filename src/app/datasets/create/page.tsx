@@ -45,6 +45,7 @@ export default function DatasetCreatePage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [datasetTypes, setDatasetTypes] = useState<DatasetType[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     dataset_doi: "",
@@ -65,7 +66,9 @@ export default function DatasetCreatePage() {
         }
 
         const json = (await response.json()) as unknown;
-        setDatasetTypes(extractArray<DatasetType>(json, ["data", "dataset_types"]));
+        setDatasetTypes(
+          extractArray<DatasetType>(json, ["data", "dataset_types"]),
+        );
       } catch {
         setDatasetTypes([]);
       }
@@ -78,6 +81,23 @@ export default function DatasetCreatePage() {
     e.preventDefault();
     setSaveError(null);
     setSaveSuccess(false);
+    setFieldErrors({});
+
+    const nextFieldErrors: Record<string, string> = {};
+    if (!formData.dataset_name.trim()) {
+      nextFieldErrors.dataset_name = "Name is required.";
+    }
+    if (!formData.dataset_type_id) {
+      nextFieldErrors.dataset_type_id = "Type is required.";
+    }
+    if (!formData.dataset_doi.trim()) {
+      nextFieldErrors.dataset_doi = "DOI is required.";
+    }
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setSaveError("Please fix the highlighted fields.");
+      return;
+    }
     setIsSaving(true);
 
     try {
@@ -130,6 +150,7 @@ export default function DatasetCreatePage() {
     {
       key: "dataset_doi",
       label: "DOI",
+      required: true,
       controlClassName:
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
@@ -137,6 +158,7 @@ export default function DatasetCreatePage() {
       key: "dataset_type_id",
       label: "Type",
       type: "select",
+      required: true,
       options: [
         { value: "", label: "--- Select a value ---" },
         ...datasetTypes.map((datasetType) => ({
@@ -150,6 +172,7 @@ export default function DatasetCreatePage() {
     {
       key: "dataset_name",
       label: "Name",
+      required: true,
       controlClassName:
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
@@ -165,7 +188,9 @@ export default function DatasetCreatePage() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
       <div className="border-b-2 border-black pb-4 dark:border-white">
-        <h1 className="text-3xl font-semibold tracking-tight">Create Dataset</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Create Dataset
+        </h1>
       </div>
       <p className="mt-4 text-zinc-600 dark:text-zinc-300">
         Add a new dataset to the system.
@@ -181,8 +206,13 @@ export default function DatasetCreatePage() {
         <DynamicForm
           onSubmit={handleSubmit}
           values={formData}
-          onChange={setFormData}
+          onChange={(next) => {
+            setFormData(next);
+            setFieldErrors({});
+            setSaveError(null);
+          }}
           fields={fields}
+          errors={fieldErrors}
           className="space-y-4"
           actions={
             <>

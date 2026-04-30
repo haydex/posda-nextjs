@@ -82,6 +82,7 @@ export default function RecordsetEditPage({ params }: PageProps) {
   const [licenses, setLicenses] = useState<License[]>([]);
   const [recordsetTypes, setRecordsetTypes] = useState<RecordsetType[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     dataset_id: "",
     recordset_doi: "",
@@ -118,26 +119,36 @@ export default function RecordsetEditPage({ params }: PageProps) {
       setIsLoadingOptions(true);
 
       try {
-        const [datasetsRes, licensesRes, recordsetTypesRes] = await Promise.all([
-          fetch("/api/datasets?limit=1000", { cache: "no-store" }),
-          fetch("/api/lookups/licenses", { cache: "no-store" }),
-          fetch("/api/lookups/recordset-types", { cache: "no-store" }),
-        ]);
+        const [datasetsRes, licensesRes, recordsetTypesRes] = await Promise.all(
+          [
+            fetch("/api/datasets?limit=1000", { cache: "no-store" }),
+            fetch("/api/lookups/licenses", { cache: "no-store" }),
+            fetch("/api/lookups/recordset-types", { cache: "no-store" }),
+          ],
+        );
 
         if (datasetsRes.ok) {
           const datasetsJson = (await datasetsRes.json()) as unknown;
-          setDatasets(extractArray<Dataset>(datasetsJson, ["data", "datasets"]));
+          setDatasets(
+            extractArray<Dataset>(datasetsJson, ["data", "datasets"]),
+          );
         }
 
         if (licensesRes.ok) {
           const licensesJson = (await licensesRes.json()) as unknown;
-          setLicenses(extractArray<License>(licensesJson, ["data", "licenses"]));
+          setLicenses(
+            extractArray<License>(licensesJson, ["data", "licenses"]),
+          );
         }
 
         if (recordsetTypesRes.ok) {
-          const recordsetTypesJson = (await recordsetTypesRes.json()) as unknown;
+          const recordsetTypesJson =
+            (await recordsetTypesRes.json()) as unknown;
           setRecordsetTypes(
-            extractArray<RecordsetType>(recordsetTypesJson, ["data", "recordset_types"]),
+            extractArray<RecordsetType>(recordsetTypesJson, [
+              "data",
+              "recordset_types",
+            ]),
           );
         }
       } catch {
@@ -237,6 +248,23 @@ export default function RecordsetEditPage({ params }: PageProps) {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaveError(null);
+    setFieldErrors({});
+
+    const nextFieldErrors: Record<string, string> = {};
+    if (!formData.dataset_id) {
+      nextFieldErrors.dataset_id = "Dataset is required.";
+    }
+    if (!formData.recordset_name.trim()) {
+      nextFieldErrors.recordset_name = "Name is required.";
+    }
+    if (!formData.recordset_type_id) {
+      nextFieldErrors.recordset_type_id = "Type is required.";
+    }
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setSaveError("Please fix the highlighted fields.");
+      return;
+    }
 
     if (!recordsetId) {
       setSaveError("Could not save recordset: missing recordset id.");
@@ -293,6 +321,7 @@ export default function RecordsetEditPage({ params }: PageProps) {
       key: "dataset_id",
       label: "Dataset",
       type: "select",
+      required: true,
       options: [
         { value: "", label: "--- Select a value ---" },
         ...datasets.map((dataset) => ({
@@ -326,6 +355,7 @@ export default function RecordsetEditPage({ params }: PageProps) {
     {
       key: "recordset_name",
       label: "Name",
+      required: true,
       controlClassName:
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
@@ -333,6 +363,7 @@ export default function RecordsetEditPage({ params }: PageProps) {
       key: "recordset_type_id",
       label: "Type",
       type: "select",
+      required: true,
       options: [
         { value: "", label: "--- Select a value ---" },
         ...recordsetTypes.map((recordsetType) => ({
@@ -355,7 +386,9 @@ export default function RecordsetEditPage({ params }: PageProps) {
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
       <div className="border-b-2 border-black pb-4 dark:border-white">
-        <h1 className="text-3xl font-semibold tracking-tight">Edit Recordset</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Edit Recordset
+        </h1>
       </div>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
@@ -387,8 +420,13 @@ export default function RecordsetEditPage({ params }: PageProps) {
             <DynamicForm
               onSubmit={handleSubmit}
               values={formData}
-              onChange={setFormData}
+              onChange={(next) => {
+                setFormData(next);
+                setFieldErrors({});
+                setSaveError(null);
+              }}
               fields={fields}
+              errors={fieldErrors}
               className="space-y-4"
               actions={
                 <>

@@ -59,6 +59,7 @@ export default function RecordsetCreatePage() {
   const [licenses, setLicenses] = useState<License[]>([]);
   const [recordsetTypes, setRecordsetTypes] = useState<RecordsetType[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     dataset_id: "",
@@ -105,13 +106,12 @@ export default function RecordsetCreatePage() {
         }
 
         if (recordsetTypesRes.ok) {
-          const recordsetTypesJson = (await recordsetTypesRes.json()) as unknown;
-          const recordsetTypesArray = extractArray<RecordsetType>(recordsetTypesJson, [
-            "recordset_types",
-            "data",
-            "items",
-            "results",
-          ]);
+          const recordsetTypesJson =
+            (await recordsetTypesRes.json()) as unknown;
+          const recordsetTypesArray = extractArray<RecordsetType>(
+            recordsetTypesJson,
+            ["recordset_types", "data", "items", "results"],
+          );
           setRecordsetTypes(recordsetTypesArray);
         }
       } catch {
@@ -144,6 +144,23 @@ export default function RecordsetCreatePage() {
     e.preventDefault();
     setSaveError(null);
     setSaveSuccess(false);
+    setFieldErrors({});
+
+    const nextFieldErrors: Record<string, string> = {};
+    if (!formData.dataset_id) {
+      nextFieldErrors.dataset_id = "Dataset is required.";
+    }
+    if (!formData.recordset_name.trim()) {
+      nextFieldErrors.recordset_name = "Name is required.";
+    }
+    if (!formData.recordset_type_id) {
+      nextFieldErrors.recordset_type_id = "Type is required.";
+    }
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setSaveError("Please fix the highlighted fields.");
+      return;
+    }
     setIsSaving(true);
 
     try {
@@ -201,6 +218,7 @@ export default function RecordsetCreatePage() {
       key: "dataset_id",
       label: "Dataset",
       type: "select",
+      required: true,
       options: [
         { value: "", label: "--- Select a value ---" },
         ...datasets.map((d) => ({
@@ -234,6 +252,7 @@ export default function RecordsetCreatePage() {
     {
       key: "recordset_name",
       label: "Name",
+      required: true,
       controlClassName:
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
@@ -241,6 +260,7 @@ export default function RecordsetCreatePage() {
       key: "recordset_type_id",
       label: "Type",
       type: "select",
+      required: true,
       options: [
         { value: "", label: "--- Select a value ---" },
         ...recordsetTypes.map((recordsetType) => ({
@@ -263,7 +283,9 @@ export default function RecordsetCreatePage() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
       <div className="border-b-2 border-black pb-4 dark:border-white">
-        <h1 className="text-3xl font-semibold tracking-tight">Create Recordset</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Create Recordset
+        </h1>
       </div>
       <p className="mt-4 text-zinc-600 dark:text-zinc-300">
         Add a new recordset to the system.
@@ -291,8 +313,13 @@ export default function RecordsetCreatePage() {
         <DynamicForm
           onSubmit={handleSubmit}
           values={formData}
-          onChange={setFormData}
+          onChange={(next) => {
+            setFormData(next);
+            setFieldErrors({});
+            setSaveError(null);
+          }}
           fields={fields}
+          errors={fieldErrors}
           className="space-y-4"
           actions={
             <>
