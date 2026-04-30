@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 
 type CreateDatasetResponse = {
@@ -13,20 +13,66 @@ type CreateDatasetResponse = {
   timestamp: string;
 };
 
+type DatasetType = {
+  dataset_type_id: number;
+  dataset_type_name: string;
+};
+
+function extractArray<T>(payload: unknown, keys: string[]): T[] {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const source = payload as Record<string, unknown>;
+
+  for (const key of keys) {
+    const value = source[key];
+    if (Array.isArray(value)) {
+      return value as T[];
+    }
+  }
+
+  return [];
+}
+
 export default function DatasetCreatePage() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [datasetTypes, setDatasetTypes] = useState<DatasetType[]>([]);
 
   const [formData, setFormData] = useState({
     dataset_doi: "",
-    dataset_type: "collection" as "collection" | "analysis_result",
-    dataset_short_title: "",
-    dataset_title: "",
+    dataset_type_id: "",
     dataset_name: "",
     active: false,
   });
+
+  useEffect(() => {
+    async function loadDatasetTypes() {
+      try {
+        const response = await fetch("/api/lookups/dataset-types", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const json = (await response.json()) as unknown;
+        setDatasetTypes(extractArray<DatasetType>(json, ["data", "dataset_types"]));
+      } catch {
+        setDatasetTypes([]);
+      }
+    }
+
+    void loadDatasetTypes();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,7 +86,12 @@ export default function DatasetCreatePage() {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          dataset_type_id: Number(formData.dataset_type_id),
+          dataset_name: formData.dataset_name,
+          dataset_doi: formData.dataset_doi,
+          active: formData.active,
+        }),
       });
 
       if (!response.ok) {
@@ -83,24 +134,18 @@ export default function DatasetCreatePage() {
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
     {
-      key: "dataset_type",
+      key: "dataset_type_id",
       label: "Type",
       type: "select",
-      options: [{ value: "collection" }, { value: "analysis_result" }],
+      options: [
+        { value: "", label: "--- Select a value ---" },
+        ...datasetTypes.map((datasetType) => ({
+          value: String(datasetType.dataset_type_id),
+          label: datasetType.dataset_type_name,
+        })),
+      ],
       controlClassName:
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
-    },
-    {
-      key: "dataset_short_title",
-      label: "Short Title",
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
-    },
-    {
-      key: "dataset_title",
-      label: "Title",
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
     {
       key: "dataset_name",
@@ -127,6 +172,12 @@ export default function DatasetCreatePage() {
       </p>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+        {datasetTypes.length === 0 && (
+          <p className="mb-4 text-sm text-red-600 dark:text-red-400">
+            Could not load dataset types from the database.
+          </p>
+        )}
+
         <DynamicForm
           onSubmit={handleSubmit}
           values={formData}

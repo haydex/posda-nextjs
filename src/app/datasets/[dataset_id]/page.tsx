@@ -10,10 +10,9 @@ import DynamicTable from "@/components/DynamicTable";
 
 type Dataset = {
   dataset_id: number;
+  dataset_type_id: number;
+  dataset_type_name: string;
   dataset_doi: string;
-  dataset_type: string;
-  dataset_short_title: string;
-  dataset_title: string;
   dataset_name: string;
   active: boolean;
   when_created: string;
@@ -338,10 +337,8 @@ export default function DatasetByIdPage({ params }: PageProps) {
   const datasetFields: DynamicSectionField[] = dataset
     ? [
         { label: "Dataset ID", value: dataset.dataset_id },
+        { label: "Type", value: dataset.dataset_type_name },
         { label: "DOI", value: dataset.dataset_doi },
-        { label: "Type", value: dataset.dataset_type },
-        { label: "Short Title", value: dataset.dataset_short_title },
-        { label: "Title", value: dataset.dataset_title, fullWidth: true },
         { label: "Name", value: dataset.dataset_name, fullWidth: true },
         { label: "Active", value: dataset.active ? "Yes" : "No" },
         { label: "Created By", value: dataset.who_created },

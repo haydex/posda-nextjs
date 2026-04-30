@@ -10,12 +10,13 @@ type Recordset = {
   recordset_id: number;
   recordset_doi: string | null;
   dataset_id: number;
+  dataset_name?: string;
   license_id: number;
   license_label?: string;
   license_url?: string;
   is_public_access?: boolean;
-  recordset_type: string;
-  recordset_title: string;
+  recordset_type_id: number;
+  recordset_type_name?: string;
   recordset_name?: string;
   active: boolean;
   when_created?: string;
@@ -264,10 +265,10 @@ export default function RecordsetsPage() {
               columns={[
                 { key: "recordset_id", label: "ID" },
                 { key: "recordset_doi", label: "DOI" },
-                { key: "dataset_id", label: "Dataset ID" },
+                { key: "dataset_name", label: "Dataset" },
                 { key: "license_label", label: "License" },
-                { key: "recordset_type", label: "Type" },
-                { key: "recordset_title", label: "Title" },
+                { key: "recordset_type_name", label: "Type" },
+                { key: "recordset_name", label: "Name" },
                 { key: "active", label: "Active" },
                 { key: "when_created", label: "Created" },
                 { key: "when_updated", label: "Updated" },

@@ -11,9 +11,12 @@ type Recordset = {
   recordset_id: number;
   recordset_doi: string;
   dataset_id: number;
+  dataset_name: string;
   license_id: number;
-  recordset_type: string;
-  recordset_title: string;
+  license_label: string;
+  recordset_type_id: number;
+  recordset_type_name: string;
+  recordset_name: string;
   active: boolean;
   when_created: string;
   who_created: string;
@@ -305,11 +308,11 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     ? [
         { label: "Recordset ID", value: recordset.recordset_id },
         { label: "DOI", value: recordset.recordset_doi },
-        { label: "Dataset ID", value: recordset.dataset_id },
-        { label: "License ID", value: recordset.license_id },
-        { label: "Type", value: recordset.recordset_type },
+        { label: "Dataset", value: recordset.dataset_name },
+        { label: "License", value: recordset.license_label },
+        { label: "Type", value: recordset.recordset_type_name },
         { label: "Active", value: recordset.active ? "Yes" : "No" },
-        { label: "Title", value: recordset.recordset_title, fullWidth: true },
+        { label: "Name", value: recordset.recordset_name, fullWidth: true },
         { label: "Created By", value: recordset.who_created },
         {
           label: "Created At",

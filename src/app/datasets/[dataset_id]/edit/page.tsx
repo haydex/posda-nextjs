@@ -7,10 +7,9 @@ import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 
 type Dataset = {
   dataset_id: number;
+  dataset_type_id: number;
+  dataset_type_name: string;
   dataset_doi: string;
-  dataset_type: string;
-  dataset_short_title: string;
-  dataset_title: string;
   dataset_name: string;
   active: boolean;
   when_created: string;
@@ -25,6 +24,32 @@ type DatasetResponse = {
   timestamp: string;
 };
 
+type DatasetType = {
+  dataset_type_id: number;
+  dataset_type_name: string;
+};
+
+function extractArray<T>(payload: unknown, keys: string[]): T[] {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const source = payload as Record<string, unknown>;
+
+  for (const key of keys) {
+    const value = source[key];
+    if (Array.isArray(value)) {
+      return value as T[];
+    }
+  }
+
+  return [];
+}
+
 type PageProps = {
   params: Promise<{
     dataset_id: string;
@@ -37,18 +62,38 @@ export default function DatasetEditPage({ params }: PageProps) {
   const [data, setData] = useState<DatasetResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [datasetTypes, setDatasetTypes] = useState<DatasetType[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     dataset_doi: "",
-    dataset_type: "collection" as "collection" | "analysis_result",
-    dataset_short_title: "",
-    dataset_title: "",
+    dataset_type_id: "",
     dataset_name: "",
     active: false,
   });
+
+  useEffect(() => {
+    async function loadDatasetTypes() {
+      try {
+        const response = await fetch("/api/lookups/dataset-types", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const json = (await response.json()) as unknown;
+        setDatasetTypes(extractArray<DatasetType>(json, ["data", "dataset_types"]));
+      } catch {
+        setDatasetTypes([]);
+      }
+    }
+
+    void loadDatasetTypes();
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -100,11 +145,7 @@ export default function DatasetEditPage({ params }: PageProps) {
         if (dataset) {
           setFormData({
             dataset_doi: dataset.dataset_doi,
-            dataset_type: dataset.dataset_type as
-              | "collection"
-              | "analysis_result",
-            dataset_short_title: dataset.dataset_short_title,
-            dataset_title: dataset.dataset_title,
+            dataset_type_id: String(dataset.dataset_type_id),
             dataset_name: dataset.dataset_name,
             active: dataset.active,
           });
@@ -153,7 +194,12 @@ export default function DatasetEditPage({ params }: PageProps) {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          dataset_type_id: Number(formData.dataset_type_id),
+          dataset_doi: formData.dataset_doi,
+          dataset_name: formData.dataset_name,
+          active: formData.active,
+        }),
       });
 
       if (!response.ok) {
@@ -190,24 +236,18 @@ export default function DatasetEditPage({ params }: PageProps) {
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
     {
-      key: "dataset_type",
+      key: "dataset_type_id",
       label: "Type",
       type: "select",
-      options: [{ value: "collection" }, { value: "analysis_result" }],
+      options: [
+        { value: "", label: "--- Select a value ---" },
+        ...datasetTypes.map((datasetType) => ({
+          value: String(datasetType.dataset_type_id),
+          label: datasetType.dataset_type_name,
+        })),
+      ],
       controlClassName:
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
-    },
-    {
-      key: "dataset_short_title",
-      label: "Short Title",
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
-    },
-    {
-      key: "dataset_title",
-      label: "Title",
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
     {
       key: "dataset_name",
@@ -231,6 +271,12 @@ export default function DatasetEditPage({ params }: PageProps) {
       </div>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+        {datasetTypes.length === 0 && (
+          <p className="mb-4 text-sm text-red-600 dark:text-red-400">
+            Could not load dataset types from the database.
+          </p>
+        )}
+
         {isLoading && <p className="text-sm">Loading...</p>}
 
         {!isLoading && error && (

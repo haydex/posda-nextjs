@@ -3,7 +3,12 @@ import { PapiHttpError, papiRequest, type PapiRequestOptions } from "@/lib/papi"
 
 type RouteContext = { params: Promise<{ path?: string[] }> };
 
-const ALLOWED_ROOTS = new Set(["datasets", "recordsets", "releases", "transfers"]);
+const ALLOWED_ROOTS = new Set([
+  "lookups",
+  "datasets",
+  "recordsets",
+  "transfers",
+]);
 const FORWARDABLE_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
 
 function buildUpstreamPath(path?: string[]) {
@@ -101,6 +106,7 @@ function applyPagination<T>(payload: T, request: Request): T {
 
   const prioritizedKeys = [
     "data",
+    "licenses",
     "datasets",
     "recordsets",
     "releases",

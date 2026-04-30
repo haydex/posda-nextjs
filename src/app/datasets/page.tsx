@@ -8,14 +8,18 @@ import DynamicTable from "@/components/DynamicTable";
 
 type Dataset = {
   dataset_id: number;
+  dataset_type_id: number;
+  dataset_type_name: string;
   dataset_doi: string;
-  dataset_type: string;
-  dataset_short_title: string;
-  dataset_title: string;
   dataset_name: string;
   active: boolean;
   when_created: string;
   when_updated: string;
+};
+
+type DatasetType = {
+  dataset_type_id: number;
+  dataset_type_name: string;
 };
 
 type DatasetsResponse = {
@@ -27,8 +31,29 @@ type DatasetsResponse = {
 type DatasetFilters = {
   search: string;
   activeOnly: boolean;
-  type: "" | "collection" | "analysis_result";
+  datasetTypeId: string;
 };
+
+function extractArray<T>(payload: unknown, keys: string[]): T[] {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const source = payload as Record<string, unknown>;
+
+  for (const key of keys) {
+    const value = source[key];
+    if (Array.isArray(value)) {
+      return value as T[];
+    }
+  }
+
+  return [];
+}
 
 function normalizeDatasetsResponse(payload: unknown): DatasetsResponse {
   const source = payload as
@@ -64,16 +89,17 @@ function normalizeDatasetsResponse(payload: unknown): DatasetsResponse {
 
 export default function DatasetsPage() {
   const router = useRouter();
+  const [datasetTypes, setDatasetTypes] = useState<DatasetType[]>([]);
   const [filtersInput, setFiltersInput] = useState<DatasetFilters>({
     search: "",
     activeOnly: false,
-    type: "",
+    datasetTypeId: "",
   });
 
   const [filters, setFilters] = useState<DatasetFilters>({
     search: "",
     activeOnly: false,
-    type: "",
+    datasetTypeId: "",
   });
 
   const [data, setData] = useState<DatasetsResponse | null>(null);
@@ -81,6 +107,28 @@ export default function DatasetsPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
+
+  useEffect(() => {
+    async function loadDatasetTypes() {
+      try {
+        const response = await fetch("/api/lookups/dataset-types", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const json = (await response.json()) as unknown;
+        const types = extractArray<DatasetType>(json, ["data", "dataset_types"]);
+        setDatasetTypes(types);
+      } catch {
+        setDatasetTypes([]);
+      }
+    }
+
+    void loadDatasetTypes();
+  }, []);
 
   async function loadDatasets() {
     setIsLoading(true);
@@ -97,8 +145,8 @@ export default function DatasetsPage() {
         apiParams.set("active_only", "true");
       }
 
-      if (filters.type) {
-        apiParams.set("type", filters.type);
+      if (filters.datasetTypeId) {
+        apiParams.set("dataset_type_id", filters.datasetTypeId);
       }
 
       apiParams.set("page", String(currentPage));
@@ -131,9 +179,9 @@ export default function DatasetsPage() {
   }
 
   function clearFilters() {
-    setFiltersInput({ search: "", activeOnly: false, type: "" });
+    setFiltersInput({ search: "", activeOnly: false, datasetTypeId: "" });
     setCurrentPage(1);
-    setFilters({ search: "", activeOnly: false, type: "" });
+    setFilters({ search: "", activeOnly: false, datasetTypeId: "" });
   }
 
   const filterFields: Array<DynamicFormField<DatasetFilters>> = [
@@ -147,14 +195,16 @@ export default function DatasetsPage() {
         "h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20",
     },
     {
-      key: "type",
+      key: "datasetTypeId",
       label: "Type",
       type: "select",
       srOnlyLabel: true,
       options: [
-        { value: "", label: "All" },
-        { value: "collection" },
-        { value: "analysis_result" },
+        { value: "", label: "--- Select a value ---" },
+        ...datasetTypes.map((datasetType) => ({
+          value: String(datasetType.dataset_type_id),
+          label: datasetType.dataset_type_name,
+        })),
       ],
       className: "text-sm",
       controlClassName:
@@ -247,7 +297,7 @@ export default function DatasetsPage() {
                 { key: "dataset_id", label: "ID" },
                 { key: "dataset_name", label: "Name" },
                 { key: "dataset_doi", label: "DOI" },
-                { key: "dataset_type", label: "Type" },
+                { key: "dataset_type_name", label: "Type" },
                 { key: "active", label: "Active" },
                 { key: "when_created", label: "Created" },
                 { key: "when_updated", label: "Updated" },

@@ -9,10 +9,12 @@ type Recordset = {
   recordset_id: number;
   recordset_doi: string;
   dataset_id: number;
+  dataset_name: string;
   license_id: number;
+  license_label: string;
   recordset_name?: string;
-  recordset_type: string;
-  recordset_title: string;
+  recordset_type_id: number;
+  recordset_type_name: string;
   active: boolean;
   when_created: string;
   when_updated: string;
@@ -25,6 +27,42 @@ type RecordsetResponse = {
   data?: Recordset;
   timestamp: string;
 };
+
+type Dataset = {
+  dataset_id: number;
+  dataset_name: string;
+};
+
+type License = {
+  license_id: number;
+  license_label: string;
+};
+
+type RecordsetType = {
+  recordset_type_id: number;
+  recordset_type_name: string;
+};
+
+function extractArray<T>(payload: unknown, keys: string[]): T[] {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const source = payload as Record<string, unknown>;
+
+  for (const key of keys) {
+    const value = source[key];
+    if (Array.isArray(value)) {
+      return value as T[];
+    }
+  }
+
+  return [];
+}
 
 type PageProps = {
   params: Promise<{
@@ -40,13 +78,16 @@ export default function RecordsetEditPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
+  const [licenses, setLicenses] = useState<License[]>([]);
+  const [recordsetTypes, setRecordsetTypes] = useState<RecordsetType[]>([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const [formData, setFormData] = useState({
     dataset_id: "",
     recordset_doi: "",
     license_id: "",
     recordset_name: "",
-    recordset_type: "",
-    recordset_title: "",
+    recordset_type_id: "",
     active: false,
   });
 
@@ -72,6 +113,43 @@ export default function RecordsetEditPage({ params }: PageProps) {
 
   useEffect(() => {
     let isMounted = true;
+
+    async function loadOptions() {
+      setIsLoadingOptions(true);
+
+      try {
+        const [datasetsRes, licensesRes, recordsetTypesRes] = await Promise.all([
+          fetch("/api/datasets?limit=1000", { cache: "no-store" }),
+          fetch("/api/lookups/licenses", { cache: "no-store" }),
+          fetch("/api/lookups/recordset-types", { cache: "no-store" }),
+        ]);
+
+        if (datasetsRes.ok) {
+          const datasetsJson = (await datasetsRes.json()) as unknown;
+          setDatasets(extractArray<Dataset>(datasetsJson, ["data", "datasets"]));
+        }
+
+        if (licensesRes.ok) {
+          const licensesJson = (await licensesRes.json()) as unknown;
+          setLicenses(extractArray<License>(licensesJson, ["data", "licenses"]));
+        }
+
+        if (recordsetTypesRes.ok) {
+          const recordsetTypesJson = (await recordsetTypesRes.json()) as unknown;
+          setRecordsetTypes(
+            extractArray<RecordsetType>(recordsetTypesJson, ["data", "recordset_types"]),
+          );
+        }
+      } catch {
+        setDatasets([]);
+        setLicenses([]);
+        setRecordsetTypes([]);
+      } finally {
+        setIsLoadingOptions(false);
+      }
+    }
+
+    void loadOptions();
 
     async function loadRecordset() {
       setIsLoading(true);
@@ -126,8 +204,7 @@ export default function RecordsetEditPage({ params }: PageProps) {
                 : "",
             license_id: String(recordset.license_id),
             recordset_name: recordset.recordset_name ?? "",
-            recordset_type: recordset.recordset_type,
-            recordset_title: recordset.recordset_title,
+            recordset_type_id: String(recordset.recordset_type_id),
             active: recordset.active,
           });
         }
@@ -181,8 +258,7 @@ export default function RecordsetEditPage({ params }: PageProps) {
             : {}),
           license_id: Number(formData.license_id),
           recordset_name: formData.recordset_name,
-          recordset_type: formData.recordset_type,
-          recordset_title: formData.recordset_title,
+          recordset_type_id: Number(formData.recordset_type_id),
           active: formData.active,
         }),
       });
@@ -215,11 +291,17 @@ export default function RecordsetEditPage({ params }: PageProps) {
   const fields: Array<DynamicFormField<typeof formData>> = [
     {
       key: "dataset_id",
-      label: "Dataset ID",
-      disabled: true,
-      helperText: "Read-only",
+      label: "Dataset",
+      type: "select",
+      options: [
+        { value: "", label: "--- Select a value ---" },
+        ...datasets.map((dataset) => ({
+          value: String(dataset.dataset_id),
+          label: `${dataset.dataset_id} - ${dataset.dataset_name}`,
+        })),
+      ],
       controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-zinc-100 px-3 py-2 text-sm dark:border-white/20 dark:bg-zinc-900",
+        "mt-1 w-full rounded-md border border-black/15 bg-zinc-100 px-3 py-2 text-sm text-zinc-900 dark:border-white/20 dark:bg-zinc-900 dark:text-zinc-100",
     },
     {
       key: "recordset_doi",
@@ -229,10 +311,17 @@ export default function RecordsetEditPage({ params }: PageProps) {
     },
     {
       key: "license_id",
-      label: "License ID",
-      type: "number",
+      label: "License",
+      type: "select",
+      options: [
+        { value: "", label: "--- Select a value ---" },
+        ...licenses.map((license) => ({
+          value: String(license.license_id),
+          label: license.license_label,
+        })),
+      ],
       controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
     },
     {
       key: "recordset_name",
@@ -241,16 +330,18 @@ export default function RecordsetEditPage({ params }: PageProps) {
         "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
     },
     {
-      key: "recordset_type",
+      key: "recordset_type_id",
       label: "Type",
+      type: "select",
+      options: [
+        { value: "", label: "--- Select a value ---" },
+        ...recordsetTypes.map((recordsetType) => ({
+          value: String(recordsetType.recordset_type_id),
+          label: recordsetType.recordset_type_name,
+        })),
+      ],
       controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
-    },
-    {
-      key: "recordset_title",
-      label: "Title",
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
     },
     {
       key: "active",
@@ -268,6 +359,12 @@ export default function RecordsetEditPage({ params }: PageProps) {
       </div>
 
       <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+        {isLoadingOptions && (
+          <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-300">
+            Loading dataset, license, and recordset type options...
+          </p>
+        )}
+
         {isLoading && <p className="text-sm">Loading...</p>}
 
         {!isLoading && error && (
