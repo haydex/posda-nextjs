@@ -7,6 +7,7 @@ import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
+import { normalizeListResponse } from "@/lib/papi";
 
 type Dataset = {
   dataset_id: number;
@@ -60,74 +61,6 @@ type DatasetRecordsetsResponse = {
   total: number;
   timestamp: string;
 };
-
-function normalizeDatasetReleasesResponse(
-  payload: unknown,
-): DatasetReleasesResponse {
-  const source = payload as
-    | {
-        releases?: DatasetRelease[];
-        total?: number;
-        timestamp?: string;
-        data?: DatasetRelease[];
-        meta?: { count?: number };
-      }
-    | undefined;
-
-  const releases = Array.isArray(source?.releases)
-    ? source.releases
-    : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-  return {
-    releases,
-    total:
-      typeof source?.total === "number"
-        ? source.total
-        : typeof source?.meta?.count === "number"
-          ? source.meta.count
-          : releases.length,
-    timestamp:
-      typeof source?.timestamp === "string"
-        ? source.timestamp
-        : new Date().toISOString(),
-  };
-}
-
-function normalizeDatasetRecordsetsResponse(
-  payload: unknown,
-): DatasetRecordsetsResponse {
-  const source = payload as
-    | {
-        recordsets?: DatasetRecordset[];
-        total?: number;
-        timestamp?: string;
-        data?: DatasetRecordset[];
-        meta?: { count?: number };
-      }
-    | undefined;
-
-  const recordsets = Array.isArray(source?.recordsets)
-    ? source.recordsets
-    : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-  return {
-    recordsets,
-    total:
-      typeof source?.total === "number"
-        ? source.total
-        : typeof source?.meta?.count === "number"
-          ? source.meta.count
-          : recordsets.length,
-    timestamp:
-      typeof source?.timestamp === "string"
-        ? source.timestamp
-        : new Date().toISOString(),
-  };
-}
 
 function formatDateTime(value?: string) {
   if (!value) {
@@ -244,7 +177,15 @@ export default function DatasetByIdPage({ params }: PageProps) {
             return;
           }
 
-          setRecordsetsData(normalizeDatasetRecordsetsResponse(recordsetsJson));
+          const {
+            items: recordsets,
+            total,
+            timestamp,
+          } = normalizeListResponse<DatasetRecordset>(
+            recordsetsJson,
+            "recordsets",
+          );
+          setRecordsetsData({ recordsets, total, timestamp });
         } catch (caughtError) {
           if (!isMounted) {
             return;
@@ -283,7 +224,12 @@ export default function DatasetByIdPage({ params }: PageProps) {
           return;
         }
 
-        setReleasesData(normalizeDatasetReleasesResponse(releasesJson));
+        const {
+          items: releases,
+          total,
+          timestamp,
+        } = normalizeListResponse<DatasetRelease>(releasesJson, "releases");
+        setReleasesData({ releases, total, timestamp });
       } catch (caughtError) {
         if (!isMounted) {
           return;
@@ -359,7 +305,9 @@ export default function DatasetByIdPage({ params }: PageProps) {
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
       <div className="border-b-2 border-black pb-4 dark:border-white">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-3xl font-semibold tracking-tight">Dataset Details</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Dataset Details
+          </h1>
           <div className="flex gap-3">
             <Link
               href={datasetId ? `/datasets/${datasetId}/edit` : "/datasets"}
@@ -382,15 +330,15 @@ export default function DatasetByIdPage({ params }: PageProps) {
         isLoading={isLoading}
         error={error}
         fields={datasetFields}
-        actions={
-          <></>
-        }
+        actions={<></>}
       >
         {!isLoading && dataset && (
           <>
             <div className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
               <div className="flex items-center justify-between border-b-2 border-black pb-2 dark:border-white">
-                <h2 className="text-lg font-semibold tracking-tight">Recordsets</h2>
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Recordsets
+                </h2>
                 <Link
                   href={
                     datasetId
@@ -462,7 +410,9 @@ export default function DatasetByIdPage({ params }: PageProps) {
 
             <div className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
               <div className="flex items-center justify-between border-b-2 border-black pb-2 dark:border-white">
-                <h2 className="text-lg font-semibold tracking-tight">Releases</h2>
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Releases
+                </h2>
                 <Link
                   href={
                     datasetId
@@ -515,7 +465,9 @@ export default function DatasetByIdPage({ params }: PageProps) {
                         new Date(String(value)).toLocaleDateString(),
                     }}
                     onRowClick={(row) =>
-                      router.push(`/datasets/releases/${row.dataset_release_id}`)
+                      router.push(
+                        `/datasets/releases/${row.dataset_release_id}`,
+                      )
                     }
                     getRowKey={(row) => row.dataset_release_id}
                   />

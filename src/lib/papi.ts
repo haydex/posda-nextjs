@@ -5,7 +5,12 @@ export class PapiHttpError extends Error {
   code?: string;
   details?: unknown;
 
-  constructor(status: number, message: string, code?: string, details?: unknown) {
+  constructor(
+    status: number,
+    message: string,
+    code?: string,
+    details?: unknown,
+  ) {
     super(message);
     this.name = "PapiHttpError";
     this.status = status;
@@ -23,7 +28,9 @@ function getPapiBaseUrl() {
 
   const normalizedTarget = target.endsWith("/") ? target.slice(0, -1) : target;
   const basePath = process.env.PAPI_BASE_PATH ?? "/papi/v1/distribution";
-  const normalizedBasePath = basePath.startsWith("/") ? basePath : `/${basePath}`;
+  const normalizedBasePath = basePath.startsWith("/")
+    ? basePath
+    : `/${basePath}`;
 
   return `${normalizedTarget}${normalizedBasePath}`;
 }
@@ -89,4 +96,50 @@ export async function papiRequest<T>(
   }
 
   return payload as T;
+}
+
+export function extractArray<T>(payload: unknown, keys: string[]): T[] {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const source = payload as Record<string, unknown>;
+
+  for (const key of keys) {
+    const value = source[key];
+    if (Array.isArray(value)) {
+      return value as T[];
+    }
+  }
+
+  return [];
+}
+
+export function normalizeListResponse<T>(
+  payload: unknown,
+  primaryKey: string,
+  additionalKeys: string[] = [],
+): { items: T[]; total: number; timestamp: string } {
+  const items = extractArray<T>(payload, [
+    primaryKey,
+    ...additionalKeys,
+    "data",
+  ]);
+  const source = payload as Record<string, unknown> | undefined;
+  const meta = source?.meta as Record<string, unknown> | undefined;
+  const total =
+    typeof source?.total === "number"
+      ? source.total
+      : typeof meta?.count === "number"
+        ? meta.count
+        : items.length;
+  const timestamp =
+    typeof source?.timestamp === "string"
+      ? source.timestamp
+      : new Date().toISOString();
+  return { items, total, timestamp };
 }

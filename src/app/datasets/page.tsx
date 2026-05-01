@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import DynamicTable from "@/components/DynamicTable";
+import { extractArray, normalizeListResponse } from "@/lib/papi";
 
 type Dataset = {
   dataset_id: number;
@@ -33,59 +34,6 @@ type DatasetFilters = {
   activeOnly: boolean;
   datasetTypeId: string;
 };
-
-function extractArray<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) {
-    return payload as T[];
-  }
-
-  if (!payload || typeof payload !== "object") {
-    return [];
-  }
-
-  const source = payload as Record<string, unknown>;
-
-  for (const key of keys) {
-    const value = source[key];
-    if (Array.isArray(value)) {
-      return value as T[];
-    }
-  }
-
-  return [];
-}
-
-function normalizeDatasetsResponse(payload: unknown): DatasetsResponse {
-  const source = payload as
-    | {
-        datasets?: Dataset[];
-        total?: number;
-        timestamp?: string;
-        data?: Dataset[];
-        meta?: { count?: number };
-      }
-    | undefined;
-
-  const datasets = Array.isArray(source?.datasets)
-    ? source.datasets
-    : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-  return {
-    datasets,
-    total:
-      typeof source?.total === "number"
-        ? source.total
-        : typeof source?.meta?.count === "number"
-          ? source.meta.count
-          : datasets.length,
-    timestamp:
-      typeof source?.timestamp === "string"
-        ? source.timestamp
-        : new Date().toISOString(),
-  };
-}
 
 export default function DatasetsPage() {
   const router = useRouter();
@@ -120,7 +68,10 @@ export default function DatasetsPage() {
         }
 
         const json = (await response.json()) as unknown;
-        const types = extractArray<DatasetType>(json, ["data", "dataset_types"]);
+        const types = extractArray<DatasetType>(json, [
+          "data",
+          "dataset_types",
+        ]);
         setDatasetTypes(types);
       } catch {
         setDatasetTypes([]);
@@ -162,8 +113,12 @@ export default function DatasetsPage() {
       }
 
       const json = (await response.json()) as unknown;
-      const normalized = normalizeDatasetsResponse(json);
-      setData(normalized);
+      const {
+        items: datasets,
+        total,
+        timestamp,
+      } = normalizeListResponse<Dataset>(json, "datasets");
+      setData({ datasets, total, timestamp });
     } catch {
       setError("Could not load datasets.");
       setData(null);
@@ -207,12 +162,11 @@ export default function DatasetsPage() {
         })),
       ],
       className: "text-sm",
-      controlClassName:
-        `h-10 w-full rounded-md border border-black/15 bg-white px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 ${
-          filtersInput.datasetTypeId
-            ? "text-zinc-900 dark:text-zinc-100"
-            : "text-zinc-500 dark:text-zinc-400"
-        }`,
+      controlClassName: `h-10 w-full rounded-md border border-black/15 bg-white px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 ${
+        filtersInput.datasetTypeId
+          ? "text-zinc-900 dark:text-zinc-100"
+          : "text-zinc-500 dark:text-zinc-400"
+      }`,
     },
     {
       key: "activeOnly",
@@ -232,9 +186,7 @@ export default function DatasetsPage() {
     <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
       <div className="border-b-2 border-black pb-4 dark:border-white">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Datasets
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Datasets</h1>
           <Link
             href="/datasets/create"
             className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"

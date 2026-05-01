@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import DynamicTable from "@/components/DynamicTable";
+import { extractArray, normalizeListResponse } from "@/lib/papi";
 
 type Recordset = {
   recordset_id: number;
@@ -41,59 +42,6 @@ type Dataset = {
   dataset_id: number;
   dataset_name: string;
 };
-
-function extractArray<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) {
-    return payload as T[];
-  }
-
-  if (!payload || typeof payload !== "object") {
-    return [];
-  }
-
-  const source = payload as Record<string, unknown>;
-
-  for (const key of keys) {
-    const value = source[key];
-    if (Array.isArray(value)) {
-      return value as T[];
-    }
-  }
-
-  return [];
-}
-
-function normalizeRecordsetsResponse(payload: unknown): RecordsetsResponse {
-  const source = payload as
-    | {
-        recordsets?: Recordset[];
-        total?: number;
-        timestamp?: string;
-        data?: Recordset[];
-        meta?: { count?: number };
-      }
-    | undefined;
-
-  const recordsets = Array.isArray(source?.recordsets)
-    ? source.recordsets
-    : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-  return {
-    recordsets,
-    total:
-      typeof source?.total === "number"
-        ? source.total
-        : typeof source?.meta?.count === "number"
-          ? source.meta.count
-          : recordsets.length,
-    timestamp:
-      typeof source?.timestamp === "string"
-        ? source.timestamp
-        : new Date().toISOString(),
-  };
-}
 
 function formatDateTime(value?: string) {
   if (!value) {
@@ -163,8 +111,12 @@ export default function RecordsetsPage() {
       }
 
       const json = (await response.json()) as unknown;
-      const normalized = normalizeRecordsetsResponse(json);
-      setData(normalized);
+      const {
+        items: recordsets,
+        total,
+        timestamp,
+      } = normalizeListResponse<Recordset>(json, "recordsets");
+      setData({ recordsets, total, timestamp });
     } catch {
       setError("Could not load recordsets.");
       setData(null);
@@ -208,12 +160,11 @@ export default function RecordsetsPage() {
         })),
       ],
       className: "text-sm",
-      controlClassName:
-        `h-10 w-full rounded-md border border-black/15 bg-white px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 ${
-          filtersInput.datasetId
-            ? "text-zinc-900 dark:text-zinc-100"
-            : "text-zinc-500 dark:text-zinc-400"
-        }`,
+      controlClassName: `h-10 w-full rounded-md border border-black/15 bg-white px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 ${
+        filtersInput.datasetId
+          ? "text-zinc-900 dark:text-zinc-100"
+          : "text-zinc-500 dark:text-zinc-400"
+      }`,
     },
     {
       key: "activeOnly",
@@ -261,9 +212,7 @@ export default function RecordsetsPage() {
     <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
       <div className="border-b-2 border-black pb-4 dark:border-white">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Recordsets
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Recordsets</h1>
           <Link
             href="/recordsets/create"
             className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"

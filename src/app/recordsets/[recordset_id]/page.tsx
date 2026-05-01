@@ -7,6 +7,7 @@ import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
+import { normalizeListResponse } from "@/lib/papi";
 
 type Recordset = {
   recordset_id: number;
@@ -61,74 +62,6 @@ type RecordsetDraftsResponse = {
   total: number;
   timestamp: string;
 };
-
-function normalizeRecordsetReleasesResponse(
-  payload: unknown,
-): RecordsetReleasesResponse {
-  const source = payload as
-    | {
-        releases?: RecordsetRelease[];
-        total?: number;
-        timestamp?: string;
-        data?: RecordsetRelease[];
-        meta?: { count?: number };
-      }
-    | undefined;
-
-  const releases = Array.isArray(source?.releases)
-    ? source.releases
-    : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-  return {
-    releases,
-    total:
-      typeof source?.total === "number"
-        ? source.total
-        : typeof source?.meta?.count === "number"
-          ? source.meta.count
-          : releases.length,
-    timestamp:
-      typeof source?.timestamp === "string"
-        ? source.timestamp
-        : new Date().toISOString(),
-  };
-}
-
-function normalizeRecordsetDraftsResponse(
-  payload: unknown,
-): RecordsetDraftsResponse {
-  const source = payload as
-    | {
-        drafts?: RecordsetDraft[];
-        total?: number;
-        timestamp?: string;
-        data?: RecordsetDraft[];
-        meta?: { count?: number };
-      }
-    | undefined;
-
-  const drafts = Array.isArray(source?.drafts)
-    ? source.drafts
-    : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-  return {
-    drafts,
-    total:
-      typeof source?.total === "number"
-        ? source.total
-        : typeof source?.meta?.count === "number"
-          ? source.meta.count
-          : drafts.length,
-    timestamp:
-      typeof source?.timestamp === "string"
-        ? source.timestamp
-        : new Date().toISOString(),
-  };
-}
 
 type PageProps = {
   params: Promise<{
@@ -231,7 +164,12 @@ export default function RecordsetByIdPage({ params }: PageProps) {
           return;
         }
 
-        setReleasesData(normalizeRecordsetReleasesResponse(releasesJson));
+        const {
+          items: releases,
+          total,
+          timestamp,
+        } = normalizeListResponse<RecordsetRelease>(releasesJson, "releases");
+        setReleasesData({ releases, total, timestamp });
 
         const draftsQuery = new URLSearchParams({
           page: String(draftsPage),
@@ -254,7 +192,16 @@ export default function RecordsetByIdPage({ params }: PageProps) {
           return;
         }
 
-        setDraftsData(normalizeRecordsetDraftsResponse(draftsJson));
+        const {
+          items: drafts,
+          total: draftsTotal,
+          timestamp: draftsTimestamp,
+        } = normalizeListResponse<RecordsetDraft>(draftsJson, "drafts");
+        setDraftsData({
+          drafts,
+          total: draftsTotal,
+          timestamp: draftsTimestamp,
+        });
       } catch (caughtError) {
         if (!isMounted) {
           return;
@@ -359,9 +306,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         isLoading={isLoading}
         error={error}
         fields={recordsetFields}
-        actions={
-          <></>
-        }
+        actions={<></>}
       >
         {!isLoading && recordset && (
           <div className="mt-6 space-y-4">
@@ -421,7 +366,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                       },
                     ]}
                     onRowClick={(row) =>
-                      router.push(`/recordsets/drafts/${row.recordset_draft_id}`)
+                      router.push(
+                        `/recordsets/drafts/${row.recordset_draft_id}`,
+                      )
                     }
                     getRowKey={(row) => row.recordset_draft_id}
                   />
@@ -431,7 +378,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
             <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
               <div className="flex items-center justify-between border-b-2 border-black pb-2 dark:border-white">
-                <h2 className="text-lg font-semibold tracking-tight">Releases</h2>
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Releases
+                </h2>
               </div>
 
               {isLoadingReleases && (

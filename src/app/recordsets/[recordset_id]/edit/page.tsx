@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import { extractArray } from "@/lib/papi";
 
 type Recordset = {
   recordset_id: number;
@@ -42,27 +43,6 @@ type RecordsetType = {
   recordset_type_id: number;
   recordset_type_name: string;
 };
-
-function extractArray<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) {
-    return payload as T[];
-  }
-
-  if (!payload || typeof payload !== "object") {
-    return [];
-  }
-
-  const source = payload as Record<string, unknown>;
-
-  for (const key of keys) {
-    const value = source[key];
-    if (Array.isArray(value)) {
-      return value as T[];
-    }
-  }
-
-  return [];
-}
 
 type PageProps = {
   params: Promise<{

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import DynamicTable from "@/components/DynamicTable";
+import { normalizeListResponse } from "@/lib/papi";
 
 type Transfer = {
   dataset_release_transfer_id: number;
@@ -22,38 +23,6 @@ type TransfersResponse = {
   total: number;
   timestamp: string;
 };
-
-function normalizeTransfersResponse(payload: unknown): TransfersResponse {
-  const source = payload as
-    | {
-        transfers?: Transfer[];
-        total?: number;
-        timestamp?: string;
-        data?: Transfer[];
-        meta?: { count?: number };
-      }
-    | undefined;
-
-  const transfers = Array.isArray(source?.transfers)
-    ? source.transfers
-    : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-  return {
-    transfers,
-    total:
-      typeof source?.total === "number"
-        ? source.total
-        : typeof source?.meta?.count === "number"
-          ? source.meta.count
-          : transfers.length,
-    timestamp:
-      typeof source?.timestamp === "string"
-        ? source.timestamp
-        : new Date().toISOString(),
-  };
-}
 
 export default function TransfersPage() {
   const [data, setData] = useState<TransfersResponse | null>(null);
@@ -80,7 +49,12 @@ export default function TransfersPage() {
       }
 
       const json = (await response.json()) as unknown;
-      setData(normalizeTransfersResponse(json));
+      const {
+        items: transfers,
+        total,
+        timestamp,
+      } = normalizeListResponse<Transfer>(json, "transfers");
+      setData({ transfers, total, timestamp });
     } catch {
       setError("Could not load transfers.");
       setData(null);
