@@ -28,13 +28,13 @@ export default function DynamicSection({
     <section
       className={
         className ??
-        "mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15"
+        "mt-6 rounded-lg border border-black/10 p-4 dark:border-white/10"
       }
     >
       {isLoading && <p className="text-sm">Loading...</p>}
 
       {!isLoading && error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
       )}
 
       {!isLoading && !error && fields && fields.length > 0 && (

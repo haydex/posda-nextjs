@@ -136,7 +136,7 @@ export default function DynamicTable<T extends RowLike>({
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-300">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-500">
         <p>
           Showing {startIndex + 1}-{Math.min(endIndex, resolvedTotalItems)} of{" "}
           {resolvedTotalItems}
@@ -164,7 +164,7 @@ export default function DynamicTable<T extends RowLike>({
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-black/10 dark:border-white/15">
+            <tr className="border-b border-black/10 dark:border-white/5">
               {resolvedColumns.map((column) => (
                 <th key={column.key} className="px-2 py-2 font-medium">
                   {column.label ?? toLabel(column.key)}
@@ -184,8 +184,8 @@ export default function DynamicTable<T extends RowLike>({
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 className={
                   onRowClick
-                    ? "cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
-                    : "border-b border-black/5 dark:border-white/10"
+                    ? "cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/5 dark:hover:bg-white/5"
+                    : "border-b border-black/5 dark:border-white/5"
                 }
               >
                 {resolvedColumns.map((column) => {
@@ -206,7 +206,7 @@ export default function DynamicTable<T extends RowLike>({
         </table>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-300">
+      <div className="mt-3 flex items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-500">
         <p>
           Page {currentPageSafe} of {totalPages}
         </p>

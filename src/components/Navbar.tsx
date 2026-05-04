@@ -14,7 +14,7 @@ const navLinks = [
 
 export default function Navbar() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-black/10 bg-white/90 backdrop-blur dark:border-white/15 dark:bg-black/80">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-black/10 bg-white/90 backdrop-blur dark:border-white/5 dark:bg-zinc-950/70">
       <nav className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="text-sm font-semibold tracking-wide">
           POSDA Next.js
@@ -24,7 +24,7 @@ export default function Navbar() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="text-zinc-700 transition-colors hover:text-black dark:text-zinc-300 dark:hover:text-white"
+                className="text-zinc-700 transition-colors hover:text-black dark:text-zinc-500 dark:hover:text-zinc-300"
               >
                 {link.label}
               </Link>
