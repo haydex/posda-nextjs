@@ -38,13 +38,15 @@ export default function ApiDemoPage() {
   }, []);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">API Demo</h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-300">
+    <main className="page-shell page-shell-3xl">
+      <div className="page-header">
+        <h1 className="page-title">API Demo</h1>
+      </div>
+      <p className="page-subtitle">
         This page calls <code>/api/hello</code> from the browser.
       </p>
 
-      <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <section className="section-card">
         {isLoading && <p className="text-sm">Loading...</p>}
 
         {!isLoading && error && (
@@ -65,7 +67,7 @@ export default function ApiDemoPage() {
         <button
           type="button"
           onClick={() => void loadHello()}
-          className="mt-4 rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          className="btn btn-primary btn-md mt-4"
         >
           Refresh
         </button>

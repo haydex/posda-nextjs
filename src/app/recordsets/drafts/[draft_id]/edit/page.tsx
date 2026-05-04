@@ -291,8 +291,7 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
           label: `${recordset.recordset_id} - ${recordset.recordset_name}`,
         })),
       ],
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
+      controlClassName: "mt-1 select",
     },
     {
       key: "cloned_from_release_id",
@@ -308,35 +307,31 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
       helperText: isLoadingReleases
         ? "Loading recordset releases..."
         : undefined,
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
+      controlClassName: "mt-1 select",
     },
     {
       key: "draft_name",
       label: "Draft Name",
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+      controlClassName: "mt-1 input",
     },
     {
       key: "draft_status",
       label: "Draft Status",
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+      controlClassName: "mt-1 input",
     },
     {
       key: "draft_notes",
       label: "Draft Notes",
       type: "textarea",
       rows: 5,
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+      controlClassName: "mt-1 textarea",
     },
   ];
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
-      <div className="border-b-2 border-black pb-4 dark:border-white">
-        <h1 className="text-3xl font-semibold tracking-tight">Edit Draft</h1>
+    <main className="page-shell page-shell-3xl">
+      <div className="page-header">
+        <h1 className="page-title">Edit Draft</h1>
       </div>
 
       {isLoading && <p className="mt-4 text-sm">Loading draft...</p>}
@@ -348,7 +343,7 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
       )}
 
       {!isLoading && !loadError && (
-        <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+        <section className="section-card">
           <DynamicForm
             onSubmit={handleSubmit}
             values={formData}
@@ -365,7 +360,7 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                  className="btn btn-primary btn-md"
                 >
                   {isSaving ? "Saving..." : "Save Changes"}
                 </button>
@@ -374,7 +369,7 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
                   href={
                     draftId ? `/recordsets/drafts/${draftId}` : "/recordsets"
                   }
-                  className="rounded-md border border-black/15 px-4 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+                  className="btn btn-ghost btn-md"
                 >
                   Cancel
                 </Link>

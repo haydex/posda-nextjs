@@ -140,10 +140,10 @@ export default function DraftByIdPage({ params }: PageProps) {
     : [];
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
-      <div className="border-b-2 border-black pb-4 dark:border-white">
+    <main className="page-shell page-shell-5xl">
+      <div className="page-header">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-3xl font-semibold tracking-tight">Recordset Draft Details</h1>
+          <h1 className="page-title">Recordset Draft Details</h1>
           <div className="flex gap-3">
             <Link
               href={
@@ -151,7 +151,7 @@ export default function DraftByIdPage({ params }: PageProps) {
                   ? `/recordsets/drafts/${draftId}/edit`
                   : "/recordsets"
               }
-              className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="btn btn-primary btn-md"
             >
               Edit Draft
             </Link>
@@ -161,7 +161,7 @@ export default function DraftByIdPage({ params }: PageProps) {
                   ? `/recordsets/${draft.recordset_id}`
                   : "/recordsets"
               }
-              className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+              className="btn btn-ghost btn-md"
             >
               Back to Recordset
             </Link>

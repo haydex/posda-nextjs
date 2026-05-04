@@ -257,8 +257,7 @@ export default function DatasetEditPage({ params }: PageProps) {
       key: "dataset_doi",
       label: "DOI",
       required: true,
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+      controlClassName: "mt-1 input",
     },
     {
       key: "dataset_type_id",
@@ -272,32 +271,30 @@ export default function DatasetEditPage({ params }: PageProps) {
           label: datasetType.dataset_type_name,
         })),
       ],
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
+      controlClassName: "mt-1 select",
     },
     {
       key: "dataset_name",
       label: "Name",
       required: true,
-      controlClassName:
-        "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950",
+      controlClassName: "mt-1 input",
     },
     {
       key: "active",
       label: "Active",
       type: "checkbox",
       className: "flex items-center gap-2",
-      controlClassName: "h-4 w-4",
+      controlClassName: "checkbox",
     },
   ];
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
-      <div className="border-b-2 border-black pb-4 dark:border-white">
-        <h1 className="text-3xl font-semibold tracking-tight">Edit Dataset</h1>
+    <main className="page-shell page-shell-3xl">
+      <div className="page-header">
+        <h1 className="page-title">Edit Dataset</h1>
       </div>
 
-      <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <section className="section-card">
         {datasetTypes.length === 0 && (
           <p className="mb-4 text-sm text-red-600 dark:text-red-400">
             Could not load dataset types from the database.
@@ -318,7 +315,7 @@ export default function DatasetEditPage({ params }: PageProps) {
                 type="text"
                 value={dataset.dataset_id}
                 disabled
-                className="mt-1 w-full rounded-md border border-black/15 bg-zinc-100 px-3 py-2 text-sm dark:border-white/20 dark:bg-zinc-900"
+                className="mt-1 input input-muted"
               />
               <p className="mt-1 text-xs text-zinc-500">Read-only</p>
             </div>
@@ -365,14 +362,14 @@ export default function DatasetEditPage({ params }: PageProps) {
                     <button
                       type="submit"
                       disabled={isSaving}
-                      className="inline-flex rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                      className="btn btn-primary btn-md"
                     >
                       {isSaving ? "Saving..." : "Save Changes"}
                     </button>
 
                     <Link
                       href={`/datasets/${datasetId}`}
-                      className="inline-flex rounded-md border border-black/15 px-4 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+                      className="btn btn-ghost btn-md"
                     >
                       Cancel
                     </Link>

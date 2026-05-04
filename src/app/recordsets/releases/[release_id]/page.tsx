@@ -165,14 +165,14 @@ export default function ReleaseByIdPage({ params }: PageProps) {
   const recordsetId = release?.recordset_id ?? searchParams.get("recordset_id");
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
-      <div className="border-b-2 border-black pb-4 dark:border-white">
+    <main className="page-shell page-shell-5xl">
+      <div className="page-header">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-3xl font-semibold tracking-tight">Release Details</h1>
+          <h1 className="page-title">Release Details</h1>
           <div className="flex gap-3">
             <Link
               href={recordsetId ? `/recordsets/${recordsetId}` : "/recordsets"}
-              className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+              className="btn btn-ghost btn-md"
             >
               Back to Recordset
             </Link>

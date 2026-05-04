@@ -17,7 +17,7 @@ export default function DashboardLayout({
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-5xl gap-8 px-4 py-8 sm:px-6">
-      <aside className="w-44 shrink-0 rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <aside className="card w-44 shrink-0">
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-500">
           Dashboard
         </p>

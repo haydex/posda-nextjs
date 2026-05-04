@@ -192,8 +192,7 @@ export default function RecordsetsPage() {
       placeholder: "DOI, title, or type",
       srOnlyLabel: true,
       className: "text-sm",
-      controlClassName:
-        "h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20",
+      controlClassName: "input-transparent",
     },
     {
       key: "datasetId",
@@ -209,7 +208,7 @@ export default function RecordsetsPage() {
       ],
       className: "text-sm",
       controlClassName:
-        `h-10 w-full rounded-md border border-black/15 bg-white px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 ${
+        `select ${
           filtersInput.datasetId
             ? "text-zinc-900 dark:text-zinc-100"
             : "text-zinc-500 dark:text-zinc-400"
@@ -220,7 +219,7 @@ export default function RecordsetsPage() {
       label: "active_only",
       type: "checkbox",
       className: "flex h-10 items-center gap-2 text-sm",
-      controlClassName: "h-4 w-4",
+      controlClassName: "checkbox",
     },
   ];
 
@@ -258,22 +257,17 @@ export default function RecordsetsPage() {
   }, []);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-6xl px-6 py-10">
-      <div className="border-b-2 border-black pb-4 dark:border-white">
+    <main className="page-shell page-shell-6xl">
+      <div className="page-header">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Recordsets
-          </h1>
-          <Link
-            href="/recordsets/create"
-            className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-          >
+          <h1 className="page-title">Recordsets</h1>
+          <Link href="/recordsets/create" className="btn btn-primary btn-md">
             New Recordset
           </Link>
         </div>
       </div>
 
-      <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <section className="section-card">
         <DynamicForm
           onSubmit={applyFilters}
           values={filtersInput}
@@ -282,17 +276,14 @@ export default function RecordsetsPage() {
           className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_12rem_auto_auto_auto] md:items-center"
           actions={
             <>
-              <button
-                type="submit"
-                className="h-10 rounded-md bg-black px-4 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-              >
+              <button type="submit" className="btn btn-primary btn-md">
                 Search
               </button>
 
               <button
                 type="button"
                 onClick={clearFilters}
-                className="h-10 rounded-md border border-black/15 px-4 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+                className="btn btn-ghost btn-md"
               >
                 Clear
               </button>
@@ -301,7 +292,7 @@ export default function RecordsetsPage() {
         />
       </section>
 
-      <section className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <section className="section-card">
         {isLoading && <p className="text-sm">Loading...</p>}
 
         {!isLoading && error && (
@@ -355,7 +346,7 @@ export default function RecordsetsPage() {
         {/* <button
           type="button"
           onClick={() => void loadRecordsets()}
-          className="mt-4 rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          className="btn btn-primary btn-md mt-4"
         >
           Refresh
         </button> */}

@@ -150,7 +150,7 @@ export default function DynamicTable<T extends RowLike>({
               const nextSize = Number(event.target.value);
               updateItemsPerPage(nextSize);
             }}
-            className="rounded-md border border-black/15 bg-transparent px-2 py-1 text-sm dark:border-white/20"
+            className="select select-sm bg-transparent"
           >
             {pageSizeOptions.map((option) => (
               <option key={option} value={option}>
@@ -216,7 +216,7 @@ export default function DynamicTable<T extends RowLike>({
             type="button"
             onClick={() => updatePage(currentPageSafe - 1)}
             disabled={currentPageSafe <= 1}
-            className="rounded-md border border-black/15 px-3 py-1.5 transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
+            className="btn btn-ghost btn-sm"
           >
             Previous
           </button>
@@ -224,7 +224,7 @@ export default function DynamicTable<T extends RowLike>({
             type="button"
             onClick={() => updatePage(currentPageSafe + 1)}
             disabled={currentPageSafe >= totalPages}
-            className="rounded-md border border-black/15 px-3 py-1.5 transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/20 dark:hover:bg-white/10"
+            className="btn btn-ghost btn-sm"
           >
             Next
           </button>

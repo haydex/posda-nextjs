@@ -20,6 +20,84 @@
   }
 }
 
+@layer components {
+  .page-shell {
+    @apply mx-auto min-h-screen w-full px-6 py-10;
+  }
+  .page-shell-3xl {
+    @apply max-w-3xl;
+  }
+  .page-shell-5xl {
+    @apply max-w-5xl;
+  }
+  .page-shell-6xl {
+    @apply max-w-6xl;
+  }
+  .page-header {
+    @apply border-b-2 border-black pb-4 dark:border-white;
+  }
+  .page-title {
+    @apply text-3xl font-semibold tracking-tight;
+  }
+  .page-subtitle {
+    @apply mt-2 text-zinc-600 dark:text-zinc-300;
+  }
+  .section-card {
+    @apply mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15;
+  }
+  .card {
+    @apply rounded-lg border border-black/10 p-4 dark:border-white/15;
+  }
+  .card-header {
+    @apply flex items-center justify-between border-b-2 border-black pb-2 dark:border-white;
+  }
+  .card-title {
+    @apply text-lg font-semibold tracking-tight;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200;
+  }
+  .btn-ghost {
+    @apply border border-black/15 hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10;
+  }
+  .btn-sm {
+    @apply h-8 px-3;
+  }
+  .btn-md {
+    @apply h-10 px-4;
+  }
+  .btn-lg {
+    @apply h-12 px-5;
+  }
+  .btn-wide {
+    @apply w-32;
+  }
+  .input {
+    @apply h-10 w-full rounded-md border border-black/15 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100;
+  }
+  .input-transparent {
+    @apply h-10 w-full rounded-md border border-black/15 bg-transparent px-3 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20;
+  }
+  .input-muted {
+    @apply bg-zinc-100 dark:bg-zinc-900;
+  }
+  .textarea {
+    @apply w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100;
+  }
+  .select {
+    @apply h-10 w-full rounded-md border border-black/15 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100;
+  }
+  .select-sm {
+    @apply h-8 px-2 py-1 text-sm;
+  }
+  .checkbox {
+    @apply h-4 w-4;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

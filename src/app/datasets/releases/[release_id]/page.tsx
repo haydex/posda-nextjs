@@ -547,12 +547,10 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
 	}
 
 	return (
-		<main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
-			<div className="border-b-2 border-black pb-4 dark:border-white">
+		<main className="page-shell page-shell-5xl">
+			<div className="page-header">
 				<div className="flex items-center justify-between gap-4">
-					<h1 className="text-3xl font-semibold tracking-tight">
-						Dataset Release Details
-					</h1>
+					<h1 className="page-title">Dataset Release Details</h1>
 					<div className="flex gap-3">
 						<Link
 							href={
@@ -560,7 +558,7 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
 									? `/datasets/releases/${releaseId}/edit`
 									: "/datasets"
 							}
-							className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+							className="btn btn-primary btn-md"
 						>
 							Edit Release
 						</Link>
@@ -570,7 +568,7 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
 									? `/datasets/${release.dataset_id}`
 									: "/datasets"
 							}
-							className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+							className="btn btn-ghost btn-md"
 						>
 							Back to Dataset
 						</Link>
@@ -580,11 +578,9 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
 
 			<DynamicSection isLoading={isLoading} error={error} fields={releaseFields}>
 				{!isLoading && release && (
-					<div className="mt-6 rounded-lg border border-black/10 p-4 dark:border-white/15">
-						<div className="flex items-center justify-between border-b-2 border-black pb-2 dark:border-white">
-							<h2 className="text-lg font-semibold tracking-tight">
-								Recordset Releases
-							</h2>
+					<div className="section-card">
+						<div className="card-header">
+							<h2 className="card-title">Recordset Releases</h2>
 						</div>
 
 						{actionError && (
@@ -633,7 +629,7 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
 																row.recordset_release_id,
 															)
 														}
-														className="h-4 w-4"
+														className="checkbox"
 													/>
 												),
 											},
@@ -655,9 +651,9 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
 									type="button"
 									onClick={handleAddSelected}
 									disabled={
-									isUpdatingLinks || selectedAvailableIds.size === 0
-								}
-									className="w-32 rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+										isUpdatingLinks || selectedAvailableIds.size === 0
+									}
+									className="btn btn-primary btn-md btn-wide"
 								>
 									Add →
 								</button>
@@ -667,7 +663,7 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
 									disabled={
 									isUpdatingLinks || selectedLinkedIds.size === 0
 								}
-									className="w-32 rounded-md border border-black/15 px-4 py-2 text-sm font-medium transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/20 dark:hover:bg-white/10"
+									className="btn btn-ghost btn-md btn-wide"
 								>
 									← Remove
 								</button>
@@ -706,7 +702,7 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
 																row.recordset_release_id,
 															)
 														}
-														className="h-4 w-4"
+														className="checkbox"
 													/>
 												),
 											},

@@ -329,26 +329,21 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     : [];
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-6 py-10">
-      <div className="border-b-2 border-black pb-4 dark:border-white">
+    <main className="page-shell page-shell-5xl">
+      <div className="page-header">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Recordset Details
-          </h1>
+          <h1 className="page-title">Recordset Details</h1>
           <div className="flex gap-3">
             <Link
               href={
                 recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"
               }
-              className="inline-flex rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+              className="btn btn-primary btn-md"
             >
               Edit Recordset
             </Link>
 
-            <Link
-              href="/recordsets"
-              className="inline-flex rounded-md border border-black/15 px-3 py-2 text-sm font-medium transition hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-            >
+            <Link href="/recordsets" className="btn btn-ghost btn-md">
               Back to Recordsets
             </Link>
           </div>
@@ -365,16 +360,16 @@ export default function RecordsetByIdPage({ params }: PageProps) {
       >
         {!isLoading && recordset && (
           <div className="mt-6 space-y-4">
-            <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
-              <div className="flex items-center justify-between border-b-2 border-black pb-2 dark:border-white">
-                <h2 className="text-lg font-semibold tracking-tight">Drafts</h2>
+            <div className="card">
+              <div className="card-header">
+                <h2 className="card-title">Drafts</h2>
                 <Link
                   href={
                     recordsetId
                       ? `/recordsets/drafts/create?recordset_id=${recordsetId}`
                       : "/recordsets/drafts/create"
                   }
-                  className="inline-flex rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                  className="btn btn-primary btn-sm"
                 >
                   New Draft
                 </Link>
@@ -429,9 +424,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
               )}
             </div>
 
-            <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
-              <div className="flex items-center justify-between border-b-2 border-black pb-2 dark:border-white">
-                <h2 className="text-lg font-semibold tracking-tight">Releases</h2>
+            <div className="card">
+              <div className="card-header">
+                <h2 className="card-title">Releases</h2>
               </div>
 
               {isLoadingReleases && (

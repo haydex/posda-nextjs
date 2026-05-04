@@ -106,7 +106,7 @@ export default function DynamicForm<T extends DynamicFormValues>({
                 disabled={field.disabled}
                 required={field.required}
                 className={getControlClassName(
-                  "h-4 w-4",
+                  "checkbox",
                   hasError
                     ? "accent-red-600 ring-2 ring-red-500 ring-offset-1"
                     : "",
@@ -146,7 +146,7 @@ export default function DynamicForm<T extends DynamicFormValues>({
                 disabled={field.disabled}
                 required={field.required}
                 className={getControlClassName(
-                  "mt-1 h-10 w-full rounded-md border border-black/15 bg-white px-3 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
+                  "mt-1 select",
                   hasError ? "border-2 border-red-500 focus:ring-red-400" : "",
                   field.controlClassName,
                 )}
@@ -191,7 +191,7 @@ export default function DynamicForm<T extends DynamicFormValues>({
                 required={field.required}
                 rows={field.rows}
                 className={getControlClassName(
-                  "mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20 dark:bg-zinc-950 dark:text-zinc-100",
+                  "mt-1 textarea",
                   hasError ? "border-2 border-red-500 focus:ring-red-400" : "",
                   field.controlClassName,
                 )}
@@ -230,7 +230,7 @@ export default function DynamicForm<T extends DynamicFormValues>({
               required={field.required}
               inputMode={field.inputMode}
               className={getControlClassName(
-                "mt-1 h-10 w-full rounded-md border border-black/15 bg-transparent px-3 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/20",
+                "mt-1 input",
                 hasError
                   ? "border-2 border-red-500 focus:ring-red-400 dark:border-red-500"
                   : "",

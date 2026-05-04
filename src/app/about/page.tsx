@@ -25,11 +25,11 @@ export default async function AboutPage() {
   const posts = await getPosts();
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        Server Component Data Fetching
-      </h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-300">
+    <main className="page-shell page-shell-3xl">
+      <div className="page-header">
+        <h1 className="page-title">Server Component Data Fetching</h1>
+      </div>
+      <p className="page-subtitle">
         This page fetches data on the server before rendering in the browser.
       </p>
 
@@ -37,10 +37,7 @@ export default async function AboutPage() {
 
       <ul className="mt-8 space-y-4">
         {posts.map((post) => (
-          <li
-            key={post.id}
-            className="rounded-lg border border-black/10 p-4 dark:border-white/15"
-          >
+          <li key={post.id} className="card">
             <h2 className="font-semibold">{post.title}</h2>
             <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
               {post.body}
