@@ -187,9 +187,7 @@ export default function DatasetCreatePage() {
       <div className="page-header">
         <h1 className="page-title">Create Dataset</h1>
       </div>
-      <p className="page-subtitle">
-        Add a new dataset to the system.
-      </p>
+      <p className="page-subtitle">Add a new dataset to the system.</p>
 
       <section className="section-card">
         {datasetTypes.length === 0 && (
@@ -232,10 +230,7 @@ export default function DatasetCreatePage() {
                   {isSaving ? "Creating..." : "Create Dataset"}
                 </button>
 
-                <Link
-                  href="/datasets"
-                  className="btn btn-ghost btn-md"
-                >
+                <Link href="/datasets" className="btn btn-ghost btn-md">
                   Cancel
                 </Link>
               </div>

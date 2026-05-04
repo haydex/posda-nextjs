@@ -354,9 +354,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         isLoading={isLoading}
         error={error}
         fields={recordsetFields}
-        actions={
-          <></>
-        }
+        actions={<></>}
       >
         {!isLoading && recordset && (
           <div className="mt-6 space-y-4">
@@ -416,7 +414,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                       },
                     ]}
                     onRowClick={(row) =>
-                      router.push(`/recordsets/drafts/${row.recordset_draft_id}`)
+                      router.push(
+                        `/recordsets/drafts/${row.recordset_draft_id}`,
+                      )
                     }
                     getRowKey={(row) => row.recordset_draft_id}
                   />

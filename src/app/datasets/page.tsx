@@ -120,7 +120,10 @@ export default function DatasetsPage() {
         }
 
         const json = (await response.json()) as unknown;
-        const types = extractArray<DatasetType>(json, ["data", "dataset_types"]);
+        const types = extractArray<DatasetType>(json, [
+          "data",
+          "dataset_types",
+        ]);
         setDatasetTypes(types);
       } catch {
         setDatasetTypes([]);
@@ -206,12 +209,11 @@ export default function DatasetsPage() {
         })),
       ],
       className: "text-sm",
-      controlClassName:
-        `select ${
-          filtersInput.datasetTypeId
-            ? "text-zinc-900 dark:text-zinc-100"
-            : "text-zinc-500 dark:text-zinc-400"
-        }`,
+      controlClassName: `select ${
+        filtersInput.datasetTypeId
+          ? "text-zinc-900 dark:text-zinc-100"
+          : "text-zinc-500 dark:text-zinc-400"
+      }`,
     },
     {
       key: "activeOnly",

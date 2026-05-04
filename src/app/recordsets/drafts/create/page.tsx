@@ -297,9 +297,7 @@ export default function RecordsetDraftCreatePage() {
       <div className="page-header">
         <h1 className="page-title">Create Draft</h1>
       </div>
-      <p className="page-subtitle">
-        Add a new draft for a recordset.
-      </p>
+      <p className="page-subtitle">Add a new draft for a recordset.</p>
 
       <section className="section-card">
         {isLoadingOptions && (

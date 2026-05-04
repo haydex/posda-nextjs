@@ -207,12 +207,11 @@ export default function RecordsetsPage() {
         })),
       ],
       className: "text-sm",
-      controlClassName:
-        `select ${
-          filtersInput.datasetId
-            ? "text-zinc-900 dark:text-zinc-100"
-            : "text-zinc-500 dark:text-zinc-400"
-        }`,
+      controlClassName: `select ${
+        filtersInput.datasetId
+          ? "text-zinc-900 dark:text-zinc-100"
+          : "text-zinc-500 dark:text-zinc-400"
+      }`,
     },
     {
       key: "activeOnly",

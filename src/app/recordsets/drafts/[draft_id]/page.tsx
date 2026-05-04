@@ -147,9 +147,7 @@ export default function DraftByIdPage({ params }: PageProps) {
           <div className="flex gap-3">
             <Link
               href={
-                draftId
-                  ? `/recordsets/drafts/${draftId}/edit`
-                  : "/recordsets"
+                draftId ? `/recordsets/drafts/${draftId}/edit` : "/recordsets"
               }
               className="btn btn-primary btn-md"
             >
@@ -169,7 +167,11 @@ export default function DraftByIdPage({ params }: PageProps) {
         </div>
       </div>
 
-      <DynamicSection isLoading={isLoading} error={error} fields={draftFields} />
+      <DynamicSection
+        isLoading={isLoading}
+        error={error}
+        fields={draftFields}
+      />
     </main>
   );
 }

@@ -280,9 +280,7 @@ export default function RecordsetCreatePage() {
       <div className="page-header">
         <h1 className="page-title">Create Recordset</h1>
       </div>
-      <p className="page-subtitle">
-        Add a new recordset to the system.
-      </p>
+      <p className="page-subtitle">Add a new recordset to the system.</p>
 
       <section className="section-card">
         {isLoadingOptions && (
@@ -341,10 +339,7 @@ export default function RecordsetCreatePage() {
                       : "Create Recordset"}
                 </button>
 
-                <Link
-                  href="/recordsets"
-                  className="btn btn-ghost btn-md"
-                >
+                <Link href="/recordsets" className="btn btn-ghost btn-md">
                   Cancel
                 </Link>
               </div>

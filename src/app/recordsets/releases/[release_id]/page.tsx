@@ -180,7 +180,11 @@ export default function ReleaseByIdPage({ params }: PageProps) {
         </div>
       </div>
 
-      <DynamicSection isLoading={isLoading} error={error} fields={releaseFields} />
+      <DynamicSection
+        isLoading={isLoading}
+        error={error}
+        fields={releaseFields}
+      />
     </main>
   );
 }

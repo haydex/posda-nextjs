@@ -290,9 +290,7 @@ export default function DatasetReleaseCreatePage() {
       <div className="page-header">
         <h1 className="page-title">Create Dataset Release</h1>
       </div>
-      <p className="page-subtitle">
-        Add a new release for a dataset.
-      </p>
+      <p className="page-subtitle">Add a new release for a dataset.</p>
 
       <section className="section-card">
         {isLoadingOptions && (

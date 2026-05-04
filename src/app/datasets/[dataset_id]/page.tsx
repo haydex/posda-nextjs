@@ -379,9 +379,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
         isLoading={isLoading}
         error={error}
         fields={datasetFields}
-        actions={
-          <></>
-        }
+        actions={<></>}
       >
         {!isLoading && dataset && (
           <>
@@ -512,7 +510,9 @@ export default function DatasetByIdPage({ params }: PageProps) {
                         new Date(String(value)).toLocaleDateString(),
                     }}
                     onRowClick={(row) =>
-                      router.push(`/datasets/releases/${row.dataset_release_id}`)
+                      router.push(
+                        `/datasets/releases/${row.dataset_release_id}`,
+                      )
                     }
                     getRowKey={(row) => row.dataset_release_id}
                   />
