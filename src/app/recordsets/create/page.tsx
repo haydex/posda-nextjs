@@ -1,11 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
+import { Button, LinkButton } from "@/components/ui/Button";
+import {
+  PageHeader,
+  PageShell,
+  PageSubtitle,
+  PageTitle,
+} from "@/components/ui/Page";
+import { SectionCard } from "@/components/ui/Card";
 
 type CreateRecordsetResponse = {
   recordset_id?: number;
@@ -283,13 +290,13 @@ export default function RecordsetCreatePage() {
   ];
 
   return (
-    <main className="page-shell page-shell-3xl">
-      <div className="page-header">
-        <h1 className="page-title">Create Recordset</h1>
-      </div>
-      <p className="page-subtitle">Add a new recordset to the system.</p>
+    <PageShell size="3xl">
+      <PageHeader>
+        <PageTitle>Create Recordset</PageTitle>
+      </PageHeader>
+      <PageSubtitle>Add a new recordset to the system.</PageSubtitle>
 
-      <section className="section-card">
+      <SectionCard>
         {isLoadingOptions && (
           <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-300">
             Loading dataset and license options...
@@ -334,26 +341,22 @@ export default function RecordsetCreatePage() {
               )}
 
               <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={isSaving || isLoadingOptions}
-                  className="btn btn-primary btn-md"
-                >
+                <Button type="submit" disabled={isSaving || isLoadingOptions}>
                   {isLoadingOptions
                     ? "Loading Options..."
                     : isSaving
                       ? "Creating..."
                       : "Create Recordset"}
-                </button>
+                </Button>
 
-                <Link href="/recordsets" className="btn btn-ghost btn-md">
+                <LinkButton href="/recordsets" variant="ghost">
                   Cancel
-                </Link>
+                </LinkButton>
               </div>
             </>
           }
         />
-      </section>
-    </main>
+      </SectionCard>
+    </PageShell>
   );
 }

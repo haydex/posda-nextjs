@@ -1,9 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import { Button, LinkButton } from "@/components/ui/Button";
+import {
+  PageHeader,
+  PageShell,
+  PageSubtitle,
+  PageTitle,
+} from "@/components/ui/Page";
+import { SectionCard } from "@/components/ui/Card";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
 
@@ -293,13 +300,13 @@ export default function DatasetReleaseCreatePage() {
   ];
 
   return (
-    <main className="page-shell page-shell-3xl">
-      <div className="page-header">
-        <h1 className="page-title">Create Dataset Release</h1>
-      </div>
-      <p className="page-subtitle">Add a new release for a dataset.</p>
+    <PageShell size="3xl">
+      <PageHeader>
+        <PageTitle>Create Dataset Release</PageTitle>
+      </PageHeader>
+      <PageSubtitle>Add a new release for a dataset.</PageSubtitle>
 
-      <section className="section-card">
+      <SectionCard>
         {isLoadingOptions && (
           <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-300">
             Loading dataset options...
@@ -319,24 +326,20 @@ export default function DatasetReleaseCreatePage() {
           className="space-y-4"
           actions={
             <div className="mt-6 flex flex-wrap gap-3">
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="btn btn-primary btn-md"
-              >
+              <Button type="submit" disabled={isSaving}>
                 {isSaving ? "Saving..." : "Create Release"}
-              </button>
+              </Button>
 
-              <Link
+              <LinkButton
                 href={
                   formData.dataset_id
                     ? `/datasets/${formData.dataset_id}`
                     : "/datasets"
                 }
-                className="btn btn-ghost btn-md"
+                variant="ghost"
               >
                 Back to Dataset
-              </Link>
+              </LinkButton>
             </div>
           }
         />
@@ -352,7 +355,7 @@ export default function DatasetReleaseCreatePage() {
             Dataset release created successfully.
           </p>
         )}
-      </section>
-    </main>
+      </SectionCard>
+    </PageShell>
   );
 }

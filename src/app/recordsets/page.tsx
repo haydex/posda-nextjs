@@ -1,10 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import DynamicTable from "@/components/DynamicTable";
+import { Button, LinkButton } from "@/components/ui/Button";
+import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { SectionCard } from "@/components/ui/Card";
 
 type Recordset = {
   recordset_id: number;
@@ -256,17 +258,15 @@ export default function RecordsetsPage() {
   }, []);
 
   return (
-    <main className="page-shell page-shell-6xl">
-      <div className="page-header">
+    <PageShell size="6xl">
+      <PageHeader>
         <div className="flex items-center justify-between">
-          <h1 className="page-title">Recordsets</h1>
-          <Link href="/recordsets/create" className="btn btn-primary btn-md">
-            New Recordset
-          </Link>
+          <PageTitle>Recordsets</PageTitle>
+          <LinkButton href="/recordsets/create">New Recordset</LinkButton>
         </div>
-      </div>
+      </PageHeader>
 
-      <section className="section-card">
+      <SectionCard>
         <DynamicForm
           onSubmit={applyFilters}
           values={filtersInput}
@@ -275,23 +275,17 @@ export default function RecordsetsPage() {
           className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_12rem_auto_auto_auto] md:items-center"
           actions={
             <>
-              <button type="submit" className="btn btn-primary btn-md">
-                Search
-              </button>
+              <Button type="submit">Search</Button>
 
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="btn btn-ghost btn-md"
-              >
+              <Button type="button" onClick={clearFilters} variant="ghost">
                 Clear
-              </button>
+              </Button>
             </>
           }
         />
-      </section>
+      </SectionCard>
 
-      <section className="section-card">
+      <SectionCard>
         {isLoading && <p className="text-sm">Loading...</p>}
 
         {!isLoading && error && (
@@ -341,15 +335,7 @@ export default function RecordsetsPage() {
             </p> */}
           </div>
         )}
-
-        {/* <button
-          type="button"
-          onClick={() => void loadRecordsets()}
-          className="btn btn-primary btn-md mt-4"
-        >
-          Refresh
-        </button> */}
-      </section>
-    </main>
+      </SectionCard>
+    </PageShell>
   );
 }

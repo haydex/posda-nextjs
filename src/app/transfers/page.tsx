@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react";
 import DynamicTable from "@/components/DynamicTable";
+import { Button } from "@/components/ui/Button";
+import {
+  PageHeader,
+  PageShell,
+  PageSubtitle,
+  PageTitle,
+} from "@/components/ui/Page";
+import { SectionCard } from "@/components/ui/Card";
 
 type Transfer = {
   dataset_release_transfer_id: number;
@@ -10,11 +18,11 @@ type Transfer = {
   transfer_name: string;
   transfer_mode: string;
   transfer_status: string;
-  transfer_notes: string;
-  when_created: string;
-  who_created: string;
-  when_updated: string;
-  who_updated: string;
+  transfer_notes?: string | null;
+  when_created?: string;
+  who_created?: string;
+  when_updated?: string;
+  who_updated?: string;
 };
 
 type TransfersResponse = {
@@ -67,13 +75,13 @@ export default function TransfersPage() {
     setError(null);
 
     try {
-      const query = new URLSearchParams({
-        page: String(currentPage),
-        limit: String(itemsPerPage),
-      }).toString();
-      const response = await fetch(`/api/transfers?${query}`, {
-        cache: "no-store",
-      });
+      const apiParams = new URLSearchParams();
+      apiParams.set("page", String(currentPage));
+      apiParams.set("limit", String(itemsPerPage));
+
+      const query = apiParams.toString();
+      const endpoint = query ? `/api/transfers?${query}` : "/api/transfers";
+      const response = await fetch(endpoint, { cache: "no-store" });
 
       if (!response.ok) {
         throw new Error("Request failed");
@@ -94,16 +102,16 @@ export default function TransfersPage() {
   }, [currentPage, itemsPerPage]);
 
   return (
-    <main className="page-shell page-shell-6xl">
-      <div className="page-header">
-        <h1 className="page-title">Transfers</h1>
-      </div>
-      <p className="page-subtitle">
+    <PageShell size="6xl">
+      <PageHeader>
+        <PageTitle>Transfers</PageTitle>
+      </PageHeader>
+      <PageSubtitle>
         This page calls <code>/api/transfers</code> and renders dataset release
         transfer records.
-      </p>
+      </PageSubtitle>
 
-      <section className="section-card">
+      <SectionCard>
         {isLoading && <p className="text-sm">Loading...</p>}
 
         {!isLoading && error && (
@@ -152,14 +160,14 @@ export default function TransfersPage() {
           </div>
         )}
 
-        {/* <button
+        <Button
           type="button"
           onClick={() => void loadTransfers()}
-          className="btn btn-primary btn-md mt-4"
+          className="mt-4"
         >
           Refresh
-        </button> */}
-      </section>
-    </main>
+        </Button>
+      </SectionCard>
+    </PageShell>
   );
 }

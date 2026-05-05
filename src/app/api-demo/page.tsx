@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import {
+  PageHeader,
+  PageShell,
+  PageSubtitle,
+  PageTitle,
+} from "@/components/ui/Page";
+import { SectionCard } from "@/components/ui/Card";
 
 type HelloResponse = {
   message: string;
@@ -38,15 +46,15 @@ export default function ApiDemoPage() {
   }, []);
 
   return (
-    <main className="page-shell page-shell-3xl">
-      <div className="page-header">
-        <h1 className="page-title">API Demo</h1>
-      </div>
-      <p className="page-subtitle">
+    <PageShell size="3xl">
+      <PageHeader>
+        <PageTitle>API Demo</PageTitle>
+      </PageHeader>
+      <PageSubtitle>
         This page calls <code>/api/hello</code> from the browser.
-      </p>
+      </PageSubtitle>
 
-      <section className="section-card">
+      <SectionCard>
         {isLoading && <p className="text-sm">Loading...</p>}
 
         {!isLoading && error && (
@@ -64,14 +72,10 @@ export default function ApiDemoPage() {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => void loadHello()}
-          className="btn btn-primary btn-md mt-4"
-        >
+        <Button type="button" onClick={() => void loadHello()} className="mt-4">
           Refresh
-        </button>
-      </section>
-    </main>
+        </Button>
+      </SectionCard>
+    </PageShell>
   );
 }

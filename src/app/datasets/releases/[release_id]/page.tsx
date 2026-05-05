@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
+import { Button, LinkButton } from "@/components/ui/Button";
+import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
+import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
 
 type DatasetRelease = {
   dataset_release_id: number;
@@ -548,32 +550,31 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
   }
 
   return (
-    <main className="page-shell page-shell-5xl">
-      <div className="page-header">
+    <PageShell size="5xl">
+      <PageHeader>
         <div className="flex items-center justify-between gap-4">
-          <h1 className="page-title">Dataset Release Details</h1>
+          <PageTitle>Dataset Release Details</PageTitle>
           <div className="flex gap-3">
-            <Link
+            <LinkButton
               href={
                 releaseId ? `/datasets/releases/${releaseId}/edit` : "/datasets"
               }
-              className="btn btn-primary btn-md"
             >
               Edit Release
-            </Link>
-            <Link
+            </LinkButton>
+            <LinkButton
               href={
                 release?.dataset_id
                   ? `/datasets/${release.dataset_id}`
                   : "/datasets"
               }
-              className="btn btn-ghost btn-md"
+              variant="ghost"
             >
               Back to Dataset
-            </Link>
+            </LinkButton>
           </div>
         </div>
-      </div>
+      </PageHeader>
 
       <DynamicSection
         isLoading={isLoading}
@@ -581,10 +582,10 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
         fields={releaseFields}
       >
         {!isLoading && release && (
-          <div className="section-card">
-            <div className="card-header">
-              <h2 className="card-title">Recordset Releases</h2>
-            </div>
+          <SectionCard>
+            <CardHeader>
+              <CardTitle>Recordset Releases</CardTitle>
+            </CardHeader>
 
             {actionError && (
               <p className="mt-3 text-sm text-red-600 dark:text-red-400">
@@ -650,22 +651,23 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
               </div>
 
               <div className="flex flex-col items-center justify-center gap-3">
-                <button
+                <Button
                   type="button"
                   onClick={handleAddSelected}
                   disabled={isUpdatingLinks || selectedAvailableIds.size === 0}
-                  className="btn btn-primary btn-md btn-wide"
+                  wide
                 >
                   Add →
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={handleRemoveSelected}
                   disabled={isUpdatingLinks || selectedLinkedIds.size === 0}
-                  className="btn btn-ghost btn-md btn-wide"
+                  variant="ghost"
+                  wide
                 >
                   ← Remove
-                </button>
+                </Button>
               </div>
 
               <div className="rounded-md border border-black/10 p-3 dark:border-white/15">
@@ -718,9 +720,9 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
                 )}
               </div>
             </div>
-          </div>
+          </SectionCard>
         )}
       </DynamicSection>
-    </main>
+    </PageShell>
   );
 }

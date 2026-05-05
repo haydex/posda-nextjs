@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
+import { LinkButton } from "@/components/ui/Button";
+import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
 
 type Draft = {
   recordset_draft_id: number;
@@ -140,38 +141,37 @@ export default function DraftByIdPage({ params }: PageProps) {
     : [];
 
   return (
-    <main className="page-shell page-shell-5xl">
-      <div className="page-header">
+    <PageShell size="5xl">
+      <PageHeader>
         <div className="flex items-center justify-between gap-4">
-          <h1 className="page-title">Recordset Draft Details</h1>
+          <PageTitle>Recordset Draft Details</PageTitle>
           <div className="flex gap-3">
-            <Link
+            <LinkButton
               href={
                 draftId ? `/recordsets/drafts/${draftId}/edit` : "/recordsets"
               }
-              className="btn btn-primary btn-md"
             >
               Edit Draft
-            </Link>
-            <Link
+            </LinkButton>
+            <LinkButton
               href={
                 draft?.recordset_id
                   ? `/recordsets/${draft.recordset_id}`
                   : "/recordsets"
               }
-              className="btn btn-ghost btn-md"
+              variant="ghost"
             >
               Back to Recordset
-            </Link>
+            </LinkButton>
           </div>
         </div>
-      </div>
+      </PageHeader>
 
       <DynamicSection
         isLoading={isLoading}
         error={error}
         fields={draftFields}
       />
-    </main>
+    </PageShell>
   );
 }

@@ -1,12 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
+import { Button, LinkButton } from "@/components/ui/Button";
+import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
+import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
 
 type Dataset = {
   dataset_id: number;
@@ -356,24 +358,23 @@ export default function DatasetByIdPage({ params }: PageProps) {
     : [];
 
   return (
-    <main className="page-shell page-shell-5xl">
-      <div className="page-header">
+    <PageShell size="5xl">
+      <PageHeader>
         <div className="flex items-center justify-between gap-4">
-          <h1 className="page-title">Dataset Details</h1>
+          <PageTitle>Dataset Details</PageTitle>
           <div className="flex gap-3">
-            <Link
+            <LinkButton
               href={datasetId ? `/datasets/${datasetId}/edit` : "/datasets"}
-              className="btn btn-primary btn-md"
             >
               Edit Dataset
-            </Link>
+            </LinkButton>
 
-            <Link href="/datasets" className="btn btn-ghost btn-md">
+            <LinkButton href="/datasets" variant="ghost">
               Back to Datasets
-            </Link>
+            </LinkButton>
           </div>
         </div>
-      </div>
+      </PageHeader>
 
       <DynamicSection
         isLoading={isLoading}
@@ -383,20 +384,20 @@ export default function DatasetByIdPage({ params }: PageProps) {
       >
         {!isLoading && dataset && (
           <>
-            <div className="section-card">
-              <div className="card-header">
-                <h2 className="card-title">Recordsets</h2>
-                <Link
+            <SectionCard>
+              <CardHeader>
+                <CardTitle>Recordsets</CardTitle>
+                <LinkButton
                   href={
                     datasetId
                       ? `/recordsets/create?dataset_id=${datasetId}`
                       : "/recordsets/create"
                   }
-                  className="btn btn-primary btn-sm"
+                  size="sm"
                 >
                   New Recordset
-                </Link>
-              </div>
+                </LinkButton>
+              </CardHeader>
 
               {isLoadingRecordsets && (
                 <p className="mt-3 text-sm">Loading recordsets...</p>
@@ -453,22 +454,22 @@ export default function DatasetByIdPage({ params }: PageProps) {
                   )}
                 </div>
               )}
-            </div>
+            </SectionCard>
 
-            <div className="section-card">
-              <div className="card-header">
-                <h2 className="card-title">Releases</h2>
-                <Link
+            <SectionCard>
+              <CardHeader>
+                <CardTitle>Releases</CardTitle>
+                <LinkButton
                   href={
                     datasetId
                       ? `/datasets/releases/create?dataset_id=${datasetId}`
                       : "/datasets/releases/create"
                   }
-                  className="btn btn-primary btn-sm"
+                  size="sm"
                 >
                   New Release
-                </Link>
-              </div>
+                </LinkButton>
+              </CardHeader>
 
               {isLoadingReleases && (
                 <p className="mt-3 text-sm">Loading releases...</p>
@@ -518,10 +519,10 @@ export default function DatasetByIdPage({ params }: PageProps) {
                   />
                 </div>
               )}
-            </div>
+            </SectionCard>
           </>
         )}
       </DynamicSection>
-    </main>
+    </PageShell>
   );
 }

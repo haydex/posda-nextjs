@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { SectionCard } from "@/components/ui/Card";
 
 export type DynamicSectionField = {
   label: string;
@@ -25,12 +26,7 @@ export default function DynamicSection({
   className,
 }: DynamicSectionProps) {
   return (
-    <section
-      className={
-        className ??
-        "mt-6 rounded-lg border border-black/10 p-4 dark:border-white/10"
-      }
-    >
+    <SectionCard className={className}>
       {isLoading && <p className="text-sm">Loading...</p>}
 
       {!isLoading && error && (
@@ -54,6 +50,6 @@ export default function DynamicSection({
       {actions && <div className="mt-4 flex flex-wrap gap-3">{actions}</div>}
 
       {children}
-    </section>
+    </SectionCard>
   );
 }

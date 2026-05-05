@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
+import { Button, LinkButton } from "@/components/ui/Button";
+import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { SectionCard } from "@/components/ui/Card";
 
 type Recordset = {
   recordset_id: number;
@@ -387,12 +390,12 @@ export default function RecordsetEditPage({ params }: PageProps) {
   ];
 
   return (
-    <main className="page-shell page-shell-3xl">
-      <div className="page-header">
-        <h1 className="page-title">Edit Recordset</h1>
-      </div>
+    <PageShell size="3xl">
+      <PageHeader>
+        <PageTitle>Edit Recordset</PageTitle>
+      </PageHeader>
 
-      <section className="section-card">
+      <SectionCard>
         {isLoadingOptions && (
           <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-300">
             Loading dataset, license, and recordset type options...
@@ -451,27 +454,23 @@ export default function RecordsetEditPage({ params }: PageProps) {
                   )}
 
                   <div className="flex gap-3 pt-2">
-                    <button
-                      type="submit"
-                      disabled={isSaving}
-                      className="btn btn-primary btn-md"
-                    >
+                    <Button type="submit" disabled={isSaving}>
                       {isSaving ? "Saving..." : "Save Changes"}
-                    </button>
+                    </Button>
 
-                    <Link
+                    <LinkButton
                       href={`/recordsets/${recordsetId}`}
-                      className="btn btn-ghost btn-md"
+                      variant="ghost"
                     >
                       Cancel
-                    </Link>
+                    </LinkButton>
                   </div>
                 </>
               }
             />
           </>
         )}
-      </section>
-    </main>
+      </SectionCard>
+    </PageShell>
   );
 }

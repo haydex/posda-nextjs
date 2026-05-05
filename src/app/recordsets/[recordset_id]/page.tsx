@@ -7,6 +7,9 @@ import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
+import { LinkButton } from "@/components/ui/Button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
 
 type Recordset = {
   recordset_id: number;
@@ -329,26 +332,25 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     : [];
 
   return (
-    <main className="page-shell page-shell-5xl">
-      <div className="page-header">
+    <PageShell size="5xl">
+      <PageHeader>
         <div className="flex items-center justify-between gap-4">
-          <h1 className="page-title">Recordset Details</h1>
+          <PageTitle>Recordset Details</PageTitle>
           <div className="flex gap-3">
-            <Link
+            <LinkButton
               href={
                 recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"
               }
-              className="btn btn-primary btn-md"
             >
               Edit Recordset
-            </Link>
+            </LinkButton>
 
-            <Link href="/recordsets" className="btn btn-ghost btn-md">
+            <LinkButton href="/recordsets" variant="ghost">
               Back to Recordsets
-            </Link>
+            </LinkButton>
           </div>
         </div>
-      </div>
+      </PageHeader>
 
       <DynamicSection
         isLoading={isLoading}
@@ -358,20 +360,20 @@ export default function RecordsetByIdPage({ params }: PageProps) {
       >
         {!isLoading && recordset && (
           <div className="mt-6 space-y-4">
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">Drafts</h2>
-                <Link
+            <Card>
+              <CardHeader>
+                <CardTitle>Drafts</CardTitle>
+                <LinkButton
                   href={
                     recordsetId
                       ? `/recordsets/drafts/create?recordset_id=${recordsetId}`
                       : "/recordsets/drafts/create"
                   }
-                  className="btn btn-primary btn-sm"
+                  size="sm"
                 >
                   New Draft
-                </Link>
-              </div>
+                </LinkButton>
+              </CardHeader>
 
               {isLoadingDrafts && (
                 <p className="mt-3 text-sm">Loading drafts...</p>
@@ -422,12 +424,12 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   />
                 </div>
               )}
-            </div>
+            </Card>
 
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">Releases</h2>
-              </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Releases</CardTitle>
+              </CardHeader>
 
               {isLoadingReleases && (
                 <p className="mt-3 text-sm">Loading releases...</p>
@@ -478,10 +480,10 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   />
                 </div>
               )}
-            </div>
+            </Card>
           </div>
         )}
       </DynamicSection>
-    </main>
+    </PageShell>
   );
 }

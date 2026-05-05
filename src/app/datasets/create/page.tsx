@@ -1,11 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
+import { Button, LinkButton } from "@/components/ui/Button";
+import {
+  PageHeader,
+  PageShell,
+  PageSubtitle,
+  PageTitle,
+} from "@/components/ui/Page";
+import { SectionCard } from "@/components/ui/Card";
 
 type CreateDatasetResponse = {
   dataset_id?: number;
@@ -190,13 +197,13 @@ export default function DatasetCreatePage() {
   ];
 
   return (
-    <main className="page-shell page-shell-3xl">
-      <div className="page-header">
-        <h1 className="page-title">Create Dataset</h1>
-      </div>
-      <p className="page-subtitle">Add a new dataset to the system.</p>
+    <PageShell size="3xl">
+      <PageHeader>
+        <PageTitle>Create Dataset</PageTitle>
+      </PageHeader>
+      <PageSubtitle>Add a new dataset to the system.</PageSubtitle>
 
-      <section className="section-card">
+      <SectionCard>
         {datasetTypes.length === 0 && (
           <p className="mb-4 text-sm text-red-600 dark:text-red-400">
             Could not load dataset types from the database.
@@ -229,22 +236,18 @@ export default function DatasetCreatePage() {
               )}
 
               <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="btn btn-primary btn-md"
-                >
+                <Button type="submit" disabled={isSaving}>
                   {isSaving ? "Creating..." : "Create Dataset"}
-                </button>
+                </Button>
 
-                <Link href="/datasets" className="btn btn-ghost btn-md">
+                <LinkButton href="/datasets" variant="ghost">
                   Cancel
-                </Link>
+                </LinkButton>
               </div>
             </>
           }
         />
-      </section>
-    </main>
+      </SectionCard>
+    </PageShell>
   );
 }

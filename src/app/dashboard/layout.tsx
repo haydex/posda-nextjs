@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Card } from "@/components/ui/Card";
 
 const dashboardLinks = [
   { href: "/dashboard", label: "Overview" },
@@ -17,7 +18,7 @@ export default function DashboardLayout({
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-5xl gap-8 px-4 py-8 sm:px-6">
-      <aside className="card w-44 shrink-0">
+      <Card as="aside" className="w-44 shrink-0">
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-500">
           Dashboard
         </p>
@@ -36,7 +37,7 @@ export default function DashboardLayout({
             </Link>
           ))}
         </nav>
-      </aside>
+      </Card>
 
       <main className="min-w-0 flex-1">{children}</main>
     </div>

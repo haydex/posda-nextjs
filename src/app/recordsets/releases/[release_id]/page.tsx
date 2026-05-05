@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
+import { LinkButton } from "@/components/ui/Button";
+import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
 
 type RecordsetRelease = {
   recordset_release_id: number;
@@ -165,26 +166,26 @@ export default function ReleaseByIdPage({ params }: PageProps) {
   const recordsetId = release?.recordset_id ?? searchParams.get("recordset_id");
 
   return (
-    <main className="page-shell page-shell-5xl">
-      <div className="page-header">
+    <PageShell size="5xl">
+      <PageHeader>
         <div className="flex items-center justify-between gap-4">
-          <h1 className="page-title">Release Details</h1>
+          <PageTitle>Release Details</PageTitle>
           <div className="flex gap-3">
-            <Link
+            <LinkButton
               href={recordsetId ? `/recordsets/${recordsetId}` : "/recordsets"}
-              className="btn btn-ghost btn-md"
+              variant="ghost"
             >
               Back to Recordset
-            </Link>
+            </LinkButton>
           </div>
         </div>
-      </div>
+      </PageHeader>
 
       <DynamicSection
         isLoading={isLoading}
         error={error}
         fields={releaseFields}
       />
-    </main>
+    </PageShell>
   );
 }

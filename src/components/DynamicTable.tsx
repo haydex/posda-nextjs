@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useMemo, useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 type RowLike = Record<string, unknown>;
 
@@ -212,22 +213,24 @@ export default function DynamicTable<T extends RowLike>({
         </p>
 
         <div className="inline-flex items-center gap-2">
-          <button
+          <Button
             type="button"
             onClick={() => updatePage(currentPageSafe - 1)}
             disabled={currentPageSafe <= 1}
-            className="btn btn-ghost btn-sm"
+            variant="ghost"
+            size="sm"
           >
             Previous
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => updatePage(currentPageSafe + 1)}
             disabled={currentPageSafe >= totalPages}
-            className="btn btn-ghost btn-sm"
+            variant="ghost"
+            size="sm"
           >
             Next
-          </button>
+          </Button>
         </div>
       </div>
     </div>

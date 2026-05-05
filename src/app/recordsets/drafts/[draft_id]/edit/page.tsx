@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import { Button, LinkButton } from "@/components/ui/Button";
+import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { SectionCard } from "@/components/ui/Card";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
 
@@ -348,10 +351,10 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
   ];
 
   return (
-    <main className="page-shell page-shell-3xl">
-      <div className="page-header">
-        <h1 className="page-title">Edit Draft</h1>
-      </div>
+    <PageShell size="3xl">
+      <PageHeader>
+        <PageTitle>Edit Draft</PageTitle>
+      </PageHeader>
 
       {isLoading && <p className="mt-4 text-sm">Loading draft...</p>}
 
@@ -362,7 +365,7 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
       )}
 
       {!isLoading && !loadError && (
-        <section className="section-card">
+        <SectionCard>
           <DynamicForm
             onSubmit={handleSubmit}
             values={formData}
@@ -376,22 +379,18 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
             className="space-y-4"
             actions={
               <div className="mt-6 flex flex-wrap gap-3">
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="btn btn-primary btn-md"
-                >
+                <Button type="submit" disabled={isSaving}>
                   {isSaving ? "Saving..." : "Save Changes"}
-                </button>
+                </Button>
 
-                <Link
+                <LinkButton
                   href={
                     draftId ? `/recordsets/drafts/${draftId}` : "/recordsets"
                   }
-                  className="btn btn-ghost btn-md"
+                  variant="ghost"
                 >
                   Cancel
-                </Link>
+                </LinkButton>
               </div>
             }
           />
@@ -407,8 +406,8 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
               Draft updated successfully.
             </p>
           )}
-        </section>
+        </SectionCard>
       )}
-    </main>
+    </PageShell>
   );
 }

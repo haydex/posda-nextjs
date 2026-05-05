@@ -1,4 +1,11 @@
 import LikeCounter from "@/components/LikeCounter";
+import { Card } from "@/components/ui/Card";
+import {
+  PageHeader,
+  PageShell,
+  PageSubtitle,
+  PageTitle,
+} from "@/components/ui/Page";
 
 type Post = {
   id: number;
@@ -25,26 +32,26 @@ export default async function AboutPage() {
   const posts = await getPosts();
 
   return (
-    <main className="page-shell page-shell-3xl">
-      <div className="page-header">
-        <h1 className="page-title">Server Component Data Fetching</h1>
-      </div>
-      <p className="page-subtitle">
+    <PageShell size="3xl">
+      <PageHeader>
+        <PageTitle>Server Component Data Fetching</PageTitle>
+      </PageHeader>
+      <PageSubtitle>
         This page fetches data on the server before rendering in the browser.
-      </p>
+      </PageSubtitle>
 
       <LikeCounter />
 
       <ul className="mt-8 space-y-4">
         {posts.map((post) => (
-          <li key={post.id} className="card">
+          <Card as="li" key={post.id}>
             <h2 className="font-semibold">{post.title}</h2>
             <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
               {post.body}
             </p>
-          </li>
+          </Card>
         ))}
       </ul>
-    </main>
+    </PageShell>
   );
 }
