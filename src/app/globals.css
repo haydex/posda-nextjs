@@ -166,19 +166,19 @@ body {
   }
 
   .toast-info {
-    background: rgba(15, 23, 42, 0.98);
+    background: rgba(24, 69, 175, 0.98);
   }
 
   .toast-success {
-    background: #065f46;
+    background: #0b805f;
   }
 
   .toast-error {
-    background: #7f1d1d;
+    background: #a81111;
   }
 
   .toast-warning {
-    background: #92400e;
+    background: #b77a00;
   }
 
   @keyframes toast-in {
