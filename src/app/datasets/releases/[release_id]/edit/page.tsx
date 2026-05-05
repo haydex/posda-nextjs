@@ -173,6 +173,18 @@ export default function DatasetReleaseEditPage({ params }: PageProps) {
     setSaveError(null);
     setFieldErrors({});
     setSaveSuccess(false);
+
+    const nextFieldErrors: Record<string, string> = {};
+    if (!formData.dataset_id) {
+      nextFieldErrors.dataset_id = "Dataset is required.";
+    }
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setSaveError("Please fix the highlighted fields.");
+      return;
+    }
+
     setIsSaving(true);
 
     try {

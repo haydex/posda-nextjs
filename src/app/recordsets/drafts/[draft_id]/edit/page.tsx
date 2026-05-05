@@ -234,6 +234,18 @@ export default function RecordsetDraftEditPage({ params }: PageProps) {
     setSaveError(null);
     setFieldErrors({});
     setSaveSuccess(false);
+
+    const nextFieldErrors: Record<string, string> = {};
+    if (!formData.recordset_id) {
+      nextFieldErrors.recordset_id = "Recordset is required.";
+    }
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setSaveError("Please fix the highlighted fields.");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
