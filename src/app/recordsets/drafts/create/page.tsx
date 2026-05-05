@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import { useToast } from "@/components/Toast";
+import { toastError, toastSuccess } from "@/components/toastHelpers";
 
 type CreateDraftResponse = {
   recordset_draft_id?: number;
@@ -55,6 +57,7 @@ function formatReleaseLabel(release: RecordsetRelease) {
 export default function RecordsetDraftCreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { addToast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -185,6 +188,7 @@ export default function RecordsetDraftCreatePage() {
     if (!formData.recordset_id) {
       setFieldErrors({ recordset_id: "Recordset is required." });
       setSaveError("Please fix the highlighted fields.");
+      toastError(addToast, "Please fix the highlighted fields.");
       setIsSaving(false);
       return;
     }
@@ -229,13 +233,16 @@ export default function RecordsetDraftCreatePage() {
       }
 
       setSaveSuccess(true);
+      toastSuccess(addToast, "Draft saved successfully.");
       router.push(`/recordsets/drafts/${newDraftId}`);
       router.refresh();
     } catch (caughtError) {
       if (caughtError instanceof Error) {
         setSaveError(caughtError.message);
+        toastError(addToast, caughtError.message);
       } else {
         setSaveError("Could not create draft.");
+        toastError(addToast, "Could not create draft.");
       }
     } finally {
       setIsSaving(false);

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import { useToast } from "@/components/Toast";
+import { toastError, toastSuccess } from "@/components/toastHelpers";
 
 type CreateDatasetResponse = {
   dataset_id?: number;
@@ -41,6 +43,7 @@ function extractArray<T>(payload: unknown, keys: string[]): T[] {
 
 export default function DatasetCreatePage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -96,6 +99,7 @@ export default function DatasetCreatePage() {
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
       setSaveError("Please fix the highlighted fields.");
+      toastError(addToast, "Please fix the highlighted fields.");
       return;
     }
     setIsSaving(true);
@@ -133,13 +137,16 @@ export default function DatasetCreatePage() {
       }
 
       setSaveSuccess(true);
+      toastSuccess(addToast, "Dataset saved successfully.");
       router.push(`/datasets/${newDatasetId}`);
       router.refresh();
     } catch (caughtError) {
       if (caughtError instanceof Error) {
         setSaveError(caughtError.message);
+        toastError(addToast, caughtError.message);
       } else {
         setSaveError("Could not create dataset.");
+        toastError(addToast, "Could not create dataset.");
       }
     } finally {
       setIsSaving(false);

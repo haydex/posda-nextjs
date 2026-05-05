@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import { useToast } from "@/components/Toast";
+import { toastError, toastSuccess } from "@/components/toastHelpers";
 
 type CreateRecordsetResponse = {
   recordset_id?: number;
@@ -52,6 +54,7 @@ function extractArray<T>(payload: unknown, keys: string[]): T[] {
 export default function RecordsetCreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { addToast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -159,6 +162,7 @@ export default function RecordsetCreatePage() {
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
       setSaveError("Please fix the highlighted fields.");
+      toastError(addToast, "Please fix the highlighted fields.");
       return;
     }
     setIsSaving(true);
@@ -200,13 +204,16 @@ export default function RecordsetCreatePage() {
       }
 
       setSaveSuccess(true);
+      toastSuccess(addToast, "Recordset saved successfully.");
       router.push(`/recordsets/${newRecordsetId}`);
       router.refresh();
     } catch (caughtError) {
       if (caughtError instanceof Error) {
         setSaveError(caughtError.message);
+        toastError(addToast, caughtError.message);
       } else {
         setSaveError("Could not create recordset.");
+        toastError(addToast, "Could not create recordset.");
       }
     } finally {
       setIsSaving(false);

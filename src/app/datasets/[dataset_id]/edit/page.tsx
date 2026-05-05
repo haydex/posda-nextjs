@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import { useToast } from "@/components/Toast";
+import { toastError, toastSuccess } from "@/components/toastHelpers";
 
 type Dataset = {
   dataset_id: number;
@@ -58,6 +60,7 @@ type PageProps = {
 
 export default function DatasetEditPage({ params }: PageProps) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [datasetId, setDatasetId] = useState<string | null>(null);
   const [data, setData] = useState<DatasetResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -202,11 +205,13 @@ export default function DatasetEditPage({ params }: PageProps) {
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
       setSaveError("Please fix the highlighted fields.");
+      toastError(addToast, "Please fix the highlighted fields.");
       return;
     }
 
     if (!datasetId) {
       setSaveError("Could not save dataset: missing dataset id.");
+      toastError(addToast, "Could not save dataset: missing dataset id.");
       return;
     }
 
@@ -238,13 +243,16 @@ export default function DatasetEditPage({ params }: PageProps) {
       }
 
       setSaveSuccess(true);
+      toastSuccess(addToast, "Dataset saved successfully.");
       router.push(`/datasets/${datasetId}`);
       router.refresh();
     } catch (caughtError) {
       if (caughtError instanceof Error) {
         setSaveError(caughtError.message);
+        toastError(addToast, caughtError.message);
       } else {
         setSaveError(`Could not save dataset ${datasetId}.`);
+        toastError(addToast, `Could not save dataset ${datasetId}.`);
       }
     } finally {
       setIsSaving(false);

@@ -34,51 +34,77 @@ export function useToast() {
 export const ToastProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [toast, setToast] = useState<Toast | null>(null);
+  const [isDismissing, setIsDismissing] = useState(false);
 
   const addToast = useCallback((payload: Omit<Toast, "id"> | string) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    const toast: Toast =
+    const nextToast: Toast =
       typeof payload === "string"
         ? { id, message: payload }
         : { id, ...payload };
 
-    setToasts((prev) => [toast, ...prev]);
+    setIsDismissing(false);
+    setToast(nextToast);
     return id;
   }, []);
 
   const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+    setToast((currentToast) => {
+      if (!currentToast || currentToast.id !== id) {
+        return currentToast;
+      }
+
+      return currentToast;
+    });
+    setIsDismissing(true);
   }, []);
 
-  const clearAll = useCallback(() => setToasts([]), []);
+  const clearAll = useCallback(() => {
+    setIsDismissing(false);
+    setToast(null);
+  }, []);
 
-  // toasts are persistent by default; they are removed only when the user
-  // clicks the dismiss button or when `removeToast` is called programmatically.
+  useEffect(() => {
+    if (!toast || !isDismissing) {
+      return undefined;
+    }
+
+    const timeout = setTimeout(() => {
+      setToast(null);
+      setIsDismissing(false);
+    }, 180);
+
+    return () => clearTimeout(timeout);
+  }, [isDismissing, toast]);
+
+  // one toast is shown at a time; new toasts replace the current one.
 
   return (
     <ToastContext.Provider value={{ addToast, removeToast, clearAll }}>
       {children}
 
       <div className="toast-container" aria-live="polite">
-        {toasts.map((t) => (
+        {toast && (
           <div
-            key={t.id}
-            className={`toast toast-${t.variant ?? "info"}`}
+            key={toast.id}
+            className={`toast toast-${toast.variant ?? "info"} ${
+              isDismissing ? "toast-exit" : "toast-enter"
+            }`}
             role="status"
           >
             <div className="toast-content">
-              <div className="toast-message">{t.message}</div>
+              <div className="toast-message">{toast.message}</div>
               <button
                 aria-label="Dismiss"
                 className="toast-dismiss"
-                onClick={() => removeToast(t.id)}
+                onClick={() => removeToast(toast.id)}
               >
                 ×
               </button>
             </div>
           </div>
-        ))}
+        )}
       </div>
     </ToastContext.Provider>
   );

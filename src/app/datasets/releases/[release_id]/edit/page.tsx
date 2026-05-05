@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import { useToast } from "@/components/Toast";
+import { toastError, toastSuccess } from "@/components/toastHelpers";
 
 type DatasetRelease = {
   dataset_release_id: number;
@@ -66,6 +68,7 @@ function toDateInput(value?: string) {
 
 export default function DatasetReleaseEditPage({ params }: PageProps) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [releaseId, setReleaseId] = useState<string | null>(null);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -182,6 +185,7 @@ export default function DatasetReleaseEditPage({ params }: PageProps) {
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
       setSaveError("Please fix the highlighted fields.");
+      toastError(addToast, "Please fix the highlighted fields.");
       return;
     }
 
@@ -213,13 +217,16 @@ export default function DatasetReleaseEditPage({ params }: PageProps) {
       }
 
       setSaveSuccess(true);
+      toastSuccess(addToast, "Dataset release saved successfully.");
       router.push(`/datasets/releases/${releaseId}`);
       router.refresh();
     } catch (caughtError) {
       if (caughtError instanceof Error) {
         setSaveError(caughtError.message);
+        toastError(addToast, caughtError.message);
       } else {
         setSaveError("Could not update dataset release.");
+        toastError(addToast, "Could not update dataset release.");
       }
     } finally {
       setIsSaving(false);

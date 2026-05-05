@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
+import { useToast } from "@/components/Toast";
+import { toastError, toastSuccess } from "@/components/toastHelpers";
 
 type Recordset = {
   recordset_id: number;
@@ -72,6 +74,7 @@ type PageProps = {
 
 export default function RecordsetEditPage({ params }: PageProps) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [recordsetId, setRecordsetId] = useState<string | null>(null);
   const [data, setData] = useState<RecordsetResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -263,11 +266,13 @@ export default function RecordsetEditPage({ params }: PageProps) {
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
       setSaveError("Please fix the highlighted fields.");
+      toastError(addToast, "Please fix the highlighted fields.");
       return;
     }
 
     if (!recordsetId) {
       setSaveError("Could not save recordset: missing recordset id.");
+      toastError(addToast, "Could not save recordset: missing recordset id.");
       return;
     }
 
@@ -302,13 +307,16 @@ export default function RecordsetEditPage({ params }: PageProps) {
         }
       }
 
+      toastSuccess(addToast, "Recordset saved successfully.");
       router.push(`/recordsets/${recordsetId}`);
       router.refresh();
     } catch (caughtError) {
       if (caughtError instanceof Error) {
         setSaveError(caughtError.message);
+        toastError(addToast, caughtError.message);
       } else {
         setSaveError(`Could not save recordset ${recordsetId}.`);
+        toastError(addToast, `Could not save recordset ${recordsetId}.`);
       }
     } finally {
       setIsSaving(false);

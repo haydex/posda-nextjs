@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import DynamicTable from "@/components/DynamicTable";
-import { useToast } from "@/components/Toast";
 
 type Dataset = {
   dataset_id: number;
@@ -90,7 +89,6 @@ function normalizeDatasetsResponse(payload: unknown): DatasetsResponse {
 
 export default function DatasetsPage() {
   const router = useRouter();
-  const { addToast, clearAll } = useToast();
   const [datasetTypes, setDatasetTypes] = useState<DatasetType[]>([]);
   const [filtersInput, setFiltersInput] = useState<DatasetFilters>({
     search: "",
@@ -133,18 +131,6 @@ export default function DatasetsPage() {
     }
 
     void loadDatasetTypes();
-  }, []);
-
-  useEffect(() => {
-    // clear any previous toasts (e.g. from earlier visits) then show demo messages
-    clearAll();
-    addToast({
-      message: "Welcome to Datasets — this is a demo toast.",
-      variant: "info",
-    });
-    addToast({ message: "Dummy: 12 datasets available.", variant: "success" });
-    addToast({ message: "Demo warning: check filters.", variant: "warning" });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadDatasets() {
