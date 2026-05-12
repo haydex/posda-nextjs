@@ -128,8 +128,6 @@ export default function RecordsetsPage() {
   const [data, setData] = useState<RecordsetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(8);
 
   async function loadRecordsets() {
     setIsLoading(true);
@@ -150,8 +148,7 @@ export default function RecordsetsPage() {
         apiParams.set("dataset_id", filters.datasetId);
       }
 
-      apiParams.set("page", String(currentPage));
-      apiParams.set("limit", String(itemsPerPage));
+      apiParams.set("limit", "1000");
 
       const apiUrl =
         apiParams.size > 0
@@ -177,13 +174,11 @@ export default function RecordsetsPage() {
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setCurrentPage(1);
     setFilters(filtersInput);
   }
 
   function clearFilters() {
     setFiltersInput({ search: "", activeOnly: false, datasetId: "" });
-    setCurrentPage(1);
     setFilters({ search: "", activeOnly: false, datasetId: "" });
   }
 
@@ -227,7 +222,7 @@ export default function RecordsetsPage() {
   useEffect(() => {
     void loadRecordsets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, currentPage, itemsPerPage]);
+  }, [filters]);
 
   useEffect(() => {
     async function loadDatasets() {
@@ -301,16 +296,10 @@ export default function RecordsetsPage() {
 
             <DynamicTable
               rows={data.recordsets}
-              defaultItemsPerPage={8}
-              totalItems={data.total}
-              currentPage={currentPage}
-              currentItemsPerPage={itemsPerPage}
-              paginateRows={false}
-              onPageChange={setCurrentPage}
-              onItemsPerPageChange={(nextItemsPerPage) => {
-                setItemsPerPage(nextItemsPerPage);
-                setCurrentPage(1);
-              }}
+              showPagination={false}
+              scrollMode="content"
+              maxVisibleRows={4}
+              paginateRows={true}
               columns={[
                 { key: "recordset_id", label: "ID" },
                 { key: "recordset_doi", label: "DOI" },

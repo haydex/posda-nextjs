@@ -15,6 +15,9 @@ type DynamicTableProps<T extends RowLike> = {
   rows: T[];
   columns?: Array<DynamicTableColumn<T>>;
   emptyMessage?: string;
+  showPagination?: boolean;
+  scrollMode?: "none" | "content";
+  maxVisibleRows?: number;
   defaultItemsPerPage?: number;
   itemsPerPageOptions?: number[];
   totalItems?: number;
@@ -53,6 +56,9 @@ export default function DynamicTable<T extends RowLike>({
   rows,
   columns,
   emptyMessage = "No rows.",
+  showPagination = true,
+  scrollMode = "none",
+  maxVisibleRows,
   defaultItemsPerPage = 4,
   itemsPerPageOptions,
   totalItems,
@@ -113,6 +119,7 @@ export default function DynamicTable<T extends RowLike>({
   const resolvedItemsPerPage = currentItemsPerPage ?? internalItemsPerPage;
   const resolvedCurrentPage = currentPage ?? internalCurrentPage;
   const resolvedTotalItems = totalItems ?? rows.length;
+  const shouldPaginate = showPagination && paginateRows;
   const totalPages = Math.max(
     1,
     Math.ceil(resolvedTotalItems / resolvedItemsPerPage),
@@ -120,7 +127,24 @@ export default function DynamicTable<T extends RowLike>({
   const currentPageSafe = Math.min(resolvedCurrentPage, totalPages);
   const startIndex = (currentPageSafe - 1) * resolvedItemsPerPage;
   const endIndex = startIndex + resolvedItemsPerPage;
-  const visibleRows = paginateRows ? rows.slice(startIndex, endIndex) : rows;
+  const visibleRows = shouldPaginate ? rows.slice(startIndex, endIndex) : rows;
+
+  const showingStart =
+    visibleRows.length > 0 ? (showPagination ? startIndex + 1 : 1) : 0;
+  const showingEnd = showPagination
+    ? Math.min(startIndex + visibleRows.length, resolvedTotalItems)
+    : visibleRows.length;
+  const showingTotal = showPagination ? resolvedTotalItems : visibleRows.length;
+
+  const hasScrollableRows =
+    !showPagination &&
+    scrollMode === "content" &&
+    typeof maxVisibleRows === "number" &&
+    Number.isFinite(maxVisibleRows) &&
+    maxVisibleRows > 0;
+  const tableViewportMaxHeight = hasScrollableRows
+    ? `${Math.floor(maxVisibleRows) * 41}px`
+    : undefined;
 
   function updatePage(nextPage: number) {
     const clampedPage = Math.max(1, Math.min(totalPages, nextPage));
@@ -139,100 +163,160 @@ export default function DynamicTable<T extends RowLike>({
     <div className="p-3">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-500">
         <p>
-          Showing {startIndex + 1}-{Math.min(endIndex, resolvedTotalItems)} of{" "}
-          {resolvedTotalItems}
+          Showing {showingStart}-{showingEnd} of {showingTotal}
         </p>
 
-        <label className="inline-flex items-center gap-2 whitespace-nowrap">
-          <span className="whitespace-nowrap">Items per page</span>
-          <select
-            value={resolvedItemsPerPage}
-            onChange={(event) => {
-              const nextSize = Number(event.target.value);
-              updateItemsPerPage(nextSize);
-            }}
-            className="select select-sm w-auto! min-w-20 shrink-0 bg-transparent"
-          >
-            {pageSizeOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-black/10 dark:border-white/5">
-              {resolvedColumns.map((column) => (
-                <th key={column.key} className="px-2 py-2 font-medium">
-                  {column.label ?? toLabel(column.key)}
-                </th>
+        {showPagination && (
+          <label className="inline-flex items-center gap-2 whitespace-nowrap">
+            <span className="whitespace-nowrap">Items per page</span>
+            <select
+              value={resolvedItemsPerPage}
+              onChange={(event) => {
+                const nextSize = Number(event.target.value);
+                updateItemsPerPage(nextSize);
+              }}
+              className="select select-sm w-auto! min-w-20 shrink-0 bg-transparent"
+            >
+              {pageSizeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {visibleRows.map((row, index) => (
-              <tr
-                title={onRowClick ? "Click to view details" : undefined}
-                key={
-                  getRowKey
-                    ? getRowKey(row, startIndex + index)
-                    : startIndex + index
-                }
-                onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={
-                  onRowClick
-                    ? "cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/5 dark:hover:bg-white/5"
-                    : "border-b border-black/5 dark:border-white/5"
-                }
-              >
-                {resolvedColumns.map((column) => {
-                  const rawValue = row[column.key];
-                  const formatter = column.render ?? formatters?.[column.key];
+            </select>
+          </label>
+        )}
+      </div>
 
-                  return (
-                    <td key={column.key} className="px-2 py-2">
-                      {formatter
-                        ? formatter(rawValue, row)
-                        : defaultFormat(rawValue)}
-                    </td>
-                  );
-                })}
+      {hasScrollableRows ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-black/10 dark:border-white/5">
+                {resolvedColumns.map((column) => (
+                  <th key={column.key} className="px-2 py-2 font-medium">
+                    {column.label ?? toLabel(column.key)}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+          </table>
 
-      <div className="mt-3 flex items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-500">
-        <p>
-          Page {currentPageSafe} of {totalPages}
-        </p>
+          <div
+            className="overflow-y-auto"
+            style={
+              tableViewportMaxHeight ? { maxHeight: tableViewportMaxHeight } : undefined
+            }
+          >
+            <table className="min-w-full border-collapse text-left text-sm">
+              <tbody>
+                {visibleRows.map((row, index) => (
+                  <tr
+                    title={onRowClick ? "Click to view details" : undefined}
+                    key={
+                      getRowKey
+                        ? getRowKey(row, startIndex + index)
+                        : startIndex + index
+                    }
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    className={
+                      onRowClick
+                        ? "cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/5 dark:hover:bg-white/5"
+                        : "border-b border-black/5 dark:border-white/5"
+                    }
+                  >
+                    {resolvedColumns.map((column) => {
+                      const rawValue = row[column.key];
+                      const formatter = column.render ?? formatters?.[column.key];
 
-        <div className="inline-flex items-center gap-2">
-          <Button
-            type="button"
-            onClick={() => updatePage(currentPageSafe - 1)}
-            disabled={currentPageSafe <= 1}
-            variant="ghost"
-            size="sm"
-          >
-            Previous
-          </Button>
-          <Button
-            type="button"
-            onClick={() => updatePage(currentPageSafe + 1)}
-            disabled={currentPageSafe >= totalPages}
-            variant="ghost"
-            size="sm"
-          >
-            Next
-          </Button>
+                      return (
+                        <td key={column.key} className="px-2 py-2">
+                          {formatter
+                            ? formatter(rawValue, row)
+                            : defaultFormat(rawValue)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-black/10 dark:border-white/5">
+                {resolvedColumns.map((column) => (
+                  <th key={column.key} className="px-2 py-2 font-medium">
+                    {column.label ?? toLabel(column.key)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {visibleRows.map((row, index) => (
+                <tr
+                  title={onRowClick ? "Click to view details" : undefined}
+                  key={
+                    getRowKey
+                      ? getRowKey(row, startIndex + index)
+                      : startIndex + index
+                  }
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  className={
+                    onRowClick
+                      ? "cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/5 dark:hover:bg-white/5"
+                      : "border-b border-black/5 dark:border-white/5"
+                  }
+                >
+                  {resolvedColumns.map((column) => {
+                    const rawValue = row[column.key];
+                    const formatter = column.render ?? formatters?.[column.key];
+
+                    return (
+                      <td key={column.key} className="px-2 py-2">
+                        {formatter
+                          ? formatter(rawValue, row)
+                          : defaultFormat(rawValue)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showPagination && (
+        <div className="mt-3 flex items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-500">
+          <p>
+            Page {currentPageSafe} of {totalPages}
+          </p>
+
+          <div className="inline-flex items-center gap-2">
+            <Button
+              type="button"
+              onClick={() => updatePage(currentPageSafe - 1)}
+              disabled={currentPageSafe <= 1}
+              variant="ghost"
+              size="sm"
+            >
+              Previous
+            </Button>
+            <Button
+              type="button"
+              onClick={() => updatePage(currentPageSafe + 1)}
+              disabled={currentPageSafe >= totalPages}
+              variant="ghost"
+              size="sm"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
