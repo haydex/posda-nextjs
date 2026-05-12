@@ -204,7 +204,9 @@ export default function DynamicTable<T extends RowLike>({
           <div
             className="overflow-y-auto"
             style={
-              tableViewportMaxHeight ? { maxHeight: tableViewportMaxHeight } : undefined
+              tableViewportMaxHeight
+                ? { maxHeight: tableViewportMaxHeight }
+                : undefined
             }
           >
             <table className="min-w-full border-collapse text-left text-sm">
@@ -226,7 +228,8 @@ export default function DynamicTable<T extends RowLike>({
                   >
                     {resolvedColumns.map((column) => {
                       const rawValue = row[column.key];
-                      const formatter = column.render ?? formatters?.[column.key];
+                      const formatter =
+                        column.render ?? formatters?.[column.key];
 
                       return (
                         <td key={column.key} className="px-2 py-2">
