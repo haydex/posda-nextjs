@@ -78,6 +78,18 @@ export const ToastProvider: React.FC<{
     return () => clearTimeout(timeout);
   }, [isDismissing, toast]);
 
+  useEffect(() => {
+    if (!toast || isDismissing) {
+      return undefined;
+    }
+
+    const timeout = setTimeout(() => {
+      removeToast(toast.id);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, [isDismissing, removeToast, toast]);
+
   // one toast is shown at a time; new toasts replace the current one.
 
   return (
