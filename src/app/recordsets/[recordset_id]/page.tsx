@@ -8,7 +8,7 @@ import DynamicSection, {
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
 import { LinkButton } from "@/components/ui/Button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { CardHeader, CardTitle } from "@/components/ui/Card";
 import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
 
 type Recordset = {
@@ -360,7 +360,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
       >
         {!isLoading && recordset && (
           <div className="mt-6 space-y-4">
-            <Card>
+            <div className="space-y-3">
               <CardHeader>
                 <CardTitle>Drafts</CardTitle>
                 <LinkButton
@@ -386,7 +386,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
               )}
 
               {!isLoadingDrafts && !draftsError && draftsData && (
-                <div className="mt-3 space-y-3">
+                <div className="rounded-lg border border-black/10 dark:border-white/5">
                   {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     Total drafts:{" "}
                     <span className="font-medium">{draftsData.total}</span>
@@ -424,9 +424,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   />
                 </div>
               )}
-            </Card>
+            </div>
 
-            <Card>
+            <div className="space-y-3">
               <CardHeader>
                 <CardTitle>Releases</CardTitle>
               </CardHeader>
@@ -442,7 +442,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
               )}
 
               {!isLoadingReleases && !releasesError && releasesData && (
-                <div className="mt-3 space-y-3">
+                <div className="rounded-lg border border-black/10 dark:border-white/5">
                   {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     Total releases:{" "}
                     <span className="font-medium">{releasesData.total}</span>
@@ -480,7 +480,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   />
                 </div>
               )}
-            </Card>
+            </div>
           </div>
         )}
       </DynamicSection>

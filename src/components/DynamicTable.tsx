@@ -136,7 +136,7 @@ export default function DynamicTable<T extends RowLike>({
   }
 
   return (
-    <div>
+    <div className="p-3">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-500">
         <p>
           Showing {startIndex + 1}-{Math.min(endIndex, resolvedTotalItems)} of{" "}

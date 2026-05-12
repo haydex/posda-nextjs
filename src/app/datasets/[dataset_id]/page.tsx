@@ -7,7 +7,7 @@ import DynamicSection, {
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
 import { Button, LinkButton } from "@/components/ui/Button";
-import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
+import { CardHeader, CardTitle } from "@/components/ui/Card";
 import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
 
 type Dataset = {
@@ -384,7 +384,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
       >
         {!isLoading && dataset && (
           <>
-            <SectionCard>
+            <div className="mt-6 space-y-3">
               <CardHeader>
                 <CardTitle>Recordsets</CardTitle>
                 <LinkButton
@@ -410,7 +410,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
               )}
 
               {!isLoadingRecordsets && !recordsetsError && recordsetsData && (
-                <div className="mt-3 space-y-3">
+                <div className="rounded-lg border border-black/10 dark:border-white/5">
                   {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     Total recordsets:{" "}
                     <span className="font-medium">{recordsetsData.total}</span>
@@ -454,9 +454,9 @@ export default function DatasetByIdPage({ params }: PageProps) {
                   )}
                 </div>
               )}
-            </SectionCard>
+            </div>
 
-            <SectionCard>
+            <div className="mt-6 space-y-3">
               <CardHeader>
                 <CardTitle>Releases</CardTitle>
                 <LinkButton
@@ -482,7 +482,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
               )}
 
               {!isLoadingReleases && !releasesError && releasesData && (
-                <div className="mt-3 space-y-3">
+                <div className="rounded-lg border border-black/10 dark:border-white/5">
                   {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     Total releases:{" "}
                     <span className="font-medium">{releasesData.total}</span>
@@ -519,7 +519,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
                   />
                 </div>
               )}
-            </SectionCard>
+            </div>
           </>
         )}
       </DynamicSection>

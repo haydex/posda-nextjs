@@ -6,7 +6,7 @@ import DynamicSection, {
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
 import { Button, LinkButton } from "@/components/ui/Button";
-import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
+import { CardHeader, CardTitle } from "@/components/ui/Card";
 import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
 
 type DatasetRelease = {
@@ -582,7 +582,7 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
         fields={releaseFields}
       >
         {!isLoading && release && (
-          <SectionCard>
+          <div className="mt-6 space-y-3">
             <CardHeader>
               <CardTitle>Recordset Releases</CardTitle>
             </CardHeader>
@@ -600,7 +600,7 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
             )}
 
             <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-              <div className="rounded-md border border-black/10 p-3 dark:border-white/15">
+              <div className="space-y-2">
                 <div className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-200">
                   Available Recordset Releases
                 </div>
@@ -613,40 +613,42 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
                   </p>
                 )}
                 {!isLoadingAvailable && !availableError && (
-                  <DynamicTable<RecordsetReleaseRow>
-                    rows={availableRows}
-                    paginateRows={false}
-                    emptyMessage="No available recordset releases."
-                    columns={[
-                      {
-                        key: "select",
-                        label: "",
-                        render: (_, row) => (
-                          <input
-                            type="checkbox"
-                            checked={selectedAvailableIds.has(
-                              row.recordset_release_id,
-                            )}
-                            onChange={() =>
-                              toggleSelection(
-                                setSelectedAvailableIds,
+                  <div className="rounded-md border border-black/10 p-3 dark:border-white/15">
+                    <DynamicTable<RecordsetReleaseRow>
+                      rows={availableRows}
+                      paginateRows={false}
+                      emptyMessage="No available recordset releases."
+                      columns={[
+                        {
+                          key: "select",
+                          label: "",
+                          render: (_, row) => (
+                            <input
+                              type="checkbox"
+                              checked={selectedAvailableIds.has(
                                 row.recordset_release_id,
-                              )
-                            }
-                            className="checkbox"
-                          />
-                        ),
-                      },
-                      { key: "recordset_name", label: "Recordset" },
-                      { key: "recordset_id", label: "Recordset ID" },
-                      { key: "release_number", label: "Version" },
-                      { key: "release_date", label: "Date" },
-                    ]}
-                    formatters={{
-                      release_date: (value) => formatDate(String(value)),
-                    }}
-                    getRowKey={(row) => row.recordset_release_id}
-                  />
+                              )}
+                              onChange={() =>
+                                toggleSelection(
+                                  setSelectedAvailableIds,
+                                  row.recordset_release_id,
+                                )
+                              }
+                              className="checkbox"
+                            />
+                          ),
+                        },
+                        { key: "recordset_name", label: "Recordset" },
+                        { key: "recordset_id", label: "Recordset ID" },
+                        { key: "release_number", label: "Version" },
+                        { key: "release_date", label: "Date" },
+                      ]}
+                      formatters={{
+                        release_date: (value) => formatDate(String(value)),
+                      }}
+                      getRowKey={(row) => row.recordset_release_id}
+                    />
+                  </div>
                 )}
               </div>
 
@@ -670,7 +672,7 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
                 </Button>
               </div>
 
-              <div className="rounded-md border border-black/10 p-3 dark:border-white/15">
+              <div className="space-y-2">
                 <div className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-200">
                   Added to Dataset Release
                 </div>
@@ -683,44 +685,46 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
                   </p>
                 )}
                 {!isLoadingRecordsets && !recordsetsError && (
-                  <DynamicTable<RecordsetReleaseRow>
-                    rows={linkedRows}
-                    paginateRows={false}
-                    emptyMessage="No recordset releases linked."
-                    columns={[
-                      {
-                        key: "select",
-                        label: "",
-                        render: (_, row) => (
-                          <input
-                            type="checkbox"
-                            checked={selectedLinkedIds.has(
-                              row.recordset_release_id,
-                            )}
-                            onChange={() =>
-                              toggleSelection(
-                                setSelectedLinkedIds,
+                  <div className="rounded-md border border-black/10 p-3 dark:border-white/15">
+                    <DynamicTable<RecordsetReleaseRow>
+                      rows={linkedRows}
+                      paginateRows={false}
+                      emptyMessage="No recordset releases linked."
+                      columns={[
+                        {
+                          key: "select",
+                          label: "",
+                          render: (_, row) => (
+                            <input
+                              type="checkbox"
+                              checked={selectedLinkedIds.has(
                                 row.recordset_release_id,
-                              )
-                            }
-                            className="checkbox"
-                          />
-                        ),
-                      },
-                      { key: "recordset_name", label: "Recordset" },
-                      { key: "recordset_id", label: "Recordset ID" },
-                      { key: "release_number", label: "Version" },
-                      { key: "release_date", label: "Date" },
-                    ]}
-                    formatters={{
-                      release_date: (value) => formatDate(String(value)),
-                    }}
-                    getRowKey={(row) => row.recordset_release_id}
-                  />
+                              )}
+                              onChange={() =>
+                                toggleSelection(
+                                  setSelectedLinkedIds,
+                                  row.recordset_release_id,
+                                )
+                              }
+                              className="checkbox"
+                            />
+                          ),
+                        },
+                        { key: "recordset_name", label: "Recordset" },
+                        { key: "recordset_id", label: "Recordset ID" },
+                        { key: "release_number", label: "Version" },
+                        { key: "release_date", label: "Date" },
+                      ]}
+                      formatters={{
+                        release_date: (value) => formatDate(String(value)),
+                      }}
+                      getRowKey={(row) => row.recordset_release_id}
+                    />
+                  </div>
                 )}
               </div>
             </div>
-          </SectionCard>
+          </div>
         )}
       </DynamicSection>
     </PageShell>
