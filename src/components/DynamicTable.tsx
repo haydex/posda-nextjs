@@ -143,15 +143,15 @@ export default function DynamicTable<T extends RowLike>({
           {resolvedTotalItems}
         </p>
 
-        <label className="inline-flex items-center gap-2">
-          <span>Items per page</span>
+        <label className="inline-flex items-center gap-2 whitespace-nowrap">
+          <span className="whitespace-nowrap">Items per page</span>
           <select
             value={resolvedItemsPerPage}
             onChange={(event) => {
               const nextSize = Number(event.target.value);
               updateItemsPerPage(nextSize);
             }}
-            className="select select-sm bg-transparent"
+            className="select select-sm w-auto! min-w-20 shrink-0 bg-transparent"
           >
             {pageSizeOptions.map((option) => (
               <option key={option} value={option}>
