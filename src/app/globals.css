@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafaf9;
+  --foreground: #3f3f46;
   --navbar-height: 3.5rem;
 }
 
@@ -34,7 +34,7 @@
     @apply max-w-6xl;
   }
   .page-header {
-    @apply border-b-2 border-black/80 pb-4 dark:border-white/5;
+    @apply border-b-2 border-black/20 pb-4 dark:border-white/5;
   }
   .page-title {
     @apply text-3xl font-semibold tracking-tight;
@@ -43,13 +43,13 @@
     @apply mt-2 text-zinc-600 dark:text-zinc-500;
   }
   .section-card {
-    @apply mt-6 rounded-lg border border-black/10 p-4 dark:border-white/5;
+    @apply mt-6 rounded-lg border border-black/5 p-4 dark:border-white/5;
   }
   .card {
-    @apply rounded-lg border border-black/10 p-4 dark:border-white/5;
+    @apply rounded-lg border border-black/5 p-4 dark:border-white/5;
   }
   .card-header {
-    @apply flex items-center justify-between border-b-2 border-black/80 pb-2 dark:border-white/5;
+    @apply flex items-center justify-between border-b-2 border-black/20 pb-2 dark:border-white/5;
   }
   .card-title {
     @apply text-lg font-semibold tracking-tight;
@@ -61,7 +61,7 @@
     @apply bg-black text-white hover:bg-zinc-800 dark:bg-zinc-300 dark:text-zinc-950 dark:hover:bg-zinc-200;
   }
   .btn-ghost {
-    @apply border border-black/15 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5;
+    @apply border border-black/10 hover:bg-black/3 dark:border-white/10 dark:hover:bg-white/5;
   }
   .btn-sm {
     @apply h-8 px-3;
@@ -76,19 +76,19 @@
     @apply w-32;
   }
   .input {
-    @apply h-10 w-full rounded-md border border-black/15 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200;
+    @apply h-10 w-full rounded-md border border-black/10 bg-white px-3 text-sm text-zinc-700 outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200;
   }
   .input-transparent {
-    @apply h-10 w-full rounded-md border border-black/15 bg-transparent px-3 text-sm outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/10;
+    @apply h-10 w-full rounded-md border border-black/10 bg-transparent px-3 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10;
   }
   .input-muted {
     @apply bg-zinc-100 dark:bg-zinc-900/50;
   }
   .textarea {
-    @apply w-full rounded-md border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200;
+    @apply w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-zinc-700 outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200;
   }
   .select {
-    @apply h-10 w-full rounded-md border border-black/15 bg-white px-3 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-400 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200;
+    @apply h-10 w-full rounded-md border border-black/10 bg-white px-3 text-sm text-zinc-700 outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200;
   }
   .select-sm {
     @apply h-8 px-2 py-1 text-sm;
