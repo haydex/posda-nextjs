@@ -6,6 +6,7 @@ import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
 import { LinkButton } from "@/components/ui/Button";
+import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
 import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
 
 type RecordsetRelease = {
@@ -26,6 +27,39 @@ type ReleaseResponse = {
   data?: RecordsetRelease;
   timestamp: string;
 };
+
+type FileTypeSummary = {
+  file_type: string;
+  file_count: number;
+  total_size_bytes: number;
+};
+
+type ModalitySummary = {
+  modality: string;
+  series_count: number;
+  file_count: number;
+};
+
+type ReleaseSummary = {
+  release_id: number;
+  total_files: number;
+  total_size_bytes: number;
+  by_file_type: FileTypeSummary[];
+  dicom: {
+    patient_count: number;
+    study_count: number;
+    series_count: number;
+    by_modality: ModalitySummary[];
+  };
+};
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
 
 async function getApiErrorMessage(
   response: Response,
@@ -66,8 +100,10 @@ type PageProps = {
 export default function ReleaseByIdPage({ params }: PageProps) {
   const searchParams = useSearchParams();
   const [data, setData] = useState<ReleaseResponse | null>(null);
+  const [summary, setSummary] = useState<ReleaseSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -87,9 +123,10 @@ export default function ReleaseByIdPage({ params }: PageProps) {
         const endpoint = recordsetIdFromQuery
           ? `/api/recordsets/${recordsetIdFromQuery}/releases/${id}`
           : `/api/recordsets/releases/${id}`;
-        const response = await fetch(endpoint, {
-          cache: "no-store",
-        });
+        const [response, summaryRes] = await Promise.all([
+          fetch(endpoint, { cache: "no-store" }),
+          fetch(`/api/recordsets/releases/${id}/summary`, { cache: "no-store" }),
+        ]);
 
         if (!response.ok) {
           const fallbackMessage = `Could not load release ${id}.`;
@@ -104,6 +141,13 @@ export default function ReleaseByIdPage({ params }: PageProps) {
         }
 
         setData({ ...json, release: json.release ?? json.data });
+
+        if (summaryRes.ok) {
+          const summaryJson = (await summaryRes.json()) as { data: ReleaseSummary };
+          if (isMounted) setSummary(summaryJson.data);
+        } else {
+          if (isMounted) setSummaryError("Could not load file summary.");
+        }
       } catch (caughtError) {
         if (!isMounted) {
           return;
@@ -186,6 +230,112 @@ export default function ReleaseByIdPage({ params }: PageProps) {
         error={error}
         fields={releaseFields}
       />
+
+      <SectionCard>
+        <CardHeader>
+          <CardTitle>File Summary</CardTitle>
+        </CardHeader>
+
+        {isLoading && <p className="text-sm">Loading...</p>}
+
+        {!isLoading && summaryError && (
+          <p className="text-sm text-red-600 dark:text-red-300">{summaryError}</p>
+        )}
+
+        {!isLoading && !summaryError && summary && (() => {
+          const hasDicom = summary.dicom.series_count > 0;
+          return (
+            <div className="mt-3 divide-y divide-neutral-300 text-sm dark:divide-neutral-600">
+              <div className="flex gap-8 pb-4">
+                <div>
+                  <span className="text-neutral-600 dark:text-neutral-300">Total Files </span>
+                  <span className="font-semibold">{summary.total_files.toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-600 dark:text-neutral-300">Total Size </span>
+                  <span className="font-semibold">{formatBytes(summary.total_size_bytes)}</span>
+                </div>
+              </div>
+
+              {summary.by_file_type.length > 0 && (
+                <div className="py-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
+                    By File Type
+                  </p>
+                  <table>
+                    <thead>
+                      <tr className="text-left text-xs font-semibold text-neutral-700 dark:text-neutral-200">
+                        <th className="pb-1 pr-10">Type</th>
+                        <th className="pb-1 pr-10">Files</th>
+                        <th className="pb-1">Size</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summary.by_file_type.map((ft) => (
+                        <tr key={ft.file_type}>
+                          <td className="py-1 pr-10">{ft.file_type}</td>
+                          <td className="py-1 pr-10">{ft.file_count.toLocaleString()}</td>
+                          <td className="py-1">{formatBytes(ft.total_size_bytes)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {hasDicom && (
+                <div className="py-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
+                    DICOM Hierarchy
+                  </p>
+                  <table>
+                    <thead>
+                      <tr className="text-left text-xs font-semibold text-neutral-700 dark:text-neutral-200">
+                        <th className="pb-1 pr-10">Patients</th>
+                        <th className="pb-1 pr-10">Studies</th>
+                        <th className="pb-1">Series</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="py-1 pr-10">{summary.dicom.patient_count.toLocaleString()}</td>
+                        <td className="py-1 pr-10">{summary.dicom.study_count.toLocaleString()}</td>
+                        <td className="py-1">{summary.dicom.series_count.toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {summary.dicom.by_modality.length > 0 && (
+                    <div className="mt-4">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
+                        By Modality
+                      </p>
+                      <table>
+                        <thead>
+                          <tr className="text-left text-xs font-semibold text-neutral-700 dark:text-neutral-200">
+                            <th className="pb-1 pr-10">Modality</th>
+                            <th className="pb-1 pr-10">Series</th>
+                            <th className="pb-1">Files</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {summary.dicom.by_modality.map((m) => (
+                            <tr key={m.modality}>
+                              <td className="py-1 pr-10">{m.modality}</td>
+                              <td className="py-1 pr-10">{m.series_count.toLocaleString()}</td>
+                              <td className="py-1">{m.file_count.toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </SectionCard>
     </PageShell>
   );
 }
