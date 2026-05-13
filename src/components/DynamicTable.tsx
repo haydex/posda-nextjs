@@ -191,9 +191,9 @@ export default function DynamicTable<T extends RowLike>({
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-black/10 dark:border-white/5">
+              <tr className="border-b border-black/10 bg-neutral-100 dark:border-white/5 dark:bg-neutral-800/50">
                 {resolvedColumns.map((column) => (
-                  <th key={column.key} className="px-2 py-2 font-medium">
+                  <th key={column.key} className="px-2 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-200">
                     {column.label ?? toLabel(column.key)}
                   </th>
                 ))}
@@ -249,9 +249,9 @@ export default function DynamicTable<T extends RowLike>({
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-black/10 dark:border-white/5">
+              <tr className="border-b border-black/10 bg-neutral-100 dark:border-white/5 dark:bg-neutral-800/50">
                 {resolvedColumns.map((column) => (
-                  <th key={column.key} className="px-2 py-2 font-medium">
+                  <th key={column.key} className="px-2 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-200">
                     {column.label ?? toLabel(column.key)}
                   </th>
                 ))}
@@ -292,7 +292,7 @@ export default function DynamicTable<T extends RowLike>({
         </div>
       )}
 
-      {showPagination && (
+      {showPagination && totalPages > 1 && (
         <div className="mt-3 flex items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-500">
           <p>
             Page {currentPageSafe} of {totalPages}
