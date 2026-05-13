@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
-import { LinkButton } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
 import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { useToast } from "@/components/Toast";
+import { toastError, toastSuccess } from "@/components/toastHelpers";
 
 type Draft = {
   recordset_draft_id: number;
@@ -67,12 +70,23 @@ function formatBytes(bytes: number): string {
 }
 
 export default function DraftByIdPage({ params }: PageProps) {
+  const router = useRouter();
+  const { addToast } = useToast();
+
   const [draftId, setDraftId] = useState<string | null>(null);
   const [data, setData] = useState<DraftResponse | null>(null);
   const [summary, setSummary] = useState<DraftSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
+
+  // Publish modal
+  const [showPublish, setShowPublish] = useState(false);
+  const [releaseNumber, setReleaseNumber] = useState("");
+  const [releaseDate, setReleaseDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [releaseNotes, setReleaseNotes] = useState("");
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -133,6 +147,37 @@ export default function DraftByIdPage({ params }: PageProps) {
     };
   }, [params]);
 
+  async function handlePublish() {
+    if (!draftId || !releaseNumber.trim() || !releaseDate) return;
+
+    setIsPublishing(true);
+    setPublishError(null);
+
+    try {
+      const res = await fetch(`/api/recordsets/drafts/${draftId}/publish`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          release_number: releaseNumber.trim(),
+          release_date: releaseDate,
+          release_notes: releaseNotes.trim() || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const json = (await res.json()) as { error?: { message?: string } };
+        throw new Error(json.error?.message ?? "Could not publish draft.");
+      }
+
+      toastSuccess(addToast, `Draft published as release ${releaseNumber.trim()}.`);
+      router.push(draft?.recordset_id ? `/recordsets/${draft.recordset_id}` : "/recordsets");
+    } catch (e) {
+      setPublishError(e instanceof Error ? e.message : "Could not publish draft.");
+    } finally {
+      setIsPublishing(false);
+    }
+  }
+
   const draft = data?.draft ?? data?.data ?? null;
 
   const draftFields: DynamicSectionField[] = draft
@@ -180,6 +225,9 @@ export default function DraftByIdPage({ params }: PageProps) {
         <div className="flex items-center justify-between gap-4">
           <PageTitle>Recordset Draft Details</PageTitle>
           <div className="flex gap-3">
+            {!!draft && draft.draft_status !== "published" && draft.draft_status !== "deleted" && (
+              <Button onClick={() => setShowPublish(true)}>Publish Draft</Button>
+            )}
             <LinkButton
               href={
                 draftId ? `/recordsets/drafts/${draftId}/edit` : "/recordsets"
@@ -200,6 +248,72 @@ export default function DraftByIdPage({ params }: PageProps) {
           </div>
         </div>
       </PageHeader>
+
+      {showPublish && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-neutral-900">
+            <h2 className="text-lg font-semibold">Publish Draft</h2>
+            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+              This will create an immutable release from the current draft files.
+            </p>
+
+            {publishError && (
+              <p className="mt-3 text-sm text-red-600 dark:text-red-400">{publishError}</p>
+            )}
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium">Release Number</label>
+                <input
+                  type="text"
+                  value={releaseNumber}
+                  onChange={(e) => setReleaseNumber(e.target.value)}
+                  placeholder="e.g. 1.0.0"
+                  className="input mt-1 w-full"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Release Date</label>
+                <input
+                  type="date"
+                  value={releaseDate}
+                  onChange={(e) => setReleaseDate(e.target.value)}
+                  className="input mt-1 w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">
+                  Release Notes{" "}
+                  <span className="font-normal text-neutral-500">(optional)</span>
+                </label>
+                <textarea
+                  value={releaseNotes}
+                  onChange={(e) => setReleaseNotes(e.target.value)}
+                  rows={3}
+                  className="input mt-1 w-full"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => { setShowPublish(false); setPublishError(null); }}
+                disabled={isPublishing}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => void handlePublish()}
+                disabled={isPublishing || !releaseNumber.trim() || !releaseDate}
+              >
+                {isPublishing ? "Publishing..." : "Publish"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <DynamicSection isLoading={isLoading} error={error} fields={draftFields} />
 
