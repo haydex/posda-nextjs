@@ -131,9 +131,9 @@ export default function DynamicForm<T extends DynamicFormValues>({
             <label
               key={field.key}
               htmlFor={id}
-              className={field.className ?? "text-sm"}
+              className={field.className ?? "block"}
             >
-              <span className={field.srOnlyLabel ? "sr-only" : undefined}>
+              <span className={field.srOnlyLabel ? "sr-only" : "mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"}>
                 {field.label}
                 {field.required && !field.srOnlyLabel && (
                   <span className="ml-1 text-red-500">*</span>
@@ -174,9 +174,9 @@ export default function DynamicForm<T extends DynamicFormValues>({
             <label
               key={field.key}
               htmlFor={id}
-              className={field.className ?? "text-sm"}
+              className={field.className ?? "block"}
             >
-              <span className={field.srOnlyLabel ? "sr-only" : undefined}>
+              <span className={field.srOnlyLabel ? "sr-only" : "mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"}>
                 {field.label}
                 {field.required && !field.srOnlyLabel && (
                   <span className="ml-1 text-red-500">*</span>
@@ -212,9 +212,9 @@ export default function DynamicForm<T extends DynamicFormValues>({
           <label
             key={field.key}
             htmlFor={id}
-            className={field.className ?? "text-sm"}
+            className={field.className ?? "block"}
           >
-            <span className={field.srOnlyLabel ? "sr-only" : undefined}>
+            <span className={field.srOnlyLabel ? "sr-only" : "mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"}>
               {field.label}
               {field.required && !field.srOnlyLabel && (
                 <span className="ml-1 text-red-500">*</span>

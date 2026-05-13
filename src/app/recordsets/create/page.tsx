@@ -6,12 +6,7 @@ import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
 import { Button, LinkButton } from "@/components/ui/Button";
-import {
-  PageHeader,
-  PageShell,
-  PageSubtitle,
-  PageTitle,
-} from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { SectionCard } from "@/components/ui/Card";
 
 type CreateRecordsetResponse = {
@@ -291,10 +286,10 @@ export default function RecordsetCreatePage() {
 
   return (
     <PageShell size="3xl">
-      <PageHeader>
-        <PageTitle>Create Recordset</PageTitle>
-      </PageHeader>
-      <PageSubtitle>Add a new recordset to the system.</PageSubtitle>
+      <PageDetailHeader
+        title="Create Recordset"
+        breadcrumb={{ label: "Recordsets", href: "/recordsets" }}
+      />
 
       <SectionCard>
         {isLoadingOptions && (
@@ -325,7 +320,7 @@ export default function RecordsetCreatePage() {
           }}
           fields={fields}
           errors={fieldErrors}
-          className="space-y-4"
+          className="space-y-3"
           actions={
             <>
               {saveError && (

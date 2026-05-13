@@ -6,12 +6,7 @@ import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
 import { Button, LinkButton } from "@/components/ui/Button";
-import {
-  PageHeader,
-  PageShell,
-  PageSubtitle,
-  PageTitle,
-} from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { SectionCard } from "@/components/ui/Card";
 
 type CreateDatasetResponse = {
@@ -198,10 +193,10 @@ export default function DatasetCreatePage() {
 
   return (
     <PageShell size="3xl">
-      <PageHeader>
-        <PageTitle>Create Dataset</PageTitle>
-      </PageHeader>
-      <PageSubtitle>Add a new dataset to the system.</PageSubtitle>
+      <PageDetailHeader
+        title="Create Dataset"
+        breadcrumb={{ label: "Datasets", href: "/datasets" }}
+      />
 
       <SectionCard>
         {datasetTypes.length === 0 && (
@@ -220,7 +215,7 @@ export default function DatasetCreatePage() {
           }}
           fields={fields}
           errors={fieldErrors}
-          className="space-y-4"
+          className="space-y-3"
           actions={
             <>
               {saveError && (

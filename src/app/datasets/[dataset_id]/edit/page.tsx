@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
 import { Button, LinkButton } from "@/components/ui/Button";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { SectionCard } from "@/components/ui/Card";
 
 type Dataset = {
@@ -301,9 +300,10 @@ export default function DatasetEditPage({ params }: PageProps) {
 
   return (
     <PageShell size="3xl">
-      <PageHeader>
-        <PageTitle>Edit Dataset</PageTitle>
-      </PageHeader>
+      <PageDetailHeader
+        title="Edit Dataset"
+        breadcrumb={{ label: "Dataset", href: datasetId ? `/datasets/${datasetId}` : "/datasets" }}
+      />
 
       <SectionCard>
         {datasetTypes.length === 0 && (
@@ -320,15 +320,14 @@ export default function DatasetEditPage({ params }: PageProps) {
 
         {!isLoading && dataset && (
           <>
-            <div>
-              <label className="block text-sm font-medium">Dataset ID</label>
+            <div className="mb-3">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Dataset ID</label>
               <input
                 type="text"
                 value={dataset.dataset_id}
                 disabled
                 className="mt-1 input input-muted"
               />
-              <p className="mt-1 text-xs text-zinc-500">Read-only</p>
             </div>
 
             <DynamicForm
@@ -340,7 +339,7 @@ export default function DatasetEditPage({ params }: PageProps) {
                 setSaveError(null);
               }}
               fields={fields}
-              className="space-y-4"
+              className="space-y-3"
               errors={fieldErrors}
               actions={
                 <>

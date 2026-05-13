@@ -7,7 +7,7 @@ import DynamicSection, {
 import DynamicTable from "@/components/DynamicTable";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { CardHeader, CardTitle } from "@/components/ui/Card";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 
 type DatasetRelease = {
   dataset_release_id: number;
@@ -551,30 +551,16 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
 
   return (
     <PageShell size="5xl">
-      <PageHeader>
-        <div className="flex items-center justify-between gap-4">
-          <PageTitle>Dataset Release Details</PageTitle>
-          <div className="flex gap-3">
-            <LinkButton
-              href={
-                releaseId ? `/datasets/releases/${releaseId}/edit` : "/datasets"
-              }
-            >
-              Edit Release
-            </LinkButton>
-            <LinkButton
-              href={
-                release?.dataset_id
-                  ? `/datasets/${release.dataset_id}`
-                  : "/datasets"
-              }
-              variant="ghost"
-            >
-              Back to Dataset
-            </LinkButton>
-          </div>
-        </div>
-      </PageHeader>
+      <PageDetailHeader
+        title="Dataset Release Details"
+        breadcrumb={{ label: "Dataset", href: release?.dataset_id ? `/datasets/${release.dataset_id}` : "/datasets" }}
+        subtitle={release ? `Release ${release.release_number}` : undefined}
+        actions={
+          <LinkButton href={releaseId ? `/datasets/releases/${releaseId}/edit` : "/datasets"}>
+            Edit Release
+          </LinkButton>
+        }
+      />
 
       <DynamicSection
         isLoading={isLoading}

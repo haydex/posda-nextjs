@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicSection, {
@@ -9,7 +8,7 @@ import DynamicSection, {
 import DynamicTable from "@/components/DynamicTable";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { CardHeader, CardTitle } from "@/components/ui/Card";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
 
@@ -486,24 +485,17 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
   return (
     <PageShell size="5xl">
-      <PageHeader>
-        <div className="flex items-center justify-between gap-4">
-          <PageTitle>Recordset Details</PageTitle>
-          <div className="flex gap-3">
-            <LinkButton
-              href={
-                recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"
-              }
-            >
-              Edit Recordset
-            </LinkButton>
-
-            <LinkButton href="/recordsets" variant="ghost">
-              Back to Recordsets
-            </LinkButton>
-          </div>
-        </div>
-      </PageHeader>
+      <PageDetailHeader
+        title="Recordset Details"
+        breadcrumb={{ label: "Recordsets", href: "/recordsets" }}
+        subtitle={recordset?.recordset_name}
+        badge={recordset ? { label: recordset.active ? "Active" : "Inactive", variant: recordset.active ? "success" : "neutral" } : undefined}
+        actions={
+          <LinkButton href={recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"}>
+            Edit Recordset
+          </LinkButton>
+        }
+      />
 
       <DynamicSection
         isLoading={isLoading}
@@ -521,7 +513,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   onClick={openAddDestModal}
                   disabled={availableDestinations.length === 0}
                 >
-                  Add Destination
+                  New Destination
                 </Button>
               </CardHeader>
 
@@ -690,7 +682,7 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-neutral-900">
             <h2 className="text-lg font-semibold">
-              {destModalIsAdding ? "Add Destination" : "Edit Destination"}
+              {destModalIsAdding ? "New Destination" : "Edit Destination"}
             </h2>
 
             {destModalError && (

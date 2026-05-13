@@ -8,7 +8,7 @@ import DynamicSection, {
 import DynamicTable from "@/components/DynamicTable";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { CardHeader, CardTitle } from "@/components/ui/Card";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 
 type Dataset = {
   dataset_id: number;
@@ -359,22 +359,17 @@ export default function DatasetByIdPage({ params }: PageProps) {
 
   return (
     <PageShell size="5xl">
-      <PageHeader>
-        <div className="flex items-center justify-between gap-4">
-          <PageTitle>Dataset Details</PageTitle>
-          <div className="flex gap-3">
-            <LinkButton
-              href={datasetId ? `/datasets/${datasetId}/edit` : "/datasets"}
-            >
-              Edit Dataset
-            </LinkButton>
-
-            <LinkButton href="/datasets" variant="ghost">
-              Back to Datasets
-            </LinkButton>
-          </div>
-        </div>
-      </PageHeader>
+      <PageDetailHeader
+        title="Dataset Details"
+        breadcrumb={{ label: "Datasets", href: "/datasets" }}
+        subtitle={dataset?.dataset_name}
+        badge={dataset ? { label: dataset.active ? "Active" : "Inactive", variant: dataset.active ? "success" : "neutral" } : undefined}
+        actions={
+          <LinkButton href={datasetId ? `/datasets/${datasetId}/edit` : "/datasets"}>
+            Edit Dataset
+          </LinkButton>
+        }
+      />
 
       <DynamicSection
         isLoading={isLoading}

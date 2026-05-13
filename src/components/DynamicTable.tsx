@@ -74,7 +74,7 @@ export default function DynamicTable<T extends RowLike>({
 }: DynamicTableProps<T>) {
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-300">{emptyMessage}</p>
+      <p className="text-sm text-muted">{emptyMessage}</p>
     );
   }
 
@@ -161,7 +161,7 @@ export default function DynamicTable<T extends RowLike>({
 
   return (
     <div className="p-3">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-500">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
         <p>
           Showing {showingStart}-{showingEnd} of {showingTotal}
         </p>
@@ -175,7 +175,8 @@ export default function DynamicTable<T extends RowLike>({
                 const nextSize = Number(event.target.value);
                 updateItemsPerPage(nextSize);
               }}
-              className="select select-sm w-auto! min-w-20 shrink-0 bg-transparent"
+              className="select select-sm w-auto! min-w-20 shrink-0"
+              style={{ background: "var(--background)" }}
             >
               {pageSizeOptions.map((option) => (
                 <option key={option} value={option}>
@@ -188,70 +189,15 @@ export default function DynamicTable<T extends RowLike>({
       </div>
 
       {hasScrollableRows ? (
-        <div className="overflow-x-auto">
+        <div
+          className="overflow-auto"
+          style={{ maxHeight: tableViewportMaxHeight }}
+        >
           <table className="min-w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-black/10 bg-neutral-100 dark:border-white/5 dark:bg-neutral-800/50">
+            <thead className="sticky top-0">
+              <tr className="bg-accent">
                 {resolvedColumns.map((column) => (
-                  <th key={column.key} className="px-2 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-200">
-                    {column.label ?? toLabel(column.key)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-          </table>
-
-          <div
-            className="overflow-y-auto"
-            style={
-              tableViewportMaxHeight
-                ? { maxHeight: tableViewportMaxHeight }
-                : undefined
-            }
-          >
-            <table className="min-w-full border-collapse text-left text-sm">
-              <tbody>
-                {visibleRows.map((row, index) => (
-                  <tr
-                    title={onRowClick ? "Click to view details" : undefined}
-                    key={
-                      getRowKey
-                        ? getRowKey(row, startIndex + index)
-                        : startIndex + index
-                    }
-                    onClick={onRowClick ? () => onRowClick(row) : undefined}
-                    className={
-                      onRowClick
-                        ? "cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/5 dark:hover:bg-white/5"
-                        : "border-b border-black/5 dark:border-white/5"
-                    }
-                  >
-                    {resolvedColumns.map((column) => {
-                      const rawValue = row[column.key];
-                      const formatter =
-                        column.render ?? formatters?.[column.key];
-
-                      return (
-                        <td key={column.key} className="px-2 py-2">
-                          {formatter
-                            ? formatter(rawValue, row)
-                            : defaultFormat(rawValue)}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-black/10 bg-neutral-100 dark:border-white/5 dark:bg-neutral-800/50">
-                {resolvedColumns.map((column) => (
-                  <th key={column.key} className="px-2 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-700 dark:text-neutral-200">
+                  <th key={column.key} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-white">
                     {column.label ?? toLabel(column.key)}
                   </th>
                 ))}
@@ -269,8 +215,54 @@ export default function DynamicTable<T extends RowLike>({
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                   className={
                     onRowClick
-                      ? "cursor-pointer border-b border-black/5 transition hover:bg-black/5 dark:border-white/5 dark:hover:bg-white/5"
-                      : "border-b border-black/5 dark:border-white/5"
+                      ? "table-row-clickable border-b border-black/5 dark:border-white/5"
+                      : "table-row border-b border-black/5 dark:border-white/5"
+                  }
+                >
+                  {resolvedColumns.map((column) => {
+                    const rawValue = row[column.key];
+                    const formatter =
+                      column.render ?? formatters?.[column.key];
+
+                    return (
+                      <td key={column.key} className="px-2 py-2">
+                        {formatter
+                          ? formatter(rawValue, row)
+                          : defaultFormat(rawValue)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse text-left text-sm">
+            <thead>
+              <tr className="bg-accent">
+                {resolvedColumns.map((column) => (
+                  <th key={column.key} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                    {column.label ?? toLabel(column.key)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {visibleRows.map((row, index) => (
+                <tr
+                  title={onRowClick ? "Click to view details" : undefined}
+                  key={
+                    getRowKey
+                      ? getRowKey(row, startIndex + index)
+                      : startIndex + index
+                  }
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  className={
+                    onRowClick
+                      ? "table-row-clickable border-b border-black/5 dark:border-white/5"
+                      : "table-row border-b border-black/5 dark:border-white/5"
                   }
                 >
                   {resolvedColumns.map((column) => {
@@ -293,7 +285,7 @@ export default function DynamicTable<T extends RowLike>({
       )}
 
       {showPagination && totalPages > 1 && (
-        <div className="mt-3 flex items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-500">
+        <div className="mt-3 flex items-center justify-between gap-3 text-sm text-muted">
           <p>
             Page {currentPageSafe} of {totalPages}
           </p>

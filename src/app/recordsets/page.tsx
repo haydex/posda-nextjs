@@ -115,13 +115,13 @@ export default function RecordsetsPage() {
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [filtersInput, setFiltersInput] = useState<RecordsetFilters>({
     search: "",
-    activeOnly: false,
+    activeOnly: true,
     datasetId: "",
   });
 
   const [filters, setFilters] = useState<RecordsetFilters>({
     search: "",
-    activeOnly: false,
+    activeOnly: true,
     datasetId: "",
   });
 
@@ -288,7 +288,7 @@ export default function RecordsetsPage() {
         )}
 
         {!isLoading && data && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
               Total recordsets:{" "}
               <span className="font-medium">{data.total}</span>
@@ -302,7 +302,6 @@ export default function RecordsetsPage() {
               paginateRows={true}
               columns={[
                 { key: "recordset_id", label: "ID" },
-                { key: "recordset_doi", label: "DOI" },
                 { key: "dataset_name", label: "Dataset" },
                 { key: "license_label", label: "License" },
                 { key: "recordset_type_name", label: "Type" },

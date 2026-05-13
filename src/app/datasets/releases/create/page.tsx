@@ -4,12 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { Button, LinkButton } from "@/components/ui/Button";
-import {
-  PageHeader,
-  PageShell,
-  PageSubtitle,
-  PageTitle,
-} from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { SectionCard } from "@/components/ui/Card";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
@@ -301,10 +296,10 @@ export default function DatasetReleaseCreatePage() {
 
   return (
     <PageShell size="3xl">
-      <PageHeader>
-        <PageTitle>Create Dataset Release</PageTitle>
-      </PageHeader>
-      <PageSubtitle>Add a new release for a dataset.</PageSubtitle>
+      <PageDetailHeader
+        title="Create Dataset Release"
+        breadcrumb={{ label: "Datasets", href: "/datasets" }}
+      />
 
       <SectionCard>
         {isLoadingOptions && (
@@ -323,7 +318,7 @@ export default function DatasetReleaseCreatePage() {
           }}
           fields={fields}
           errors={fieldErrors}
-          className="space-y-4"
+          className="space-y-3"
           actions={
             <div className="mt-6 flex flex-wrap gap-3">
               <Button type="submit" disabled={isSaving}>

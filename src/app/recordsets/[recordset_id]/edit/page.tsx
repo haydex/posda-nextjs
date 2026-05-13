@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
 import { Button, LinkButton } from "@/components/ui/Button";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { SectionCard } from "@/components/ui/Card";
 
 type Recordset = {
@@ -391,9 +390,10 @@ export default function RecordsetEditPage({ params }: PageProps) {
 
   return (
     <PageShell size="3xl">
-      <PageHeader>
-        <PageTitle>Edit Recordset</PageTitle>
-      </PageHeader>
+      <PageDetailHeader
+        title="Edit Recordset"
+        breadcrumb={{ label: "Recordset", href: recordsetId ? `/recordsets/${recordsetId}` : "/recordsets" }}
+      />
 
       <SectionCard>
         {isLoadingOptions && (
@@ -410,15 +410,14 @@ export default function RecordsetEditPage({ params }: PageProps) {
 
         {!isLoading && recordset && (
           <>
-            <div>
-              <label className="block text-sm font-medium">Recordset ID</label>
+            <div className="mb-3">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Recordset ID</label>
               <input
                 type="text"
                 value={recordset.recordset_id}
                 disabled
                 className="mt-1 input input-muted"
               />
-              <p className="mt-1 text-xs text-zinc-500">Read-only</p>
             </div>
 
             <DynamicForm
@@ -431,7 +430,7 @@ export default function RecordsetEditPage({ params }: PageProps) {
               }}
               fields={fields}
               errors={fieldErrors}
-              className="space-y-4"
+              className="space-y-3"
               actions={
                 <>
                   <div className="space-y-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-900/50">

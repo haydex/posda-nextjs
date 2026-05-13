@@ -1,16 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { Button, LinkButton } from "@/components/ui/Button";
-import {
-  PageHeader,
-  PageShell,
-  PageSubtitle,
-  PageTitle,
-} from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { SectionCard } from "@/components/ui/Card";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
@@ -309,10 +303,10 @@ export default function RecordsetDraftCreatePage() {
 
   return (
     <PageShell size="3xl">
-      <PageHeader>
-        <PageTitle>Create Draft</PageTitle>
-      </PageHeader>
-      <PageSubtitle>Add a new draft for a recordset.</PageSubtitle>
+      <PageDetailHeader
+        title="Create Draft"
+        breadcrumb={{ label: "Recordsets", href: "/recordsets" }}
+      />
 
       <SectionCard>
         {isLoadingOptions && (
@@ -331,7 +325,7 @@ export default function RecordsetDraftCreatePage() {
           }}
           fields={fields}
           errors={fieldErrors}
-          className="space-y-4"
+          className="space-y-3"
           actions={
             <div className="mt-6 flex flex-wrap gap-3">
               <Button type="submit" disabled={isSaving}>

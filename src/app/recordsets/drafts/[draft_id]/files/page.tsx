@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
 
@@ -492,24 +492,11 @@ export default function DraftFilesPage({ params }: PageProps) {
 
   return (
     <PageShell size="5xl">
-      <PageHeader>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <PageTitle>Edit Draft Files</PageTitle>
-            {!isLoadingDraft && draft && (
-              <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                {draft.draft_name}
-              </p>
-            )}
-          </div>
-          <LinkButton
-            href={draftId ? `/recordsets/drafts/${draftId}` : "/recordsets"}
-            variant="ghost"
-          >
-            Back to Draft
-          </LinkButton>
-        </div>
-      </PageHeader>
+      <PageDetailHeader
+        title="Edit Draft Files"
+        breadcrumb={{ label: "Draft", href: draftId ? `/recordsets/drafts/${draftId}` : "/recordsets" }}
+        subtitle={draft?.draft_name}
+      />
 
       {draftError && (
         <p className="text-sm text-red-600 dark:text-red-400">{draftError}</p>
@@ -633,7 +620,7 @@ export default function DraftFilesPage({ params }: PageProps) {
         </SectionCard>
 
         {/* Right: Browser panel with tabs */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex gap-1 border-b border-neutral-200 dark:border-neutral-700">
             {(["activity", "release", "files"] as const).map((tab) => (
               <button
@@ -656,7 +643,7 @@ export default function DraftFilesPage({ params }: PageProps) {
 
           {/* Activity Browser */}
           {browserTab === "activity" && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <SectionCard>
                 <CardHeader>
                   <CardTitle>Activities</CardTitle>
@@ -829,7 +816,7 @@ export default function DraftFilesPage({ params }: PageProps) {
 
           {/* Release Browser */}
           {browserTab === "release" && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <SectionCard>
                 <CardHeader>
                   <CardTitle>Releases</CardTitle>

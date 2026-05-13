@@ -7,9 +7,9 @@ import DynamicSection, {
 } from "@/components/DynamicSection";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { useToast } from "@/components/Toast";
-import { toastError, toastSuccess } from "@/components/toastHelpers";
+import { toastSuccess } from "@/components/toastHelpers";
 
 type Draft = {
   recordset_draft_id: number;
@@ -221,37 +221,29 @@ export default function DraftByIdPage({ params }: PageProps) {
 
   return (
     <PageShell size="5xl">
-      <PageHeader>
-        <div className="flex items-center justify-between gap-4">
-          <PageTitle>Recordset Draft Details</PageTitle>
-          <div className="flex gap-3">
+      <PageDetailHeader
+        title="Draft Details"
+        breadcrumb={{ label: "Recordset", href: draft?.recordset_id ? `/recordsets/${draft.recordset_id}` : "/recordsets" }}
+        subtitle={draft?.draft_name}
+        badge={draft ? {
+          label: draft.draft_status === "published" ? "Published" : draft.draft_status === "deleted" ? "Deleted" : "Draft",
+          variant: draft.draft_status === "published" ? "success" : draft.draft_status === "deleted" ? "danger" : "neutral",
+        } : undefined}
+        actions={
+          <>
             {!!draft && draft.draft_status !== "published" && draft.draft_status !== "deleted" && (
               <Button onClick={() => setShowPublish(true)}>Publish Draft</Button>
             )}
-            <LinkButton
-              href={
-                draftId ? `/recordsets/drafts/${draftId}/edit` : "/recordsets"
-              }
-            >
+            <LinkButton href={draftId ? `/recordsets/drafts/${draftId}/edit` : "/recordsets"}>
               Edit Draft
             </LinkButton>
-            <LinkButton
-              href={
-                draft?.recordset_id
-                  ? `/recordsets/${draft.recordset_id}`
-                  : "/recordsets"
-              }
-              variant="ghost"
-            >
-              Back to Recordset
-            </LinkButton>
-          </div>
-        </div>
-      </PageHeader>
+          </>
+        }
+      />
 
       {showPublish && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-neutral-900">
+          <div className="w-full max-w-md rounded-lg p-6 shadow-xl" style={{ background: "var(--surface)", border: "1px solid var(--border-strong)" }}>
             <h2 className="text-lg font-semibold">Publish Draft</h2>
             <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
               This will create an immutable release from the current draft files.

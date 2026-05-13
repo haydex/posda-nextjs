@@ -94,13 +94,13 @@ export default function DatasetsPage() {
   const [datasetTypes, setDatasetTypes] = useState<DatasetType[]>([]);
   const [filtersInput, setFiltersInput] = useState<DatasetFilters>({
     search: "",
-    activeOnly: false,
+    activeOnly: true,
     datasetTypeId: "",
   });
 
   const [filters, setFilters] = useState<DatasetFilters>({
     search: "",
-    activeOnly: false,
+    activeOnly: true,
     datasetTypeId: "",
   });
 
@@ -267,7 +267,7 @@ export default function DatasetsPage() {
         )}
 
         {!isLoading && data && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
               Total datasets: <span className="font-medium">{data.total}</span>
             </p> */}

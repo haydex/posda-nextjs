@@ -7,7 +7,7 @@ import DynamicSection, {
 } from "@/components/DynamicSection";
 import { LinkButton } from "@/components/ui/Button";
 import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 
 type RecordsetRelease = {
   recordset_release_id: number;
@@ -211,19 +211,11 @@ export default function ReleaseByIdPage({ params }: PageProps) {
 
   return (
     <PageShell size="5xl">
-      <PageHeader>
-        <div className="flex items-center justify-between gap-4">
-          <PageTitle>Release Details</PageTitle>
-          <div className="flex gap-3">
-            <LinkButton
-              href={recordsetId ? `/recordsets/${recordsetId}` : "/recordsets"}
-              variant="ghost"
-            >
-              Back to Recordset
-            </LinkButton>
-          </div>
-        </div>
-      </PageHeader>
+      <PageDetailHeader
+        title="Release Details"
+        breadcrumb={{ label: "Recordset", href: recordsetId ? `/recordsets/${recordsetId}` : "/recordsets" }}
+        subtitle={release ? `Release ${release.release_number}` : undefined}
+      />
 
       <DynamicSection
         isLoading={isLoading}

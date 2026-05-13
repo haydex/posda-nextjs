@@ -1,22 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafaf9;
-  --foreground: #3f3f46;
+  --background: #ffffff;
+  --foreground: #1e293b;
+  --surface: #e8eaee;
+  --surface-alt: #d8dce3;
+  --muted: #64748b;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --border: rgba(0, 0, 0, 0.10);
+  --border-strong: rgba(0, 0, 0, 0.18);
   --navbar-height: 3.5rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #171717;
-    --foreground: #d4d4d8;
+    --background: #243050;
+    --foreground: #d0d8e8;
+    --surface: #1a2035;
+    --surface-alt: #1e2840;
+    --muted: #8899b8;
+    --accent: #4a8fd4;
+    --accent-hover: #5a9fe4;
+    --border: #263352;
+    --border-strong: #2e4270;
   }
 }
 
@@ -24,83 +43,159 @@
   .page-shell {
     @apply mx-auto min-h-screen w-full px-6 py-10;
   }
-  .page-shell-3xl {
-    @apply max-w-3xl;
-  }
-  .page-shell-5xl {
-    @apply max-w-5xl;
-  }
-  .page-shell-6xl {
-    @apply max-w-6xl;
-  }
+  .page-shell-3xl { @apply max-w-3xl; }
+  .page-shell-5xl { @apply max-w-5xl; }
+  .page-shell-6xl { @apply max-w-6xl; }
+
   .page-header {
-    @apply border-b-2 border-black/20 pb-4 dark:border-white/5;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-strong);
   }
+
   .page-title {
     @apply text-3xl font-semibold tracking-tight;
   }
+
   .page-subtitle {
-    @apply mt-2 text-zinc-600 dark:text-zinc-500;
+    @apply mt-2;
+    color: var(--muted);
   }
+
   .section-card {
-    @apply mt-6 rounded-lg border border-black/5 p-4 dark:border-white/5;
+    @apply mt-6 rounded-lg p-4;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
   }
+
   .card {
-    @apply rounded-lg border border-black/5 p-4 dark:border-white/5;
+    @apply rounded-lg p-4;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
   }
+
   .card-header {
-    @apply flex items-center justify-between border-b-2 border-black/35 pb-2 dark:border-white/10;
+    @apply flex items-center justify-between pb-3 mb-3;
+    min-height: 2.5rem;
+    border-bottom: 2px solid var(--border-strong);
+    border-left: 3px solid var(--accent);
+    padding-left: 0.625rem;
   }
+
   .card-title {
-    @apply text-lg font-semibold tracking-tight;
+    @apply text-sm font-bold uppercase tracking-wider;
+    color: var(--foreground);
   }
+
+  .navbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-strong);
+  }
+
   .btn {
     @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60;
   }
+
   .btn-primary {
-    @apply bg-black text-white hover:bg-zinc-800 dark:bg-zinc-300 dark:text-zinc-950 dark:hover:bg-zinc-200;
+    background: var(--accent);
+    color: #ffffff;
   }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
   .btn-ghost {
-    @apply border border-black/10 hover:bg-black/3 dark:border-white/10 dark:hover:bg-white/5;
+    border: 1px solid var(--border-strong);
+    color: var(--foreground);
   }
-  .btn-sm {
-    @apply h-8 px-3;
+  .btn-ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.06);
   }
-  .btn-md {
-    @apply h-10 px-4;
+  @media (prefers-color-scheme: light) {
+    .btn-ghost:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.06);
+    }
   }
-  .btn-lg {
-    @apply h-12 px-5;
-  }
-  .btn-wide {
-    @apply w-32;
-  }
+
+  .btn-sm { @apply h-8 px-3; }
+  .btn-md { @apply h-10 px-4; }
+  .btn-lg { @apply h-12 px-5; }
+  .btn-wide { @apply w-32; }
+
   .input {
-    @apply h-10 w-full rounded-md border border-black/10 bg-white px-3 text-sm text-zinc-700 outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200;
+    @apply h-10 w-full rounded-md px-3 text-sm outline-none;
+    background: var(--background);
+    border: 1px solid var(--border-strong);
+    color: var(--foreground);
   }
+  .input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+
   .input-transparent {
-    @apply h-10 w-full rounded-md border border-black/10 bg-transparent px-3 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10;
+    @apply h-10 w-full rounded-md px-3 text-sm outline-none;
+    background: var(--background);
+    border: 1px solid var(--border-strong);
+    color: var(--foreground);
   }
+  .input-transparent:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+
   .input-muted {
-    @apply bg-zinc-100 dark:bg-zinc-900/50;
+    background: var(--surface-alt);
   }
+
   .textarea {
-    @apply w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm text-zinc-700 outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200;
+    @apply w-full rounded-md px-3 py-2 text-sm outline-none;
+    background: var(--background);
+    border: 1px solid var(--border-strong);
+    color: var(--foreground);
   }
+  .textarea:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+  }
+
   .select {
-    @apply h-10 w-full rounded-md border border-black/10 bg-white px-3 text-sm text-zinc-700 outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200;
+    @apply h-10 w-full rounded-md px-3 text-sm outline-none;
+    background: var(--background);
+    border: 1px solid var(--border-strong);
+    color: var(--foreground);
   }
-  .select-sm {
-    @apply h-8 px-2 py-1 text-sm;
+  .select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
   }
-  .checkbox {
-    @apply h-4 w-4;
-  }
+
+  .select-sm { @apply h-8 px-2 py-1 text-sm; }
+
+  .checkbox { @apply h-4 w-4; }
+}
+
+thead th {
+  text-align: left;
+}
+
+.table-row {
+  background: var(--background);
+}
+
+.table-row-clickable {
+  background: var(--background);
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.table-row-clickable:hover {
+  background: var(--surface-alt);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  accent-color: var(--accent);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   padding-top: var(--navbar-height);
   scroll-padding-top: var(--navbar-height);

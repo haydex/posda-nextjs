@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { Button, LinkButton } from "@/components/ui/Button";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { SectionCard } from "@/components/ui/Card";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
@@ -275,9 +274,10 @@ export default function DatasetReleaseEditPage({ params }: PageProps) {
 
   return (
     <PageShell size="3xl">
-      <PageHeader>
-        <PageTitle>Edit Dataset Release</PageTitle>
-      </PageHeader>
+      <PageDetailHeader
+        title="Edit Dataset Release"
+        breadcrumb={{ label: "Dataset Release", href: releaseId ? `/datasets/releases/${releaseId}` : "/datasets" }}
+      />
 
       {isLoading && <p className="mt-4 text-sm">Loading release...</p>}
 
@@ -299,7 +299,7 @@ export default function DatasetReleaseEditPage({ params }: PageProps) {
             }}
             fields={fields}
             errors={fieldErrors}
-            className="space-y-4"
+            className="space-y-3"
             actions={
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button type="submit" disabled={isSaving}>
