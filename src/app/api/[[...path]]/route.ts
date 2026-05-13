@@ -3,26 +3,26 @@ import { PapiHttpError, papiRequest, type PapiRequestOptions } from "@/lib/papi"
 
 type RouteContext = { params: Promise<{ path?: string[] }> };
 
-const ALLOWED_ROOTS = new Set([
-  "lookups",
-  "datasets",
-  "releases",
-  "recordsets",
-  "transfers",
-]);
+const ROOT_ROUTERS: Record<string, string> = {
+  lookups:    "/papi/v1/distribution",
+  datasets:   "/papi/v1/distribution",
+  releases:   "/papi/v1/distribution",
+  recordsets: "/papi/v1/distribution",
+  transfers:  "/papi/v1/distribution",
+  activities: "/papi/v1",
+};
+
 const FORWARDABLE_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
 
-function buildUpstreamPath(path?: string[]) {
-  if (!path || path.length === 0) {
-    return null;
-  }
+function buildUpstreamInfo(
+  path?: string[],
+): { upstreamPath: string; basePath: string } | null {
+  if (!path || path.length === 0) return null;
 
-  const [root] = path;
-  if (!ALLOWED_ROOTS.has(root)) {
-    return null;
-  }
+  const basePath = ROOT_ROUTERS[path[0]];
+  if (!basePath) return null;
 
-  return `/${path.join("/")}`;
+  return { upstreamPath: `/${path.join("/")}`, basePath };
 }
 
 function toPapiErrorResponse(error: unknown, fallbackMessage: string) {
@@ -130,7 +130,12 @@ function applyPagination<T>(payload: T, request: Request): T {
   } as T;
 }
 
-async function forwardFromRequest(request: Request, path: string, fallbackMessage: string) {
+async function forwardFromRequest(
+  request: Request,
+  upstreamPath: string,
+  basePath: string,
+  fallbackMessage: string,
+) {
   const method = request.method.toUpperCase();
   if (!FORWARDABLE_METHODS.has(method)) {
     return NextResponse.json(
@@ -147,6 +152,7 @@ async function forwardFromRequest(request: Request, path: string, fallbackMessag
   const query = new URL(request.url).searchParams;
   const options: PapiRequestOptions = {
     query,
+    basePath,
     ...(method === "GET" ? {} : { method: method as PapiRequestOptions["method"] }),
   };
 
@@ -158,7 +164,7 @@ async function forwardFromRequest(request: Request, path: string, fallbackMessag
   }
 
   try {
-    const response = await papiRequest(path, options);
+    const response = await papiRequest(upstreamPath, options);
     return NextResponse.json(applyPagination(response, request));
   } catch (error) {
     return toPapiErrorResponse(error, fallbackMessage);
@@ -167,9 +173,9 @@ async function forwardFromRequest(request: Request, path: string, fallbackMessag
 
 async function handle(request: Request, context: RouteContext) {
   const { path } = await context.params;
-  const upstreamPath = buildUpstreamPath(path);
+  const upstream = buildUpstreamInfo(path);
 
-  if (!upstreamPath) {
+  if (!upstream) {
     return NextResponse.json(
       {
         error: {
@@ -183,8 +189,9 @@ async function handle(request: Request, context: RouteContext) {
 
   return forwardFromRequest(
     request,
-    upstreamPath,
-    `Failed to forward ${request.method.toUpperCase()} ${upstreamPath}.`,
+    upstream.upstreamPath,
+    upstream.basePath,
+    `Failed to forward ${request.method.toUpperCase()} ${upstream.upstreamPath}.`,
   );
 }
 

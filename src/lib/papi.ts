@@ -14,7 +14,7 @@ export class PapiHttpError extends Error {
   }
 }
 
-function getPapiBaseUrl() {
+function getPapiBaseUrl(basePath?: string) {
   const target = process.env.PAPI_TARGET;
 
   if (!target) {
@@ -22,8 +22,11 @@ function getPapiBaseUrl() {
   }
 
   const normalizedTarget = target.endsWith("/") ? target.slice(0, -1) : target;
-  const basePath = process.env.PAPI_BASE_PATH ?? "/papi/v1/distribution";
-  const normalizedBasePath = basePath.startsWith("/") ? basePath : `/${basePath}`;
+  const resolvedBasePath =
+    basePath ?? process.env.PAPI_BASE_PATH ?? "/papi/v1/distribution";
+  const normalizedBasePath = resolvedBasePath.startsWith("/")
+    ? resolvedBasePath
+    : `/${resolvedBasePath}`;
 
   return `${normalizedTarget}${normalizedBasePath}`;
 }
@@ -33,13 +36,14 @@ export type PapiRequestOptions = {
   query?: URLSearchParams;
   body?: unknown;
   headers?: HeadersInit;
+  basePath?: string;
 };
 
 export async function papiRequest<T>(
   path: string,
   options: PapiRequestOptions = {},
 ): Promise<T> {
-  const baseUrl = getPapiBaseUrl();
+  const baseUrl = getPapiBaseUrl(options.basePath);
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const url = new URL(`${baseUrl}${normalizedPath}`);
 
