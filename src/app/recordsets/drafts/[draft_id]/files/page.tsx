@@ -29,6 +29,14 @@ type Timepoint = {
   file_count: number;
 };
 
+type Release = {
+  recordset_release_id: number;
+  release_number: string;
+  release_date: string;
+  release_notes: string | null;
+  file_count: number;
+};
+
 type DiffResult = {
   draft_id: number;
   compare_type: string;
@@ -96,6 +104,14 @@ export default function DraftFilesPage({ params }: PageProps) {
   const [diff, setDiff] = useState<DiffResult | null>(null);
   const [diffRefreshKey, setDiffRefreshKey] = useState(0);
 
+  // Release browser
+  const [releases, setReleases] = useState<Release[]>([]);
+  const [releaseSearch, setReleaseSearch] = useState("");
+  const [releaseIdSearch, setReleaseIdSearch] = useState("");
+  const [selectedRelease, setSelectedRelease] = useState<Release | null>(null);
+  const [releaseDiff, setReleaseDiff] = useState<DiffResult | null>(null);
+  const [releaseDiffRefreshKey, setReleaseDiffRefreshKey] = useState(0);
+
   // Draft contents
   const [draftSummary, setDraftSummary] = useState<DraftSummary | null>(null);
   const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
@@ -105,14 +121,19 @@ export default function DraftFilesPage({ params }: PageProps) {
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
   const [isLoadingTimepoints, setIsLoadingTimepoints] = useState(false);
   const [isLoadingDiff, setIsLoadingDiff] = useState(false);
+  const [isLoadingReleases, setIsLoadingReleases] = useState(false);
+  const [isLoadingReleaseDiff, setIsLoadingReleaseDiff] = useState(false);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [isAddingFromRelease, setIsAddingFromRelease] = useState(false);
 
   // Error states
   const [draftError, setDraftError] = useState<string | null>(null);
   const [activitiesError, setActivitiesError] = useState<string | null>(null);
   const [timepointsError, setTimepointsError] = useState<string | null>(null);
   const [diffError, setDiffError] = useState<string | null>(null);
+  const [releasesError, setReleasesError] = useState<string | null>(null);
+  const [releaseDiffError, setReleaseDiffError] = useState<string | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
 
   // Load draft + activities on mount
@@ -291,6 +312,79 @@ export default function DraftFilesPage({ params }: PageProps) {
     };
   }, [draftId, selectedActivityId, selectedTimepointId, diffRefreshKey]);
 
+  // Load releases when the draft's recordset_id is known
+  useEffect(() => {
+    if (!draft?.recordset_id) return;
+    let isMounted = true;
+
+    setIsLoadingReleases(true);
+    setReleasesError(null);
+
+    async function loadReleases() {
+      try {
+        const res = await fetch(
+          `/api/recordsets/${draft!.recordset_id}/releases`,
+          { cache: "no-store" },
+        );
+        if (!isMounted) return;
+        if (res.ok) {
+          const json = (await res.json()) as Release[] | { data?: Release[] };
+          setReleases(Array.isArray(json) ? json : (json.data ?? []));
+        } else {
+          setReleasesError("Could not load releases.");
+        }
+      } catch {
+        if (!isMounted) return;
+        setReleasesError("Could not load releases.");
+      } finally {
+        if (isMounted) setIsLoadingReleases(false);
+      }
+    }
+
+    void loadReleases();
+    return () => { isMounted = false; };
+  }, [draft]);
+
+  // Load release diff when a release is selected
+  useEffect(() => {
+    if (!draftId || !selectedRelease) {
+      setReleaseDiff(null);
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoadingReleaseDiff(true);
+    setReleaseDiffError(null);
+    setReleaseDiff(null);
+
+    const releaseId = selectedRelease.recordset_release_id;
+
+    async function loadReleaseDiff() {
+      const query = new URLSearchParams({ compare_release_id: String(releaseId) });
+      try {
+        const res = await fetch(
+          `/api/recordsets/drafts/${draftId}/diff?${query.toString()}`,
+          { cache: "no-store" },
+        );
+        if (!isMounted) return;
+        if (res.ok) {
+          const json = (await res.json()) as { data: DiffResult } | DiffResult;
+          setReleaseDiff("data" in json ? (json as { data: DiffResult }).data : (json as DiffResult));
+        } else {
+          setReleaseDiffError("Could not load diff.");
+        }
+      } catch {
+        if (!isMounted) return;
+        setReleaseDiffError("Could not load diff.");
+      } finally {
+        if (isMounted) setIsLoadingReleaseDiff(false);
+      }
+    }
+
+    void loadReleaseDiff();
+    return () => { isMounted = false; };
+  }, [draftId, selectedRelease, releaseDiffRefreshKey]);
+
   async function handleAddFromActivity() {
     if (!draftId || !diff || diff.removed_file_ids.length === 0) return;
 
@@ -320,6 +414,35 @@ export default function DraftFilesPage({ params }: PageProps) {
     }
   }
 
+  async function handleAddFromRelease() {
+    if (!draftId || !releaseDiff || releaseDiff.removed_file_ids.length === 0) return;
+
+    setIsAddingFromRelease(true);
+    try {
+      const res = await fetch(`/api/recordsets/drafts/${draftId}/files/add`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ file_ids: releaseDiff.removed_file_ids }),
+      });
+
+      if (!res.ok) {
+        const json = (await res.json()) as { error?: { message?: string } };
+        throw new Error(json.error?.message ?? "Could not add files.");
+      }
+
+      toastSuccess(
+        addToast,
+        `Added ${releaseDiff.removed_file_ids.length.toLocaleString()} files to draft.`,
+      );
+      setReleaseDiffRefreshKey((k) => k + 1);
+      setSummaryRefreshKey((k) => k + 1);
+    } catch (e) {
+      toastError(addToast, e instanceof Error ? e.message : "Could not add files.");
+    } finally {
+      setIsAddingFromRelease(false);
+    }
+  }
+
   const DISPLAY_CAP = 25;
   const trimmedSearch = activitySearch.trim();
   const trimmedIdSearch = activityIdSearch.trim();
@@ -342,6 +465,28 @@ export default function DraftFilesPage({ params }: PageProps) {
   const displayedActivities = hasMoreResults
     ? matchedActivities.slice(0, DISPLAY_CAP)
     : matchedActivities;
+
+  // Release browser filtering
+  const trimmedReleaseSearch = releaseSearch.trim();
+  const trimmedReleaseIdSearch = releaseIdSearch.trim();
+  const releaseTextSearchActive = trimmedReleaseSearch.length >= 2;
+  const releaseIdSearchActive = /^\d+$/.test(trimmedReleaseIdSearch);
+  const releaseSearchActive = releaseTextSearchActive || releaseIdSearchActive;
+  const searchedReleaseId = releaseIdSearchActive ? Number(trimmedReleaseIdSearch) : null;
+
+  const matchedReleases = releaseSearchActive
+    ? releases.filter(
+        (r) =>
+          (releaseIdSearchActive && r.recordset_release_id === searchedReleaseId) ||
+          (releaseTextSearchActive &&
+            (r.release_number ?? "").toLowerCase().includes(trimmedReleaseSearch.toLowerCase())),
+      )
+    : [];
+
+  const releaseHasMoreResults = matchedReleases.length > DISPLAY_CAP;
+  const displayedReleases = releaseHasMoreResults
+    ? matchedReleases.slice(0, DISPLAY_CAP)
+    : matchedReleases;
 
   const hasDicom = (draftSummary?.dicom.series_count ?? 0) > 0;
 
@@ -684,12 +829,138 @@ export default function DraftFilesPage({ params }: PageProps) {
 
           {/* Release Browser */}
           {browserTab === "release" && (
-            <SectionCard>
-              <CardHeader>
-                <CardTitle>Release Browser</CardTitle>
-              </CardHeader>
-              <p className="mt-3 text-sm text-neutral-500">Coming soon.</p>
-            </SectionCard>
+            <div className="space-y-4">
+              <SectionCard>
+                <CardHeader>
+                  <CardTitle>Releases</CardTitle>
+                </CardHeader>
+
+                <div className="mt-3 flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="ID"
+                    value={releaseIdSearch}
+                    onChange={(e) => setReleaseIdSearch(e.target.value)}
+                    className="input w-24"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search by version number..."
+                    value={releaseSearch}
+                    onChange={(e) => setReleaseSearch(e.target.value)}
+                    className="input flex-1"
+                  />
+                </div>
+
+                {isLoadingReleases && (
+                  <p className="mt-3 text-sm">Loading releases...</p>
+                )}
+
+                {!isLoadingReleases && releasesError && (
+                  <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                    {releasesError}
+                  </p>
+                )}
+
+                {!isLoadingReleases && !releasesError && (
+                  <div className="mt-3 rounded-md border border-neutral-200 dark:border-neutral-700">
+                    {!releaseSearchActive ? (
+                      <p className="p-3 text-sm text-neutral-500">
+                        Enter a release ID or type 2+ characters to search.
+                      </p>
+                    ) : displayedReleases.length === 0 ? (
+                      <p className="p-3 text-sm text-neutral-500">No releases found.</p>
+                    ) : (
+                      <>
+                        <ul className="max-h-72 divide-y divide-neutral-100 overflow-y-auto dark:divide-neutral-800">
+                          {displayedReleases.map((r) => (
+                            <li key={r.recordset_release_id}>
+                              <button
+                                className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 ${
+                                  selectedRelease?.recordset_release_id === r.recordset_release_id
+                                    ? "bg-blue-50 dark:bg-blue-950/30"
+                                    : ""
+                                }`}
+                                onClick={() => setSelectedRelease(r)}
+                              >
+                                <span className="font-medium">{r.release_number}</span>
+                                <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
+                                  #{r.recordset_release_id} &middot;{" "}
+                                  {new Date(r.release_date).toLocaleDateString()} &middot;{" "}
+                                  {r.file_count.toLocaleString()} files
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                        {releaseHasMoreResults && (
+                          <p className="border-t border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                            Showing {DISPLAY_CAP} of {matchedReleases.length} — refine your search to narrow results.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </SectionCard>
+
+              {selectedRelease && (
+                <SectionCard>
+                  <CardHeader>
+                    <CardTitle>{selectedRelease.release_number}</CardTitle>
+                  </CardHeader>
+
+                  {isLoadingReleaseDiff && <p className="mt-3 text-sm">Loading diff...</p>}
+
+                  {!isLoadingReleaseDiff && releaseDiffError && (
+                    <p className="mt-3 text-sm text-red-600 dark:text-red-400">{releaseDiffError}</p>
+                  )}
+
+                  {!isLoadingReleaseDiff && !releaseDiffError && releaseDiff && (
+                    <div className="mt-4 space-y-4">
+                      <div className="grid grid-cols-3 gap-3 rounded-lg border border-neutral-200 p-4 text-sm dark:border-neutral-700">
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                            {releaseDiff.removed_count.toLocaleString()}
+                          </p>
+                          <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
+                            From release, not in draft
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-neutral-700 dark:text-neutral-300">
+                            {releaseDiff.unchanged_count.toLocaleString()}
+                          </p>
+                          <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
+                            Already in draft
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                            {releaseDiff.added_count.toLocaleString()}
+                          </p>
+                          <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
+                            In draft, not from this release
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={() => void handleAddFromRelease()}
+                          disabled={isAddingFromRelease || releaseDiff.removed_count === 0}
+                          size="sm"
+                        >
+                          {isAddingFromRelease
+                            ? "Adding..."
+                            : `Add ${releaseDiff.removed_count.toLocaleString()} Files to Draft`}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </SectionCard>
+              )}
+            </div>
           )}
 
           {/* File Browser */}
