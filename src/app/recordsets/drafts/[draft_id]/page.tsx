@@ -309,16 +309,16 @@ export default function DraftByIdPage({ params }: PageProps) {
 
       <DynamicSection isLoading={isLoading} error={error} fields={draftFields} />
 
-      <SectionCard>
-        <CardHeader>
-          <CardTitle>File Summary</CardTitle>
-          <LinkButton
-            href={draftId ? `/recordsets/drafts/${draftId}/files` : "#"}
-            size="sm"
-          >
-            Edit Files
-          </LinkButton>
-        </CardHeader>
+      <CardHeader className="mt-6 mb-0">
+        <CardTitle>File Summary</CardTitle>
+        <LinkButton
+          href={draftId ? `/recordsets/drafts/${draftId}/files` : "#"}
+          size="sm"
+        >
+          Edit Files
+        </LinkButton>
+      </CardHeader>
+      <SectionCard className="mt-1">
 
         {isLoading && <p className="text-sm">Loading...</p>}
 

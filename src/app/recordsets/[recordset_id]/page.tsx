@@ -7,7 +7,7 @@ import DynamicSection, {
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
 import { Button, LinkButton } from "@/components/ui/Button";
-import { CardHeader, CardTitle } from "@/components/ui/Card";
+import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
 import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
@@ -497,181 +497,129 @@ export default function RecordsetByIdPage({ params }: PageProps) {
             <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{recordset ? new Date(recordset.when_updated).toLocaleString() : "—"} by {recordset?.who_updated}</p>
           </div>
         }
-      >
-        {!isLoading && recordset && (
-          <div className="mt-6 space-y-4">
-            <div className="space-y-3">
-              <CardHeader>
-                <CardTitle>Destinations</CardTitle>
-                <Button
-                  size="sm"
-                  onClick={openAddDestModal}
-                  disabled={availableDestinations.length === 0}
-                >
-                  New Destination
-                </Button>
-              </CardHeader>
+      />
 
-              {isLoadingDestinations && (
-                <p className="mt-3 text-sm">Loading destinations...</p>
-              )}
+      {!isLoading && recordset && (
+        <>
+          <CardHeader className="mt-6 mb-0">
+            <CardTitle>Destinations</CardTitle>
+            <Button
+              size="sm"
+              onClick={openAddDestModal}
+              disabled={availableDestinations.length === 0}
+            >
+              New Destination
+            </Button>
+          </CardHeader>
+          <SectionCard className="mt-1">
 
-              {!isLoadingDestinations && destinationsError && (
-                <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-                  {destinationsError}
-                </p>
-              )}
+            {isLoadingDestinations && <p className="text-sm">Loading destinations...</p>}
+            {!isLoadingDestinations && destinationsError && (
+              <p className="text-sm text-red-600 dark:text-red-400">{destinationsError}</p>
+            )}
+            {!isLoadingDestinations && !destinationsError && (
+              <DynamicTable
+                rows={destinations}
+                defaultItemsPerPage={4}
+                totalItems={destinations.length}
+                currentPage={destinationsPage}
+                currentItemsPerPage={destinationsItemsPerPage}
+                onPageChange={setDestinationsPage}
+                onItemsPerPageChange={(n) => { setDestinationsItemsPerPage(n); setDestinationsPage(1); }}
+                columns={[
+                  { key: "destination_name", label: "Destination" },
+                  { key: "destination_abbr", label: "Abbr" },
+                  { key: "default_display", label: "Default Display" },
+                  { key: "transfer_mode_name", label: "Transfer Mode" },
+                ]}
+                formatters={{ default_display: (value) => (value ? "Yes" : "No") }}
+                onRowClick={(row) => openEditDestModal(row)}
+                getRowKey={(row) => row.destination_id}
+              />
+            )}
+          </SectionCard>
 
-              {!isLoadingDestinations && !destinationsError && (
-                <div className="rounded-lg border border-black/10 dark:border-white/5">
-                  <DynamicTable
-                    rows={destinations}
-                    defaultItemsPerPage={4}
-                    totalItems={destinations.length}
-                    currentPage={destinationsPage}
-                    currentItemsPerPage={destinationsItemsPerPage}
-                    onPageChange={setDestinationsPage}
-                    onItemsPerPageChange={(n) => { setDestinationsItemsPerPage(n); setDestinationsPage(1); }}
-                    columns={[
-                      { key: "destination_name", label: "Destination" },
-                      { key: "destination_abbr", label: "Abbr" },
-                      { key: "default_display", label: "Default Display" },
-                      { key: "transfer_mode_name", label: "Transfer Mode" },
-                    ]}
-                    formatters={{
-                      default_display: (value) => (value ? "Yes" : "No"),
-                    }}
-                    onRowClick={(row) => openEditDestModal(row)}
-                    getRowKey={(row) => row.destination_id}
-                  />
-                </div>
-              )}
-            </div>
+          <CardHeader className="mt-6 mb-0">
+            <CardTitle>Releases</CardTitle>
+          </CardHeader>
+          <SectionCard className="mt-1">
 
-            <div className="space-y-3">
-              <CardHeader>
-                <CardTitle>Releases</CardTitle>
-              </CardHeader>
+            {isLoadingReleases && <p className="text-sm">Loading releases...</p>}
+            {!isLoadingReleases && releasesError && (
+              <p className="text-sm text-red-600 dark:text-red-400">{releasesError}</p>
+            )}
+            {!isLoadingReleases && !releasesError && releasesData && (
+              <DynamicTable
+                rows={releasesData.releases}
+                defaultItemsPerPage={4}
+                totalItems={releasesData.total}
+                currentPage={releasesPage}
+                currentItemsPerPage={releasesItemsPerPage}
+                paginateRows={false}
+                onPageChange={setReleasesPage}
+                onItemsPerPageChange={(nextItemsPerPage) => {
+                  setReleasesItemsPerPage(nextItemsPerPage);
+                  setReleasesPage(1);
+                }}
+                columns={[
+                  { key: "recordset_release_id", label: "ID" },
+                  { key: "release_number", label: "Version" },
+                  { key: "release_date", label: "Date" },
+                  { key: "release_notes", label: "Notes" },
+                  { key: "file_count", label: "File Count" },
+                ]}
+                formatters={{
+                  release_date: (value) => new Date(String(value)).toLocaleDateString(),
+                }}
+                onRowClick={(row) => router.push(`/recordsets/releases/${row.recordset_release_id}`)}
+                getRowKey={(row) => row.recordset_release_id}
+              />
+            )}
+          </SectionCard>
 
-              {isLoadingReleases && (
-                <p className="mt-3 text-sm">Loading releases...</p>
-              )}
+          <CardHeader className="mt-6 mb-0">
+            <CardTitle>Drafts</CardTitle>
+            <LinkButton
+              href={recordsetId ? `/recordsets/drafts/create?recordset_id=${recordsetId}` : "/recordsets/drafts/create"}
+              size="sm"
+            >
+              New Draft
+            </LinkButton>
+          </CardHeader>
+          <SectionCard className="mt-1">
 
-              {!isLoadingReleases && releasesError && (
-                <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-                  {releasesError}
-                </p>
-              )}
-
-              {!isLoadingReleases && !releasesError && releasesData && (
-                <div className="rounded-lg border border-black/10 dark:border-white/5">
-                  {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                    Total releases:{" "}
-                    <span className="font-medium">{releasesData.total}</span>
-                  </p> */}
-
-                  <DynamicTable
-                    rows={releasesData.releases}
-                    defaultItemsPerPage={4}
-                    totalItems={releasesData.total}
-                    currentPage={releasesPage}
-                    currentItemsPerPage={releasesItemsPerPage}
-                    paginateRows={false}
-                    onPageChange={setReleasesPage}
-                    onItemsPerPageChange={(nextItemsPerPage) => {
-                      setReleasesItemsPerPage(nextItemsPerPage);
-                      setReleasesPage(1);
-                    }}
-                    columns={[
-                      { key: "recordset_release_id", label: "ID" },
-                      { key: "release_number", label: "Version" },
-                      { key: "release_date", label: "Date" },
-                      { key: "release_notes", label: "Notes" },
-                      { key: "file_count", label: "File Count" },
-                    ]}
-                    formatters={{
-                      release_date: (value) =>
-                        new Date(String(value)).toLocaleDateString(),
-                    }}
-                    onRowClick={(row) =>
-                      router.push(
-                        `/recordsets/releases/${row.recordset_release_id}`,
-                      )
-                    }
-                    getRowKey={(row) => row.recordset_release_id}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-3">
-              <CardHeader>
-                <CardTitle>Drafts</CardTitle>
-                <LinkButton
-                  href={
-                    recordsetId
-                      ? `/recordsets/drafts/create?recordset_id=${recordsetId}`
-                      : "/recordsets/drafts/create"
-                  }
-                  size="sm"
-                >
-                  New Draft
-                </LinkButton>
-              </CardHeader>
-
-              {isLoadingDrafts && (
-                <p className="mt-3 text-sm">Loading drafts...</p>
-              )}
-
-              {!isLoadingDrafts && draftsError && (
-                <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-                  {draftsError}
-                </p>
-              )}
-
-              {!isLoadingDrafts && !draftsError && draftsData && (
-                <div className="rounded-lg border border-black/10 dark:border-white/5">
-                  {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                    Total drafts:{" "}
-                    <span className="font-medium">{draftsData.total}</span>
-                  </p> */}
-
-                  <DynamicTable
-                    rows={draftsData.drafts}
-                    defaultItemsPerPage={4}
-                    totalItems={draftsData.total}
-                    currentPage={draftsPage}
-                    currentItemsPerPage={draftsItemsPerPage}
-                    paginateRows={false}
-                    onPageChange={setDraftsPage}
-                    onItemsPerPageChange={(nextItemsPerPage) => {
-                      setDraftsItemsPerPage(nextItemsPerPage);
-                      setDraftsPage(1);
-                    }}
-                    columns={[
-                      { key: "recordset_draft_id", label: "ID" },
-                      { key: "draft_name", label: "Name" },
-                      { key: "draft_status", label: "Status" },
-                      { key: "draft_notes", label: "Notes" },
-                      { key: "file_count", label: "File Count" },
-                      {
-                        key: "cloned_from_release_id",
-                        label: "Cloned Release ID",
-                      },
-                    ]}
-                    onRowClick={(row) =>
-                      router.push(
-                        `/recordsets/drafts/${row.recordset_draft_id}`,
-                      )
-                    }
-                    getRowKey={(row) => row.recordset_draft_id}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </DynamicSection>
+            {isLoadingDrafts && <p className="text-sm">Loading drafts...</p>}
+            {!isLoadingDrafts && draftsError && (
+              <p className="text-sm text-red-600 dark:text-red-400">{draftsError}</p>
+            )}
+            {!isLoadingDrafts && !draftsError && draftsData && (
+              <DynamicTable
+                rows={draftsData.drafts}
+                defaultItemsPerPage={4}
+                totalItems={draftsData.total}
+                currentPage={draftsPage}
+                currentItemsPerPage={draftsItemsPerPage}
+                paginateRows={false}
+                onPageChange={setDraftsPage}
+                onItemsPerPageChange={(nextItemsPerPage) => {
+                  setDraftsItemsPerPage(nextItemsPerPage);
+                  setDraftsPage(1);
+                }}
+                columns={[
+                  { key: "recordset_draft_id", label: "ID" },
+                  { key: "draft_name", label: "Name" },
+                  { key: "draft_status", label: "Status" },
+                  { key: "draft_notes", label: "Notes" },
+                  { key: "file_count", label: "File Count" },
+                  { key: "cloned_from_release_id", label: "Cloned Release ID" },
+                ]}
+                onRowClick={(row) => router.push(`/recordsets/drafts/${row.recordset_draft_id}`)}
+                getRowKey={(row) => row.recordset_draft_id}
+              />
+            )}
+          </SectionCard>
+        </>
+      )}
 
       {showDestModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

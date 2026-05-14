@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
-import { LinkButton } from "@/components/ui/Button";
 import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
 import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 
@@ -223,10 +222,10 @@ export default function ReleaseByIdPage({ params }: PageProps) {
         fields={releaseFields}
       />
 
-      <SectionCard>
-        <CardHeader>
-          <CardTitle>File Summary</CardTitle>
-        </CardHeader>
+      <CardHeader className="mt-6 mb-0">
+        <CardTitle>File Summary</CardTitle>
+      </CardHeader>
+      <SectionCard className="mt-1">
 
         {isLoading && <p className="text-sm">Loading...</p>}
 

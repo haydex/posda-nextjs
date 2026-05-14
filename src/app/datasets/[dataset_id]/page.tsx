@@ -6,8 +6,8 @@ import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
-import { Button, LinkButton } from "@/components/ui/Button";
-import { CardHeader, CardTitle } from "@/components/ui/Card";
+import { LinkButton } from "@/components/ui/Button";
+import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
 import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 
 type Dataset = {
@@ -371,148 +371,136 @@ export default function DatasetByIdPage({ params }: PageProps) {
             <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{dataset ? new Date(dataset.when_updated).toLocaleString() : "—"} by {dataset?.who_updated}</p>
           </div>
         }
-      >
-        {!isLoading && dataset && (
-          <>
-            <div className="mt-6 space-y-3">
-              <CardHeader>
-                <CardTitle>Recordsets</CardTitle>
-                <LinkButton
-                  href={
-                    datasetId
-                      ? `/recordsets/create?dataset_id=${datasetId}`
-                      : "/recordsets/create"
-                  }
-                  size="sm"
-                >
-                  New Recordset
-                </LinkButton>
-              </CardHeader>
+      />
 
-              {isLoadingRecordsets && (
-                <p className="mt-3 text-sm">Loading recordsets...</p>
-              )}
+      {!isLoading && dataset && (
+        <>
+          <CardHeader className="mt-6 mb-0">
+            <CardTitle>Recordsets</CardTitle>
+            <LinkButton
+              href={
+                datasetId
+                  ? `/recordsets/create?dataset_id=${datasetId}`
+                  : "/recordsets/create"
+              }
+              size="sm"
+            >
+              New Recordset
+            </LinkButton>
+          </CardHeader>
+          <SectionCard className="mt-1">
 
-              {!isLoadingRecordsets && recordsetsError && (
-                <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-                  {recordsetsError}
-                </p>
-              )}
+            {isLoadingRecordsets && (
+              <p className="text-sm">Loading recordsets...</p>
+            )}
 
-              {!isLoadingRecordsets && !recordsetsError && recordsetsData && (
-                <div className="rounded-lg border border-black/10 dark:border-white/5">
-                  {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                    Total recordsets:{" "}
-                    <span className="font-medium">{recordsetsData.total}</span>
-                  </p> */}
+            {!isLoadingRecordsets && recordsetsError && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {recordsetsError}
+              </p>
+            )}
 
-                  {recordsetsData.recordsets.length === 0 ? (
-                    <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                      No recordsets were found for this dataset.
-                    </p>
-                  ) : (
-                    <DynamicTable
-                      rows={recordsetsData.recordsets}
-                      defaultItemsPerPage={5}
-                      totalItems={recordsetsData.total}
-                      currentPage={recordsetsPage}
-                      currentItemsPerPage={recordsetsItemsPerPage}
-                      paginateRows={false}
-                      onPageChange={setRecordsetsPage}
-                      onItemsPerPageChange={(nextItemsPerPage) => {
-                        setRecordsetsItemsPerPage(nextItemsPerPage);
-                        setRecordsetsPage(1);
-                      }}
-                      columns={[
-                        { key: "recordset_id", label: "ID" },
-                        { key: "recordset_name", label: "Name" },
-                        { key: "recordset_type_name", label: "Type" },
-                        { key: "license_label", label: "License" },
-                        { key: "recordset_doi", label: "DOI" },
-                        { key: "active", label: "Active" },
-                        { key: "when_updated", label: "Updated" },
-                      ]}
-                      formatters={{
-                        when_updated: (value) =>
-                          formatDateTime(value as string),
-                      }}
-                      onRowClick={(row) =>
-                        router.push(`/recordsets/${row.recordset_id}`)
-                      }
-                      getRowKey={(row) => row.recordset_id}
-                    />
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <CardHeader>
-                <CardTitle>Releases</CardTitle>
-                <LinkButton
-                  href={
-                    datasetId
-                      ? `/datasets/releases/create?dataset_id=${datasetId}`
-                      : "/datasets/releases/create"
-                  }
-                  size="sm"
-                >
-                  New Release
-                </LinkButton>
-              </CardHeader>
-
-              {isLoadingReleases && (
-                <p className="mt-3 text-sm">Loading releases...</p>
-              )}
-
-              {!isLoadingReleases && releasesError && (
-                <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-                  {releasesError}
-                </p>
-              )}
-
-              {!isLoadingReleases && !releasesError && releasesData && (
-                <div className="rounded-lg border border-black/10 dark:border-white/5">
-                  {/* <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                    Total releases:{" "}
-                    <span className="font-medium">{releasesData.total}</span>
-                  </p> */}
-
+            {!isLoadingRecordsets && !recordsetsError && recordsetsData && (
+              <>
+                {recordsetsData.recordsets.length === 0 ? (
+                  <p className="text-sm" style={{ color: "var(--muted)" }}>
+                    No recordsets were found for this dataset.
+                  </p>
+                ) : (
                   <DynamicTable
-                    rows={releasesData.releases}
-                    defaultItemsPerPage={4}
-                    totalItems={releasesData.total}
-                    currentPage={releasesPage}
-                    currentItemsPerPage={releasesItemsPerPage}
+                    rows={recordsetsData.recordsets}
+                    defaultItemsPerPage={5}
+                    totalItems={recordsetsData.total}
+                    currentPage={recordsetsPage}
+                    currentItemsPerPage={recordsetsItemsPerPage}
                     paginateRows={false}
-                    onPageChange={setReleasesPage}
+                    onPageChange={setRecordsetsPage}
                     onItemsPerPageChange={(nextItemsPerPage) => {
-                      setReleasesItemsPerPage(nextItemsPerPage);
-                      setReleasesPage(1);
+                      setRecordsetsItemsPerPage(nextItemsPerPage);
+                      setRecordsetsPage(1);
                     }}
                     columns={[
-                      { key: "dataset_release_id", label: "ID" },
-                      { key: "release_number", label: "Version" },
-                      { key: "release_date", label: "Date" },
-                      { key: "release_notes", label: "Notes" },
+                      { key: "recordset_id", label: "ID" },
+                      { key: "recordset_name", label: "Name" },
+                      { key: "recordset_type_name", label: "Type" },
+                      { key: "license_label", label: "License" },
+                      { key: "recordset_doi", label: "DOI" },
+                      { key: "active", label: "Active" },
+                      { key: "when_updated", label: "Updated" },
                     ]}
                     formatters={{
-                      release_date: (value) =>
-                        new Date(String(value)).toLocaleDateString(),
+                      when_updated: (value) =>
+                        formatDateTime(value as string),
                     }}
                     onRowClick={(row) =>
-                      router.push(
-                        `/datasets/releases/${row.dataset_release_id}`,
-                      )
+                      router.push(`/recordsets/${row.recordset_id}`)
                     }
-                    getRowKey={(row) => row.dataset_release_id}
+                    getRowKey={(row) => row.recordset_id}
                   />
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </DynamicSection>
+                )}
+              </>
+            )}
+          </SectionCard>
+
+          <CardHeader className="mt-6 mb-0">
+            <CardTitle>Releases</CardTitle>
+            <LinkButton
+              href={
+                datasetId
+                  ? `/datasets/releases/create?dataset_id=${datasetId}`
+                  : "/datasets/releases/create"
+              }
+              size="sm"
+            >
+              New Release
+            </LinkButton>
+          </CardHeader>
+          <SectionCard className="mt-1">
+
+            {isLoadingReleases && (
+              <p className="text-sm">Loading releases...</p>
+            )}
+
+            {!isLoadingReleases && releasesError && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {releasesError}
+              </p>
+            )}
+
+            {!isLoadingReleases && !releasesError && releasesData && (
+              <DynamicTable
+                rows={releasesData.releases}
+                defaultItemsPerPage={4}
+                totalItems={releasesData.total}
+                currentPage={releasesPage}
+                currentItemsPerPage={releasesItemsPerPage}
+                paginateRows={false}
+                onPageChange={setReleasesPage}
+                onItemsPerPageChange={(nextItemsPerPage) => {
+                  setReleasesItemsPerPage(nextItemsPerPage);
+                  setReleasesPage(1);
+                }}
+                columns={[
+                  { key: "dataset_release_id", label: "ID" },
+                  { key: "release_number", label: "Version" },
+                  { key: "release_date", label: "Date" },
+                  { key: "release_notes", label: "Notes" },
+                ]}
+                formatters={{
+                  release_date: (value) =>
+                    new Date(String(value)).toLocaleDateString(),
+                }}
+                onRowClick={(row) =>
+                  router.push(
+                    `/datasets/releases/${row.dataset_release_id}`,
+                  )
+                }
+                getRowKey={(row) => row.dataset_release_id}
+              />
+            )}
+          </SectionCard>
+        </>
+      )}
     </PageShell>
   );
 }
