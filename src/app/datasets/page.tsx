@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import DynamicTable from "@/components/DynamicTable";
 import { Button, LinkButton } from "@/components/ui/Button";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { SectionCard } from "@/components/ui/Card";
 
 type Dataset = {
@@ -108,7 +108,7 @@ export default function DatasetsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     async function loadDatasetTypes() {
@@ -233,12 +233,10 @@ export default function DatasetsPage() {
 
   return (
     <PageShell size="5xl">
-      <PageHeader>
-        <div className="flex items-center justify-between">
-          <PageTitle>Datasets</PageTitle>
-          <LinkButton href="/datasets/create">New Dataset</LinkButton>
-        </div>
-      </PageHeader>
+      <PageDetailHeader
+        title="Datasets"
+        actions={<LinkButton href="/datasets/create">New Dataset</LinkButton>}
+      />
 
       <SectionCard>
         <DynamicForm

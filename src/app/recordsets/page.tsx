@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import DynamicTable from "@/components/DynamicTable";
 import { Button, LinkButton } from "@/components/ui/Button";
-import { PageHeader, PageShell, PageTitle } from "@/components/ui/Page";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 import { SectionCard } from "@/components/ui/Card";
 
 type Recordset = {
@@ -128,6 +128,8 @@ export default function RecordsetsPage() {
   const [data, setData] = useState<RecordsetsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   async function loadRecordsets() {
     setIsLoading(true);
@@ -148,12 +150,10 @@ export default function RecordsetsPage() {
         apiParams.set("dataset_id", filters.datasetId);
       }
 
-      apiParams.set("limit", "1000");
+      apiParams.set("page", String(currentPage));
+      apiParams.set("limit", String(itemsPerPage));
 
-      const apiUrl =
-        apiParams.size > 0
-          ? `/api/recordsets?${apiParams.toString()}`
-          : "/api/recordsets";
+      const apiUrl = `/api/recordsets?${apiParams.toString()}`;
 
       const response = await fetch(apiUrl, { cache: "no-store" });
 
@@ -174,11 +174,13 @@ export default function RecordsetsPage() {
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setCurrentPage(1);
     setFilters(filtersInput);
   }
 
   function clearFilters() {
     setFiltersInput({ search: "", activeOnly: false, datasetId: "" });
+    setCurrentPage(1);
     setFilters({ search: "", activeOnly: false, datasetId: "" });
   }
 
@@ -222,7 +224,7 @@ export default function RecordsetsPage() {
   useEffect(() => {
     void loadRecordsets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, currentPage, itemsPerPage]);
 
   useEffect(() => {
     async function loadDatasets() {
@@ -254,12 +256,10 @@ export default function RecordsetsPage() {
 
   return (
     <PageShell size="6xl">
-      <PageHeader>
-        <div className="flex items-center justify-between">
-          <PageTitle>Recordsets</PageTitle>
-          <LinkButton href="/recordsets/create">New Recordset</LinkButton>
-        </div>
-      </PageHeader>
+      <PageDetailHeader
+        title="Recordsets"
+        actions={<LinkButton href="/recordsets/create">New Recordset</LinkButton>}
+      />
 
       <SectionCard>
         <DynamicForm
@@ -296,10 +296,16 @@ export default function RecordsetsPage() {
 
             <DynamicTable
               rows={data.recordsets}
-              showPagination={false}
-              scrollMode="content"
-              maxVisibleRows={4}
-              paginateRows={true}
+              defaultItemsPerPage={10}
+              totalItems={data.total}
+              currentPage={currentPage}
+              currentItemsPerPage={itemsPerPage}
+              paginateRows={false}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(next) => {
+                setItemsPerPage(next);
+                setCurrentPage(1);
+              }}
               columns={[
                 { key: "recordset_id", label: "ID" },
                 { key: "dataset_name", label: "Dataset" },
