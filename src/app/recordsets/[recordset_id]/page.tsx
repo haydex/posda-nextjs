@@ -470,16 +470,6 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         { label: "Type", value: recordset.recordset_type_name },
         { label: "Active", value: recordset.active ? "Yes" : "No" },
         { label: "Name", value: recordset.recordset_name, fullWidth: true },
-        { label: "Created By", value: recordset.who_created },
-        {
-          label: "Created At",
-          value: new Date(recordset.when_created).toLocaleString(),
-        },
-        { label: "Updated By", value: recordset.who_updated },
-        {
-          label: "Updated At",
-          value: new Date(recordset.when_updated).toLocaleString(),
-        },
       ]
     : [];
 
@@ -501,7 +491,12 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         isLoading={isLoading}
         error={error}
         fields={recordsetFields}
-        actions={<></>}
+        actions={
+          <div className="space-y-1 rounded-md px-3 py-2 text-xs" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)", color: "var(--muted)" }}>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Created:</span>{" "}{recordset ? new Date(recordset.when_created).toLocaleString() : "—"} by {recordset?.who_created}</p>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{recordset ? new Date(recordset.when_updated).toLocaleString() : "—"} by {recordset?.who_updated}</p>
+          </div>
+        }
       >
         {!isLoading && recordset && (
           <div className="mt-6 space-y-4">

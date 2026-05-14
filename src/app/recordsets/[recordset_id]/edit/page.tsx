@@ -433,17 +433,9 @@ export default function RecordsetEditPage({ params }: PageProps) {
               className="space-y-3"
               actions={
                 <>
-                  <div className="space-y-2 rounded-md bg-zinc-50 p-3 dark:bg-zinc-900/50">
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                      <strong>Created:</strong>{" "}
-                      {new Date(recordset.when_created).toLocaleString()} by{" "}
-                      {recordset.who_created}
-                    </p>
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                      <strong>Updated:</strong>{" "}
-                      {new Date(recordset.when_updated).toLocaleString()} by{" "}
-                      {recordset.who_updated}
-                    </p>
+                  <div className="space-y-1 rounded-md px-3 py-2 text-xs" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)", color: "var(--muted)" }}>
+                    <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Created:</span>{" "}{new Date(recordset.when_created).toLocaleString()} by {recordset.who_created}</p>
+                    <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{new Date(recordset.when_updated).toLocaleString()} by {recordset.who_updated}</p>
                   </div>
 
                   {saveError && (

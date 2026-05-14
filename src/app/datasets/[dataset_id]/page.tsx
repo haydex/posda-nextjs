@@ -344,16 +344,6 @@ export default function DatasetByIdPage({ params }: PageProps) {
         { label: "Name", value: dataset.dataset_name, fullWidth: true },
         { label: "DOI", value: dataset.dataset_doi },
         { label: "Active", value: dataset.active ? "Yes" : "No" },
-        { label: "Created By", value: dataset.who_created },
-        {
-          label: "Created At",
-          value: new Date(dataset.when_created).toLocaleString(),
-        },
-        { label: "Updated By", value: dataset.who_updated },
-        {
-          label: "Updated At",
-          value: new Date(dataset.when_updated).toLocaleString(),
-        },
       ]
     : [];
 
@@ -375,7 +365,12 @@ export default function DatasetByIdPage({ params }: PageProps) {
         isLoading={isLoading}
         error={error}
         fields={datasetFields}
-        actions={<></>}
+        actions={
+          <div className="space-y-1 rounded-md px-3 py-2 text-xs" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)", color: "var(--muted)" }}>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Created:</span>{" "}{dataset ? new Date(dataset.when_created).toLocaleString() : "—"} by {dataset?.who_created}</p>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{dataset ? new Date(dataset.when_updated).toLocaleString() : "—"} by {dataset?.who_updated}</p>
+          </div>
+        }
       >
         {!isLoading && dataset && (
           <>
