@@ -50,6 +50,8 @@
   .page-header {
     padding-bottom: 1rem;
     border-bottom: 2px solid var(--border-strong);
+    border-left: 16px solid var(--accent);
+    padding-left: 0.625rem;
   }
 
   .page-title {
@@ -77,7 +79,7 @@
     @apply flex items-center justify-between pb-3 mb-3;
     min-height: 2.5rem;
     border-bottom: 2px solid var(--border-strong);
-    border-left: 3px solid var(--accent);
+    border-left: 8px solid var(--accent);
     padding-left: 0.625rem;
   }
 

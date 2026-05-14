@@ -341,8 +341,8 @@ export default function DatasetByIdPage({ params }: PageProps) {
     ? [
         { label: "Dataset ID", value: dataset.dataset_id },
         { label: "Type", value: dataset.dataset_type_name },
-        { label: "DOI", value: dataset.dataset_doi },
         { label: "Name", value: dataset.dataset_name, fullWidth: true },
+        { label: "DOI", value: dataset.dataset_doi },
         { label: "Active", value: dataset.active ? "Yes" : "No" },
         { label: "Created By", value: dataset.who_created },
         {

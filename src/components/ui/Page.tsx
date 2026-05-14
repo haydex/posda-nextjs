@@ -84,42 +84,41 @@ export function PageDetailHeader({
   actions,
 }: PageDetailHeaderProps) {
   return (
-    <PageHeader>
+    <div>
       {breadcrumb && (
-        <div className="mb-2">
-          <Link
-            href={breadcrumb.href}
-            className="text-sm transition-colors hover:text-accent"
-            style={{ color: "var(--muted)" }}
-          >
-            ← {breadcrumb.label}
+        <nav className="mb-2 flex items-center gap-1.5 text-sm" style={{ color: "var(--muted)" }}>
+          <span className="opacity-40">←</span>
+          <Link href={breadcrumb.href} className="transition-colors hover:text-accent">
+            {breadcrumb.label}
           </Link>
-        </div>
+        </nav>
       )}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="page-title">{title}</h1>
-            {badge && (
-              <span className={classNames(
-                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-                badgeClasses[badge.variant],
-              )}>
-                <span className={classNames("h-1.5 w-1.5 rounded-full", badgeDotClasses[badge.variant])} />
-                {badge.label}
-              </span>
+      <PageHeader>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="page-title">{title}</h1>
+              {badge && (
+                <span className={classNames(
+                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+                  badgeClasses[badge.variant],
+                )}>
+                  <span className={classNames("h-1.5 w-1.5 rounded-full", badgeDotClasses[badge.variant])} />
+                  {badge.label}
+                </span>
+              )}
+            </div>
+            {subtitle && (
+              <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+                {subtitle}
+              </p>
             )}
           </div>
-          {subtitle && (
-            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-              {subtitle}
-            </p>
+          {actions && (
+            <div className="flex shrink-0 items-center gap-3">{actions}</div>
           )}
         </div>
-        {actions && (
-          <div className="flex shrink-0 items-center gap-3">{actions}</div>
-        )}
-      </div>
-    </PageHeader>
+      </PageHeader>
+    </div>
   );
 }
