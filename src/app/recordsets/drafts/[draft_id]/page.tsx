@@ -190,20 +190,6 @@ export default function DraftByIdPage({ params }: PageProps) {
           label: "Cloned From Release ID",
           value: draft.cloned_from_release_id ?? "N/A",
         },
-        { label: "Created By", value: draft.who_created ?? "-" },
-        {
-          label: "Created At",
-          value: draft.when_created
-            ? new Date(draft.when_created).toLocaleString()
-            : "-",
-        },
-        { label: "Updated By", value: draft.who_updated ?? "-" },
-        {
-          label: "Updated At",
-          value: draft.when_updated
-            ? new Date(draft.when_updated).toLocaleString()
-            : "-",
-        },
         ...(draft.draft_notes
           ? [
               {
@@ -307,7 +293,17 @@ export default function DraftByIdPage({ params }: PageProps) {
         </div>
       )}
 
-      <DynamicSection isLoading={isLoading} error={error} fields={draftFields} />
+      <DynamicSection
+        isLoading={isLoading}
+        error={error}
+        fields={draftFields}
+        actions={
+          <div className="space-y-1 rounded-md px-3 py-2 text-xs" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)", color: "var(--muted)" }}>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Created:</span>{" "}{draft?.when_created ? new Date(draft.when_created).toLocaleString() : "—"} by {draft?.who_created ?? "—"}</p>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{draft?.when_updated ? new Date(draft.when_updated).toLocaleString() : "—"} by {draft?.who_updated ?? "—"}</p>
+          </div>
+        }
+      />
 
       <CardHeader className="mt-6 mb-0">
         <CardTitle>File Summary</CardTitle>

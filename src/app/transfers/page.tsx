@@ -1,173 +1,235 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import DynamicTable from "@/components/DynamicTable";
 import { Button } from "@/components/ui/Button";
-import {
-  PageHeader,
-  PageShell,
-  PageSubtitle,
-  PageTitle,
-} from "@/components/ui/Page";
-import { SectionCard } from "@/components/ui/Card";
+import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
+import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 
-type Transfer = {
-  dataset_release_transfer_id: number;
+type Dataset = {
+  dataset_id: number;
+  dataset_name: string;
+  dataset_type_name: string;
+  active: boolean;
+};
+
+type DatasetRelease = {
   dataset_release_id: number;
-  destination_id: number;
-  transfer_name: string;
-  transfer_mode: string;
-  transfer_status: string;
-  transfer_notes?: string | null;
-  when_created?: string;
-  who_created?: string;
-  when_updated?: string;
-  who_updated?: string;
+  dataset_id: number;
+  release_number: number;
+  release_date: string;
+  release_notes: string;
 };
 
-type TransfersResponse = {
-  transfers: Transfer[];
-  total: number;
-  timestamp: string;
+type DatasetFilters = {
+  search: string;
+  activeOnly: boolean;
 };
 
-function normalizeTransfersResponse(payload: unknown): TransfersResponse {
-  const source = payload as
-    | {
-        transfers?: Transfer[];
-        total?: number;
-        timestamp?: string;
-        data?: Transfer[];
-        meta?: { count?: number };
-      }
-    | undefined;
-
-  const transfers = Array.isArray(source?.transfers)
-    ? source.transfers
-    : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-  return {
-    transfers,
-    total:
-      typeof source?.total === "number"
-        ? source.total
-        : typeof source?.meta?.count === "number"
-          ? source.meta.count
-          : transfers.length,
-    timestamp:
-      typeof source?.timestamp === "string"
-        ? source.timestamp
-        : new Date().toISOString(),
-  };
+function extractArray<T>(payload: unknown, keys: string[]): T[] {
+  if (Array.isArray(payload)) return payload as T[];
+  if (!payload || typeof payload !== "object") return [];
+  const source = payload as Record<string, unknown>;
+  for (const key of keys) {
+    const value = source[key];
+    if (Array.isArray(value)) return value as T[];
+  }
+  return [];
 }
 
 export default function TransfersPage() {
-  const [data, setData] = useState<TransfersResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const router = useRouter();
 
-  async function loadTransfers() {
-    setIsLoading(true);
-    setError(null);
+  const [filtersInput, setFiltersInput] = useState<DatasetFilters>({ search: "", activeOnly: true });
+  const [filters, setFilters] = useState<DatasetFilters>({ search: "", activeOnly: true });
 
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
+  const [datasetTotal, setDatasetTotal] = useState(0);
+  const [isLoadingDatasets, setIsLoadingDatasets] = useState(true);
+  const [datasetError, setDatasetError] = useState<string | null>(null);
+  const [datasetPage, setDatasetPage] = useState(1);
+  const [datasetPageSize, setDatasetPageSize] = useState(10);
+
+  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
+  const [releases, setReleases] = useState<DatasetRelease[]>([]);
+  const [isLoadingReleases, setIsLoadingReleases] = useState(false);
+  const [releaseError, setReleaseError] = useState<string | null>(null);
+
+  async function loadDatasets() {
+    setIsLoadingDatasets(true);
+    setDatasetError(null);
     try {
-      const apiParams = new URLSearchParams();
-      apiParams.set("page", String(currentPage));
-      apiParams.set("limit", String(itemsPerPage));
-
-      const query = apiParams.toString();
-      const endpoint = query ? `/api/transfers?${query}` : "/api/transfers";
-      const response = await fetch(endpoint, { cache: "no-store" });
-
-      if (!response.ok) {
-        throw new Error("Request failed");
-      }
-
-      const json = (await response.json()) as unknown;
-      setData(normalizeTransfersResponse(json));
+      const params = new URLSearchParams();
+      if (filters.search.trim()) params.set("search", filters.search.trim());
+      if (filters.activeOnly) params.set("active_only", "true");
+      params.set("page", String(datasetPage));
+      params.set("limit", String(datasetPageSize));
+      const res = await fetch(`/api/datasets?${params.toString()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error("Request failed");
+      const json = (await res.json()) as unknown;
+      const items = extractArray<Dataset>(json, ["datasets", "data"]);
+      const total = (json as { total?: number })?.total ?? items.length;
+      setDatasets(items);
+      setDatasetTotal(total);
     } catch {
-      setError("Could not load transfers.");
-      setData(null);
+      setDatasetError("Could not load datasets.");
+      setDatasets([]);
     } finally {
-      setIsLoading(false);
+      setIsLoadingDatasets(false);
+    }
+  }
+
+  async function loadReleases(datasetId: number) {
+    setIsLoadingReleases(true);
+    setReleaseError(null);
+    setReleases([]);
+    try {
+      const res = await fetch(`/api/datasets/${datasetId}/releases`, { cache: "no-store" });
+      if (!res.ok) throw new Error("Request failed");
+      const json = (await res.json()) as unknown;
+      const items = extractArray<DatasetRelease>(json, ["releases", "data"]);
+      setReleases(items);
+    } catch {
+      setReleaseError("Could not load releases for this dataset.");
+    } finally {
+      setIsLoadingReleases(false);
     }
   }
 
   useEffect(() => {
-    void loadTransfers();
-  }, [currentPage, itemsPerPage]);
+    void loadDatasets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, datasetPage, datasetPageSize]);
+
+  function applyFilters(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setDatasetPage(1);
+    setSelectedDataset(null);
+    setReleases([]);
+    setFilters(filtersInput);
+  }
+
+  function clearFilters() {
+    const cleared = { search: "", activeOnly: false };
+    setFiltersInput(cleared);
+    setDatasetPage(1);
+    setSelectedDataset(null);
+    setReleases([]);
+    setFilters(cleared);
+  }
+
+  function selectDataset(row: Dataset) {
+    setSelectedDataset(row);
+    void loadReleases(row.dataset_id);
+  }
+
+  const filterFields: Array<DynamicFormField<DatasetFilters>> = [
+    {
+      key: "search",
+      label: "Search",
+      placeholder: "Dataset name or DOI",
+      srOnlyLabel: true,
+      className: "text-sm",
+      controlClassName: "input-transparent",
+    },
+    {
+      key: "activeOnly",
+      label: "Active only",
+      type: "checkbox",
+      className: "flex h-10 items-center gap-2 text-sm",
+      controlClassName: "checkbox",
+    },
+  ];
 
   return (
     <PageShell size="6xl">
-      <PageHeader>
-        <PageTitle>Transfers</PageTitle>
-      </PageHeader>
-      <PageSubtitle>
-        This page calls <code>/api/transfers</code> and renders dataset release
-        transfer records.
-      </PageSubtitle>
+      <PageDetailHeader
+        title="Transfers"
+        subtitle="Select a dataset, then click a release to manage its transfers"
+      />
 
-      <SectionCard>
-        {isLoading && <p className="text-sm">Loading...</p>}
-
-        {!isLoading && error && (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        )}
-
-        {!isLoading && data && (
-          <div className="space-y-3">
-            <p className="text-sm text-zinc-600 dark:text-zinc-300">
-              Total transfers: <span className="font-medium">{data.total}</span>
-            </p>
-
-            <DynamicTable
-              rows={data.transfers}
-              defaultItemsPerPage={6}
-              totalItems={data.total}
-              currentPage={currentPage}
-              currentItemsPerPage={itemsPerPage}
-              paginateRows={false}
-              onPageChange={setCurrentPage}
-              onItemsPerPageChange={(nextItemsPerPage) => {
-                setItemsPerPage(nextItemsPerPage);
-                setCurrentPage(1);
-              }}
-              columns={[
-                { key: "dataset_release_transfer_id", label: "ID" },
-                { key: "dataset_release_id", label: "Dataset Release ID" },
-                { key: "destination_id", label: "Destination ID" },
-                { key: "transfer_name", label: "Name" },
-                { key: "transfer_mode", label: "Mode" },
-                { key: "transfer_status", label: "Status" },
-                { key: "transfer_notes", label: "Notes" },
-                { key: "when_created", label: "Created" },
-                { key: "who_created", label: "Created By" },
-                { key: "when_updated", label: "Updated" },
-                { key: "who_updated", label: "Updated By" },
-              ]}
-              formatters={{
-                when_created: (value) =>
-                  new Date(String(value)).toLocaleString(),
-                when_updated: (value) =>
-                  new Date(String(value)).toLocaleString(),
-              }}
-              getRowKey={(row) => row.dataset_release_transfer_id}
-            />
-          </div>
-        )}
-
-        <Button
-          type="button"
-          onClick={() => void loadTransfers()}
-          className="mt-4"
-        >
-          Refresh
-        </Button>
+      <SectionCard className="mt-6">
+        <DynamicForm
+          onSubmit={applyFilters}
+          values={filtersInput}
+          onChange={setFiltersInput}
+          fields={filterFields}
+          className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center"
+          actions={
+            <>
+              <Button type="submit">Search</Button>
+              <Button type="button" onClick={clearFilters} variant="ghost">Clear</Button>
+            </>
+          }
+        />
       </SectionCard>
+
+      <CardHeader className="mt-6 mb-0">
+        <CardTitle>Datasets</CardTitle>
+      </CardHeader>
+      <SectionCard className="mt-1">
+        {isLoadingDatasets && <p className="text-sm">Loading...</p>}
+        {!isLoadingDatasets && datasetError && (
+          <p className="text-sm text-red-600 dark:text-red-400">{datasetError}</p>
+        )}
+        {!isLoadingDatasets && !datasetError && (
+          <DynamicTable
+            rows={datasets}
+            totalItems={datasetTotal}
+            currentPage={datasetPage}
+            currentItemsPerPage={datasetPageSize}
+            defaultItemsPerPage={10}
+            paginateRows={false}
+            onPageChange={setDatasetPage}
+            onItemsPerPageChange={(next) => { setDatasetPageSize(next); setDatasetPage(1); }}
+            columns={[
+              { key: "dataset_id", label: "ID" },
+              { key: "dataset_name", label: "Name" },
+              { key: "dataset_type_name", label: "Type" },
+              { key: "active", label: "Active" },
+            ]}
+            onRowClick={selectDataset}
+            getRowKey={(row) => row.dataset_id}
+          />
+        )}
+      </SectionCard>
+
+      {selectedDataset && (
+        <>
+          <CardHeader className="mt-6 mb-0">
+            <CardTitle>{selectedDataset.dataset_name} — Releases</CardTitle>
+          </CardHeader>
+          <SectionCard className="mt-1">
+            {isLoadingReleases && <p className="text-sm">Loading releases...</p>}
+            {!isLoadingReleases && releaseError && (
+              <p className="text-sm text-red-600 dark:text-red-400">{releaseError}</p>
+            )}
+            {!isLoadingReleases && !releaseError && releases.length === 0 && (
+              <p className="text-sm" style={{ color: "var(--muted)" }}>No releases found for this dataset.</p>
+            )}
+            {!isLoadingReleases && releases.length > 0 && (
+              <DynamicTable
+                rows={releases}
+                columns={[
+                  { key: "dataset_release_id", label: "ID" },
+                  { key: "release_number", label: "Version" },
+                  { key: "release_date", label: "Date" },
+                  { key: "release_notes", label: "Notes" },
+                ]}
+                formatters={{
+                  release_date: (v) => v ? new Date(String(v)).toLocaleDateString() : "—",
+                }}
+                onRowClick={(row) =>
+                  router.push(`/datasets/releases/${row.dataset_release_id}/transfers`)
+                }
+                getRowKey={(row) => row.dataset_release_id}
+              />
+            )}
+          </SectionCard>
+        </>
+      )}
     </PageShell>
   );
 }

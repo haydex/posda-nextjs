@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
-import DynamicTable from "@/components/DynamicTable";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
 import { PageDetailHeader, PageShell } from "@/components/ui/Page";
@@ -35,10 +34,6 @@ type RecordsetRelease = {
   release_date: string;
   release_notes: string;
   recordset_name?: string;
-};
-
-type RecordsetReleaseRow = RecordsetRelease & {
-  select: string;
 };
 
 type DatasetRecordset = {
@@ -365,20 +360,6 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
         { label: "Dataset ID", value: release.dataset_id },
         { label: "Release Number", value: release.release_number },
         { label: "Release Date", value: formatDate(release.release_date) },
-        { label: "Created By", value: release.who_created ?? "-" },
-        {
-          label: "Created At",
-          value: release.when_created
-            ? new Date(release.when_created).toLocaleString()
-            : "-",
-        },
-        { label: "Updated By", value: release.who_updated ?? "-" },
-        {
-          label: "Updated At",
-          value: release.when_updated
-            ? new Date(release.when_updated).toLocaleString()
-            : "-",
-        },
         {
           label: "Release Notes",
           value: release.release_notes,
@@ -388,18 +369,25 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
       ]
     : [];
 
-  const availableRows: RecordsetReleaseRow[] = availableRecordsetReleases.map(
-    (releaseItem) => ({
-      ...releaseItem,
-      select: "",
-    }),
-  );
-  const linkedRows: RecordsetReleaseRow[] = linkedRecordsetReleases.map(
-    (releaseItem) => ({
-      ...releaseItem,
-      select: "",
-    }),
-  );
+  function groupByRecordset(items: RecordsetRelease[]) {
+    const map = new Map<number, { recordset_id: number; recordset_name: string; releases: RecordsetRelease[] }>();
+    for (const item of items) {
+      const existing = map.get(item.recordset_id);
+      if (existing) {
+        existing.releases.push(item);
+      } else {
+        map.set(item.recordset_id, {
+          recordset_id: item.recordset_id,
+          recordset_name: item.recordset_name ?? `Recordset ${item.recordset_id}`,
+          releases: [item],
+        });
+      }
+    }
+    return [...map.values()].map((group) => ({
+      ...group,
+      releases: [...group.releases].sort((a, b) => b.release_number - a.release_number),
+    }));
+  }
 
   function toggleSelection(
     setState: React.Dispatch<React.SetStateAction<Set<number>>>,
@@ -556,9 +544,14 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
         breadcrumb={{ label: "Dataset", href: release?.dataset_id ? `/datasets/${release.dataset_id}` : "/datasets" }}
         subtitle={release ? `Release ${release.release_number}` : undefined}
         actions={
-          <LinkButton href={releaseId ? `/datasets/releases/${releaseId}/edit` : "/datasets"}>
-            Edit Release
-          </LinkButton>
+          <>
+            <LinkButton href={releaseId ? `/datasets/releases/${releaseId}/transfers` : "/transfers"} variant="ghost">
+              Transfers
+            </LinkButton>
+            <LinkButton href={releaseId ? `/datasets/releases/${releaseId}/edit` : "/datasets"}>
+              Edit Release
+            </LinkButton>
+          </>
         }
       />
 
@@ -566,6 +559,12 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
         isLoading={isLoading}
         error={error}
         fields={releaseFields}
+        actions={
+          <div className="space-y-1 rounded-md px-3 py-2 text-xs" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)", color: "var(--muted)" }}>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Created:</span>{" "}{release?.when_created ? new Date(release.when_created).toLocaleString() : "—"} by {release?.who_created ?? "—"}</p>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{release ? (release.when_updated ? new Date(release.when_updated).toLocaleString() : "—") : "—"} by {release?.who_updated ?? "—"}</p>
+          </div>
+        }
       />
 
       {!isLoading && release && (
@@ -601,41 +600,34 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
                 </p>
               )}
               {!isLoadingAvailable && !availableError && (
-                <div className="rounded-md border border-black/10 p-3 dark:border-white/15">
-                  <DynamicTable<RecordsetReleaseRow>
-                    rows={availableRows}
-                    paginateRows={false}
-                    emptyMessage="No available recordset releases."
-                    columns={[
-                      {
-                        key: "select",
-                        label: "",
-                        render: (_, row) => (
-                          <input
-                            type="checkbox"
-                            checked={selectedAvailableIds.has(
-                              row.recordset_release_id,
-                            )}
-                            onChange={() =>
-                              toggleSelection(
-                                setSelectedAvailableIds,
-                                row.recordset_release_id,
-                              )
-                            }
-                            className="checkbox"
-                          />
-                        ),
-                      },
-                      { key: "recordset_name", label: "Recordset" },
-                      { key: "recordset_id", label: "Recordset ID" },
-                      { key: "release_number", label: "Version" },
-                      { key: "release_date", label: "Date" },
-                    ]}
-                    formatters={{
-                      release_date: (value) => formatDate(String(value)),
-                    }}
-                    getRowKey={(row) => row.recordset_release_id}
-                  />
+                <div className="rounded-md p-2" style={{ border: "1px solid var(--border-strong)" }}>
+                  {availableRecordsetReleases.length === 0 ? (
+                    <p className="text-sm" style={{ color: "var(--muted)" }}>No available recordset releases.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {groupByRecordset(availableRecordsetReleases).map((group) => (
+                        <div key={group.recordset_id}>
+                          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+                            {group.recordset_name}
+                          </p>
+                          <div className="space-y-1">
+                            {group.releases.map((r) => (
+                              <label key={r.recordset_release_id} className="flex cursor-pointer items-center gap-3 rounded px-2 py-1.5 text-sm transition-colors bg-background hover:bg-surface-alt">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedAvailableIds.has(r.recordset_release_id)}
+                                  onChange={() => toggleSelection(setSelectedAvailableIds, r.recordset_release_id)}
+                                  className="checkbox"
+                                />
+                                <span className="font-medium">v{r.release_number}</span>
+                                <span style={{ color: "var(--muted)" }}>{formatDate(r.release_date)}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -673,41 +665,34 @@ export default function DatasetReleaseByIdPage({ params }: PageProps) {
                 </p>
               )}
               {!isLoadingRecordsets && !recordsetsError && (
-                <div className="rounded-md border border-black/10 p-3 dark:border-white/15">
-                  <DynamicTable<RecordsetReleaseRow>
-                    rows={linkedRows}
-                    paginateRows={false}
-                    emptyMessage="No recordset releases linked."
-                    columns={[
-                      {
-                        key: "select",
-                        label: "",
-                        render: (_, row) => (
-                          <input
-                            type="checkbox"
-                            checked={selectedLinkedIds.has(
-                              row.recordset_release_id,
-                            )}
-                            onChange={() =>
-                              toggleSelection(
-                                setSelectedLinkedIds,
-                                row.recordset_release_id,
-                              )
-                            }
-                            className="checkbox"
-                          />
-                        ),
-                      },
-                      { key: "recordset_name", label: "Recordset" },
-                      { key: "recordset_id", label: "Recordset ID" },
-                      { key: "release_number", label: "Version" },
-                      { key: "release_date", label: "Date" },
-                    ]}
-                    formatters={{
-                      release_date: (value) => formatDate(String(value)),
-                    }}
-                    getRowKey={(row) => row.recordset_release_id}
-                  />
+                <div className="rounded-md p-2" style={{ border: "1px solid var(--border-strong)" }}>
+                  {linkedRecordsetReleases.length === 0 ? (
+                    <p className="text-sm" style={{ color: "var(--muted)" }}>No recordset releases linked.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {groupByRecordset(linkedRecordsetReleases).map((group) => (
+                        <div key={group.recordset_id}>
+                          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+                            {group.recordset_name}
+                          </p>
+                          <div className="space-y-1">
+                            {group.releases.map((r) => (
+                              <label key={r.recordset_release_id} className="flex cursor-pointer items-center gap-3 rounded px-2 py-1.5 text-sm transition-colors bg-background hover:bg-surface-alt">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedLinkedIds.has(r.recordset_release_id)}
+                                  onChange={() => toggleSelection(setSelectedLinkedIds, r.recordset_release_id)}
+                                  className="checkbox"
+                                />
+                                <span className="font-medium">v{r.release_number}</span>
+                                <span style={{ color: "var(--muted)" }}>{formatDate(r.release_date)}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -183,20 +183,6 @@ export default function ReleaseByIdPage({ params }: PageProps) {
           label: "Release Date",
           value: new Date(release.release_date).toLocaleDateString(),
         },
-        { label: "Created By", value: release.who_created ?? "-" },
-        {
-          label: "Created At",
-          value: release.when_created
-            ? new Date(release.when_created).toLocaleString()
-            : "-",
-        },
-        { label: "Updated By", value: release.who_updated ?? "-" },
-        {
-          label: "Updated At",
-          value: release.when_updated
-            ? new Date(release.when_updated).toLocaleString()
-            : "-",
-        },
         {
           label: "Release Notes",
           value: release.release_notes,
@@ -220,6 +206,12 @@ export default function ReleaseByIdPage({ params }: PageProps) {
         isLoading={isLoading}
         error={error}
         fields={releaseFields}
+        actions={
+          <div className="space-y-1 rounded-md px-3 py-2 text-xs" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)", color: "var(--muted)" }}>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Created:</span>{" "}{release?.when_created ? new Date(release.when_created).toLocaleString() : "—"} by {release?.who_created ?? "—"}</p>
+            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{release?.when_updated ? new Date(release.when_updated).toLocaleString() : "—"} by {release?.who_updated ?? "—"}</p>
+          </div>
+        }
       />
 
       <CardHeader className="mt-6 mb-0">
