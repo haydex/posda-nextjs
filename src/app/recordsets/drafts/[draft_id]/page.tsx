@@ -323,91 +323,110 @@ export default function DraftByIdPage({ params }: PageProps) {
         )}
 
         {!isLoading && !summaryError && summary && (
-          <div className="mt-3 divide-y divide-neutral-300 text-sm dark:divide-neutral-600">
-            <div className="flex gap-8 pb-4">
-              <div>
-                <span className="text-neutral-600 dark:text-neutral-300">Total Files </span>
-                <span className="font-semibold">{summary.total_files.toLocaleString()}</span>
+          <div className="space-y-3 text-sm">
+            {/* Stat tiles */}
+            <div className="flex gap-3">
+              <div className="flex-1 rounded-md px-4 py-3" style={{ background: "var(--surface-alt)", borderLeft: "4px solid var(--accent)" }}>
+                <p className="text-2xl font-bold">{summary.total_files.toLocaleString()}</p>
+                <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--muted)" }}>Total Files</p>
               </div>
-              <div>
-                <span className="text-neutral-600 dark:text-neutral-300">Total Size </span>
-                <span className="font-semibold">{formatBytes(summary.total_size_bytes)}</span>
+              <div className="flex-1 rounded-md px-4 py-3" style={{ background: "var(--surface-alt)", borderLeft: "4px solid var(--accent)" }}>
+                <p className="text-2xl font-bold">{formatBytes(summary.total_size_bytes)}</p>
+                <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--muted)" }}>Total Size</p>
               </div>
             </div>
 
+            {/* File Types */}
             {summary.by_file_type.length > 0 && (
-              <div className="py-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-                  By File Type
-                </p>
-                <table>
-                  <thead>
-                    <tr className="text-left text-xs font-semibold text-neutral-700 dark:text-neutral-200">
-                      <th className="pb-1 pr-10">Type</th>
-                      <th className="pb-1 pr-10">Files</th>
-                      <th className="pb-1">Size</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {summary.by_file_type.map((ft) => (
-                      <tr key={ft.file_type}>
-                        <td className="py-1 pr-10">{ft.file_type}</td>
-                        <td className="py-1 pr-10">{ft.file_count.toLocaleString()}</td>
-                        <td className="py-1">{formatBytes(ft.total_size_bytes)}</td>
+              <div className="rounded-md" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)" }}>
+                <div className="px-3 py-2" style={{ borderLeft: "4px solid var(--accent)" }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted)" }}>File Types</p>
+                </div>
+                <div className="px-3 pb-3 pt-2">
+                  <table className="w-full table-fixed">
+                    <colgroup>
+                      <col className="w-1/2" />
+                      <col className="w-1/4" />
+                      <col className="w-1/4" />
+                    </colgroup>
+                    <thead>
+                      <tr className="text-left text-xs font-semibold" style={{ color: "var(--muted)", background: "var(--border-strong)" }}>
+                        <th className="py-1.5">Type</th>
+                        <th className="py-1.5">Files</th>
+                        <th className="py-1.5">Size</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {summary.by_file_type.map((ft) => (
+                        <tr key={ft.file_type} className="border-t" style={{ borderColor: "var(--border-strong)" }}>
+                          <td className="py-1.5">{ft.file_type}</td>
+                          <td className="py-1.5">{ft.file_count.toLocaleString()}</td>
+                          <td className="py-1.5">{formatBytes(ft.total_size_bytes)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
+            {/* DICOM Hierarchy */}
             {hasDicom && (
-              <div className="py-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-                  DICOM Hierarchy
-                </p>
-                <table>
-                  <thead>
-                    <tr className="text-left text-xs font-semibold text-neutral-700 dark:text-neutral-200">
-                      <th className="pb-1 pr-10">Patients</th>
-                      <th className="pb-1 pr-10">Studies</th>
-                      <th className="pb-1">Series</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-1 pr-10">{summary.dicom.patient_count.toLocaleString()}</td>
-                      <td className="py-1 pr-10">{summary.dicom.study_count.toLocaleString()}</td>
-                      <td className="py-1">{summary.dicom.series_count.toLocaleString()}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div className="rounded-md" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)" }}>
+                <div className="px-3 py-2" style={{ borderLeft: "4px solid var(--accent)" }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted)" }}>DICOM</p>
+                </div>
+                <div className="px-3 pb-3 pt-2">
+                  <table className="w-full table-fixed">
+                    <colgroup>
+                      <col className="w-1/2" />
+                      <col className="w-1/4" />
+                      <col className="w-1/4" />
+                    </colgroup>
+                    <thead>
+                      <tr className="text-left text-xs font-semibold" style={{ color: "var(--muted)", background: "var(--border-strong)" }}>
+                        <th className="py-1.5">Patients</th>
+                        <th className="py-1.5">Studies</th>
+                        <th className="py-1.5">Series</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t" style={{ borderColor: "var(--border-strong)" }}>
+                        <td className="py-1.5">{summary.dicom.patient_count.toLocaleString()}</td>
+                        <td className="py-1.5">{summary.dicom.study_count.toLocaleString()}</td>
+                        <td className="py-1.5">{summary.dicom.series_count.toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
-                {summary.dicom.by_modality.length > 0 && (
-                  <div className="mt-4">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-                      By Modality
-                    </p>
-                    <table>
-                      <thead>
-                        <tr className="text-left text-xs font-semibold text-neutral-700 dark:text-neutral-200">
-                          <th className="pb-1 pr-10">Modality</th>
-                          <th className="pb-1 pr-10">Series</th>
-                          <th className="pb-1">Files</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {summary.dicom.by_modality.map((m) => (
-                          <tr key={m.modality}>
-                            <td className="py-1 pr-10">{m.modality}</td>
-                            <td className="py-1 pr-10">{m.series_count.toLocaleString()}</td>
-                            <td className="py-1">{m.file_count.toLocaleString()}</td>
+                  {summary.dicom.by_modality.length > 0 && (
+                    <div className="mt-3 border-t" style={{ borderColor: "var(--border-strong)" }}>
+                      <table className="w-full table-fixed">
+                        <colgroup>
+                          <col className="w-1/2" />
+                          <col className="w-1/4" />
+                          <col className="w-1/4" />
+                        </colgroup>
+                        <thead>
+                          <tr className="text-left text-xs font-semibold" style={{ color: "var(--muted)", background: "var(--border-strong)" }}>
+                            <th className="py-1.5">Modality</th>
+                            <th className="py-1.5">Series</th>
+                            <th className="py-1.5">Files</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                        </thead>
+                        <tbody>
+                          {summary.dicom.by_modality.map((m) => (
+                            <tr key={m.modality} className="border-t" style={{ borderColor: "var(--border-strong)" }}>
+                              <td className="py-1.5">{m.modality}</td>
+                              <td className="py-1.5">{m.series_count.toLocaleString()}</td>
+                              <td className="py-1.5">{m.file_count.toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
