@@ -15,7 +15,7 @@ const navLinks = [
 export default function Navbar() {
   return (
     <header className="navbar fixed inset-x-0 top-0 z-50">
-      <nav className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
+      <nav className="content-width flex h-14 items-center justify-between px-4 sm:px-6">
         <Link href="/" className="text-sm font-bold tracking-wide text-accent">
           POSDA Next.js
         </Link>

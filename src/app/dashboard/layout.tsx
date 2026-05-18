@@ -17,7 +17,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-5xl gap-8 px-4 py-8 sm:px-6">
+    <div className="content-width flex min-h-screen gap-8 px-4 py-8 sm:px-6">
       <Card as="aside" className="w-44 shrink-0">
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-500">
           Dashboard

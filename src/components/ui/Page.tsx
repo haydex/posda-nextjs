@@ -32,7 +32,11 @@ export function PageShell({
   return (
     <main
       {...props}
-      className={classNames("page-shell", shellSizeClasses[size], className)}
+      className={classNames(
+        "page-shell content-width",
+        shellSizeClasses[size],
+        className,
+      )}
     />
   );
 }

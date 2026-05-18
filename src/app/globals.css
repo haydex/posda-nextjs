@@ -11,6 +11,7 @@
   --border: rgba(0, 0, 0, 0.10);
   --border-strong: rgba(0, 0, 0, 0.18);
   --navbar-height: 3.5rem;
+  --page-max-width: 72rem;
 }
 
 @theme inline {
@@ -40,12 +41,19 @@
 }
 
 @layer components {
+  .content-width {
+    @apply mx-auto w-full;
+    max-width: var(--page-max-width);
+  }
+
   .page-shell {
     @apply mx-auto min-h-screen w-full px-6 py-10;
   }
-  .page-shell-3xl { @apply max-w-3xl; }
-  .page-shell-5xl { @apply max-w-5xl; }
-  .page-shell-6xl { @apply max-w-6xl; }
+  .page-shell-3xl,
+  .page-shell-5xl,
+  .page-shell-6xl {
+    max-width: var(--page-max-width);
+  }
 
   .page-header {
     padding-bottom: 1rem;
