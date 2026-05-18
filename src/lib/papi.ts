@@ -79,9 +79,10 @@ export async function papiRequest<T>(
     : undefined;
 
   if (!response.ok) {
-    const errorPayload = payload as PapiErrorPayload | undefined;
+    const errorPayload = payload as (PapiErrorPayload & { detail?: string }) | undefined;
     const message =
       errorPayload?.error?.message ??
+      (typeof errorPayload?.detail === "string" ? errorPayload.detail : undefined) ??
       `PAPI request failed with status ${response.status}`;
 
     throw new PapiHttpError(

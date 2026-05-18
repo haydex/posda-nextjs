@@ -6,7 +6,9 @@ import DynamicSection, {
   DynamicSectionField,
 } from "@/components/DynamicSection";
 import DynamicTable from "@/components/DynamicTable";
-import { LinkButton } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
+import { useToast } from "@/components/Toast";
+import { toastError, toastSuccess } from "@/components/toastHelpers";
 import { CardHeader, CardTitle, SectionCard } from "@/components/ui/Card";
 import { PageDetailHeader, PageShell } from "@/components/ui/Page";
 
@@ -61,6 +63,27 @@ type DatasetRecordsetsResponse = {
   recordsets: DatasetRecordset[];
   total: number;
   timestamp: string;
+};
+
+type WpMap = {
+  map_id: number;
+  posda_object_type: string;
+  posda_object_id: number;
+  wp_object_type: string;
+  wp_object_id: number;
+  wp_edit_url: string | null;
+  wp_view_url: string | null;
+  parent_wp_object_id: number | null;
+  when_synced: string | null;
+};
+
+type WpSearchResult = {
+  id: number;
+  title: string;
+  type: string;
+  status: string;
+  view_url: string;
+  edit_url: string;
 };
 
 function normalizeDatasetReleasesResponse(
@@ -152,6 +175,7 @@ type PageProps = {
 
 export default function DatasetByIdPage({ params }: PageProps) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [datasetId, setDatasetId] = useState<string | null>(null);
   const [data, setData] = useState<DatasetResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -168,6 +192,17 @@ export default function DatasetByIdPage({ params }: PageProps) {
     useState<DatasetRecordsetsResponse | null>(null);
   const [isLoadingRecordsets, setIsLoadingRecordsets] = useState(false);
   const [recordsetsError, setRecordsetsError] = useState<string | null>(null);
+
+  // WP link
+  const [wpMap, setWpMap] = useState<WpMap | null | undefined>(undefined);
+  const [isLoadingWpMap, setIsLoadingWpMap] = useState(false);
+  const [showWpModal, setShowWpModal] = useState(false);
+  const [wpSearchType, setWpSearchType] = useState<"collection" | "analysis_result">("collection");
+  const [wpSearchQuery, setWpSearchQuery] = useState("");
+  const [wpResults, setWpResults] = useState<WpSearchResult[]>([]);
+  const [isSearchingWp, setIsSearchingWp] = useState(false);
+  const [isSavingWpMap, setIsSavingWpMap] = useState(false);
+  const [wpModalError, setWpModalError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -336,6 +371,83 @@ export default function DatasetByIdPage({ params }: PageProps) {
     releasesItemsPerPage,
   ]);
 
+  useEffect(() => {
+    if (!datasetId) return;
+    let isMounted = true;
+    setIsLoadingWpMap(true);
+    fetch(`/api/posda/dataset/${datasetId}/wp-map`, { cache: "no-store" })
+      .then(async (res) => {
+        if (!isMounted) return;
+        if (res.ok) {
+          const json = (await res.json()) as { data: WpMap };
+          setWpMap(json.data);
+        } else {
+          setWpMap(null);
+        }
+      })
+      .catch(() => { if (isMounted) setWpMap(null); })
+      .finally(() => { if (isMounted) setIsLoadingWpMap(false); });
+    return () => { isMounted = false; };
+  }, [datasetId]);
+
+  async function searchWp() {
+    if (!wpSearchQuery.trim()) return;
+    setIsSearchingWp(true);
+    setWpResults([]);
+    try {
+      const endpoint = wpSearchType === "collection" ? "collections" : "analysis-results";
+      const res = await fetch(`/api/${endpoint}?search=${encodeURIComponent(wpSearchQuery.trim())}`);
+      if (res.ok) setWpResults((await res.json()) as WpSearchResult[]);
+    } finally {
+      setIsSearchingWp(false);
+    }
+  }
+
+  async function saveWpLink(result: WpSearchResult) {
+    if (!datasetId) return;
+    setIsSavingWpMap(true);
+    setWpModalError(null);
+    try {
+      const body = {
+        wp_object_type: wpSearchType,
+        wp_object_id: result.id,
+        wp_edit_url: result.edit_url,
+        wp_view_url: result.view_url,
+      };
+      const res = wpMap
+        ? await fetch(`/api/wp-object-map/${wpMap.map_id}`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(body),
+          })
+        : await fetch("/api/wp-object-map", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              posda_object_type: "dataset",
+              posda_object_id: parseInt(datasetId, 10),
+              ...body,
+            }),
+          });
+      if (!res.ok) {
+        const json = (await res.json()) as { error?: { message?: string } | string };
+        throw new Error(typeof json.error === "string" ? json.error : (json.error?.message ?? "Could not save link."));
+      }
+      const json = (await res.json()) as { data: WpMap };
+      setWpMap(json.data);
+      setShowWpModal(false);
+      setWpSearchQuery("");
+      setWpResults([]);
+      toastSuccess(addToast, "WordPress link saved.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Could not save link.";
+      setWpModalError(msg);
+      toastError(addToast, msg);
+    } finally {
+      setIsSavingWpMap(false);
+    }
+  }
+
   const dataset = data?.dataset ?? data?.data ?? null;
   const datasetFields: DynamicSectionField[] = dataset
     ? [
@@ -375,6 +487,38 @@ export default function DatasetByIdPage({ params }: PageProps) {
 
       {!isLoading && dataset && (
         <>
+          <CardHeader className="mt-6 mb-0">
+            <CardTitle>WordPress Object</CardTitle>
+            <Button size="sm" onClick={() => setShowWpModal(true)}>
+              {wpMap ? "Change Link" : "Link to WordPress"}
+            </Button>
+          </CardHeader>
+          <SectionCard className="mt-1">
+            {isLoadingWpMap && <p className="text-sm">Loading...</p>}
+            {!isLoadingWpMap && wpMap === null && (
+              <p className="text-sm" style={{ color: "var(--muted)" }}>No WordPress object linked.</p>
+            )}
+            {!isLoadingWpMap && wpMap && (
+              <div className="space-y-1 text-sm">
+                <p>
+                  <span className="font-medium capitalize">{wpMap.wp_object_type.replace("_", " ")}</span>
+                  {" "}<span style={{ color: "var(--muted)" }}>ID {wpMap.wp_object_id}</span>
+                </p>
+                <div className="flex gap-4 text-xs">
+                  {wpMap.wp_view_url && (
+                    <a href={wpMap.wp_view_url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>View on site ↗</a>
+                  )}
+                  {wpMap.wp_edit_url && (
+                    <a href={wpMap.wp_edit_url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>Edit in WordPress ↗</a>
+                  )}
+                </div>
+                {wpMap.when_synced && (
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>Synced: {new Date(wpMap.when_synced).toLocaleString()}</p>
+                )}
+              </div>
+            )}
+          </SectionCard>
+
           <CardHeader className="mt-6 mb-0">
             <CardTitle>Recordsets</CardTitle>
             <LinkButton
@@ -500,6 +644,65 @@ export default function DatasetByIdPage({ params }: PageProps) {
             )}
           </SectionCard>
         </>
+      )}
+      {showWpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-lg rounded-lg p-6 shadow-xl" style={{ background: "var(--surface)", border: "1px solid var(--border-strong)" }}>
+            <h2 className="text-lg font-semibold">Link to WordPress Object</h2>
+            {wpModalError && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{wpModalError}</p>}
+            <div className="mt-4 space-y-3">
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <select
+                    value={wpSearchType}
+                    onChange={(e) => { setWpSearchType(e.target.value as "collection" | "analysis_result"); setWpResults([]); }}
+                    className="select"
+                  >
+                    <option value="collection">Collection</option>
+                    <option value="analysis_result">Analysis Result</option>
+                  </select>
+                  <Button onClick={() => void searchWp()} disabled={isSearchingWp || !wpSearchQuery.trim()}>
+                    {isSearchingWp ? "…" : "Search"}
+                  </Button>
+                </div>
+                <input
+                  type="text"
+                  value={wpSearchQuery}
+                  onChange={(e) => setWpSearchQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") void searchWp(); }}
+                  placeholder="Search by title..."
+                  className="input w-full"
+                  autoFocus
+                />
+              </div>
+              {wpResults.length > 0 && (
+                <ul className="max-h-64 overflow-y-auto divide-y rounded" style={{ border: "1px solid var(--border-strong)" }}>
+                  {wpResults.map((r) => (
+                    <li
+                      key={r.id}
+                      className="flex cursor-pointer items-center justify-between gap-4 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                      onClick={() => { if (!isSavingWpMap) void saveWpLink(r); }}
+                    >
+                      <span className="text-sm">
+                        <span className="font-medium">{r.title}</span>
+                        <span className="ml-2 text-xs" style={{ color: "var(--muted)" }}>{r.status}</span>
+                      </span>
+                      <span className="shrink-0 text-xs" style={{ color: "var(--muted)" }}>ID {r.id}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {!isSearchingWp && wpResults.length === 0 && wpSearchQuery && (
+                <p className="text-sm" style={{ color: "var(--muted)" }}>No results.</p>
+              )}
+            </div>
+            <div className="mt-6 flex justify-end">
+              <Button variant="ghost" onClick={() => { setShowWpModal(false); setWpSearchQuery(""); setWpResults([]); setWpModalError(null); }}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </PageShell>
   );

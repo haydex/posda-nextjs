@@ -66,6 +66,27 @@ type RecordsetDraftsResponse = {
   timestamp: string;
 };
 
+type WpMap = {
+  map_id: number;
+  posda_object_type: string;
+  posda_object_id: number;
+  wp_object_type: string;
+  wp_object_id: number;
+  wp_edit_url: string | null;
+  wp_view_url: string | null;
+  parent_wp_object_id: number | null;
+  when_synced: string | null;
+};
+
+type WpSearchResult = {
+  id: number;
+  title: string;
+  type: string;
+  status: string;
+  view_url: string;
+  edit_url: string;
+};
+
 type RecordsetDestination = {
   destination_id: number;
   destination_name: string;
@@ -198,6 +219,16 @@ export default function RecordsetByIdPage({ params }: PageProps) {
   const [destModalTransferModeId, setDestModalTransferModeId] = useState<number | null>(null);
   const [isSavingDest, setIsSavingDest] = useState(false);
   const [destModalError, setDestModalError] = useState<string | null>(null);
+
+  // WP link
+  const [wpMap, setWpMap] = useState<WpMap | null | undefined>(undefined);
+  const [isLoadingWpMap, setIsLoadingWpMap] = useState(false);
+  const [showWpModal, setShowWpModal] = useState(false);
+  const [wpSearchQuery, setWpSearchQuery] = useState("");
+  const [wpResults, setWpResults] = useState<WpSearchResult[]>([]);
+  const [isSearchingWp, setIsSearchingWp] = useState(false);
+  const [isSavingWpMap, setIsSavingWpMap] = useState(false);
+  const [wpModalError, setWpModalError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -457,6 +488,82 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     }
   }
 
+  useEffect(() => {
+    if (!recordsetId) return;
+    let isMounted = true;
+    setIsLoadingWpMap(true);
+    fetch(`/api/posda/recordset/${recordsetId}/wp-map`, { cache: "no-store" })
+      .then(async (res) => {
+        if (!isMounted) return;
+        if (res.ok) {
+          const json = (await res.json()) as { data: WpMap };
+          setWpMap(json.data);
+        } else {
+          setWpMap(null);
+        }
+      })
+      .catch(() => { if (isMounted) setWpMap(null); })
+      .finally(() => { if (isMounted) setIsLoadingWpMap(false); });
+    return () => { isMounted = false; };
+  }, [recordsetId]);
+
+  async function searchWp() {
+    if (!wpSearchQuery.trim()) return;
+    setIsSearchingWp(true);
+    setWpResults([]);
+    try {
+      const res = await fetch(`/api/downloads?search=${encodeURIComponent(wpSearchQuery.trim())}`);
+      if (res.ok) setWpResults((await res.json()) as WpSearchResult[]);
+    } finally {
+      setIsSearchingWp(false);
+    }
+  }
+
+  async function saveWpLink(result: WpSearchResult) {
+    if (!recordsetId) return;
+    setIsSavingWpMap(true);
+    setWpModalError(null);
+    try {
+      const body = {
+        wp_object_type: "download",
+        wp_object_id: result.id,
+        wp_edit_url: result.edit_url,
+        wp_view_url: result.view_url,
+      };
+      const res = wpMap
+        ? await fetch(`/api/wp-object-map/${wpMap.map_id}`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(body),
+          })
+        : await fetch("/api/wp-object-map", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              posda_object_type: "recordset",
+              posda_object_id: parseInt(recordsetId, 10),
+              ...body,
+            }),
+          });
+      if (!res.ok) {
+        const json = (await res.json()) as { error?: { message?: string } | string };
+        throw new Error(typeof json.error === "string" ? json.error : (json.error?.message ?? "Could not save link."));
+      }
+      const json = (await res.json()) as { data: WpMap };
+      setWpMap(json.data);
+      setShowWpModal(false);
+      setWpSearchQuery("");
+      setWpResults([]);
+      toastSuccess(addToast, "WordPress link saved.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Could not save link.";
+      setWpModalError(msg);
+      toastError(addToast, msg);
+    } finally {
+      setIsSavingWpMap(false);
+    }
+  }
+
   const configuredDestIds = new Set(destinations.map((d) => d.destination_id));
   const availableDestinations = allDestinations.filter((d) => !configuredDestIds.has(d.destination_id));
 
@@ -501,6 +608,38 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
       {!isLoading && recordset && (
         <>
+          <CardHeader className="mt-6 mb-0">
+            <CardTitle>WordPress Object</CardTitle>
+            <Button size="sm" onClick={() => setShowWpModal(true)}>
+              {wpMap ? "Change Link" : "Link to WordPress"}
+            </Button>
+          </CardHeader>
+          <SectionCard className="mt-1">
+            {isLoadingWpMap && <p className="text-sm">Loading...</p>}
+            {!isLoadingWpMap && wpMap === null && (
+              <p className="text-sm" style={{ color: "var(--muted)" }}>No WordPress object linked.</p>
+            )}
+            {!isLoadingWpMap && wpMap && (
+              <div className="space-y-1 text-sm">
+                <p>
+                  <span className="font-medium capitalize">{wpMap.wp_object_type}</span>
+                  {" "}<span style={{ color: "var(--muted)" }}>ID {wpMap.wp_object_id}</span>
+                </p>
+                <div className="flex gap-4 text-xs">
+                  {wpMap.wp_view_url && (
+                    <a href={wpMap.wp_view_url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>View on site ↗</a>
+                  )}
+                  {wpMap.wp_edit_url && (
+                    <a href={wpMap.wp_edit_url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>Edit in WordPress ↗</a>
+                  )}
+                </div>
+                {wpMap.when_synced && (
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>Synced: {new Date(wpMap.when_synced).toLocaleString()}</p>
+                )}
+              </div>
+            )}
+          </SectionCard>
+
           <CardHeader className="mt-6 mb-0">
             <CardTitle>Destinations</CardTitle>
             <Button
@@ -697,6 +836,56 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                 disabled={isSavingDest || !destModalDestId || !destModalTransferModeId}
               >
                 {isSavingDest ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showWpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-lg rounded-lg p-6 shadow-xl" style={{ background: "var(--surface)", border: "1px solid var(--border-strong)" }}>
+            <h2 className="text-lg font-semibold">Link to WordPress Download</h2>
+            {wpModalError && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{wpModalError}</p>}
+            <div className="mt-4 space-y-3">
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={wpSearchQuery}
+                  onChange={(e) => setWpSearchQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") void searchWp(); }}
+                  placeholder="Search by title..."
+                  className="input w-full"
+                  autoFocus
+                />
+                <Button onClick={() => void searchWp()} disabled={isSearchingWp || !wpSearchQuery.trim()}>
+                  {isSearchingWp ? "…" : "Search"}
+                </Button>
+              </div>
+              {wpResults.length > 0 && (
+                <ul className="max-h-64 overflow-y-auto divide-y rounded" style={{ border: "1px solid var(--border-strong)" }}>
+                  {wpResults.map((r) => (
+                    <li
+                      key={r.id}
+                      className="flex cursor-pointer items-center justify-between gap-4 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                      onClick={() => { if (!isSavingWpMap) void saveWpLink(r); }}
+                    >
+                      <span className="text-sm">
+                        <span className="font-medium">{r.title}</span>
+                        <span className="ml-2 text-xs" style={{ color: "var(--muted)" }}>{r.status}</span>
+                      </span>
+                      <span className="shrink-0 text-xs" style={{ color: "var(--muted)" }}>ID {r.id}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {!isSearchingWp && wpResults.length === 0 && wpSearchQuery && (
+                <p className="text-sm" style={{ color: "var(--muted)" }}>No results.</p>
+              )}
+            </div>
+            <div className="mt-6 flex justify-end">
+              <Button variant="ghost" onClick={() => { setShowWpModal(false); setWpSearchQuery(""); setWpResults([]); setWpModalError(null); }}>
+                Cancel
               </Button>
             </div>
           </div>

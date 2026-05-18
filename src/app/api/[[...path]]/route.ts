@@ -4,12 +4,17 @@ import { PapiHttpError, papiRequest, type PapiRequestOptions } from "@/lib/papi"
 type RouteContext = { params: Promise<{ path?: string[] }> };
 
 const ROOT_ROUTERS: Record<string, string> = {
-  lookups:    "/papi/v1/distribution",
-  datasets:   "/papi/v1/distribution",
-  releases:   "/papi/v1/distribution",
-  recordsets: "/papi/v1/distribution",
-  transfers:  "/papi/v1/distribution",
-  activities: "/papi/v1",
+  lookups:           "/papi/v1/distribution",
+  datasets:          "/papi/v1/distribution",
+  releases:          "/papi/v1/distribution",
+  recordsets:        "/papi/v1/distribution",
+  transfers:         "/papi/v1/distribution",
+  activities:        "/papi/v1",
+  collections:       "/papi/v1/manager",
+  "analysis-results": "/papi/v1/manager",
+  downloads:         "/papi/v1/manager",
+  "wp-object-map":   "/papi/v1/manager",
+  posda:             "/papi/v1/manager",
 };
 
 const FORWARDABLE_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
