@@ -67,17 +67,19 @@ type PageDetailHeaderProps = {
 };
 
 const badgeClasses: Record<BadgeVariant, string> = {
-  success: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+  success:
+    "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
   neutral: "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
-  warning: "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400",
-  danger:  "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400",
+  warning:
+    "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400",
+  danger: "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400",
 };
 
 const badgeDotClasses: Record<BadgeVariant, string> = {
   success: "bg-green-500",
   neutral: "bg-zinc-400",
   warning: "bg-amber-500",
-  danger:  "bg-red-500",
+  danger: "bg-red-500",
 };
 
 export function PageDetailHeader({
@@ -90,9 +92,15 @@ export function PageDetailHeader({
   return (
     <div>
       {breadcrumb && (
-        <nav className="mb-2 flex items-center gap-1.5 text-sm" style={{ color: "var(--muted)" }}>
+        <nav
+          className="mb-2 flex items-center gap-1.5 text-sm"
+          style={{ color: "var(--muted)" }}
+        >
           <span className="opacity-40">←</span>
-          <Link href={breadcrumb.href} className="transition-colors hover:text-accent">
+          <Link
+            href={breadcrumb.href}
+            className="transition-colors hover:text-accent"
+          >
             {breadcrumb.label}
           </Link>
         </nav>
@@ -103,11 +111,18 @@ export function PageDetailHeader({
             <div className="flex items-center gap-3">
               <h1 className="page-title">{title}</h1>
               {badge && (
-                <span className={classNames(
-                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-                  badgeClasses[badge.variant],
-                )}>
-                  <span className={classNames("h-1.5 w-1.5 rounded-full", badgeDotClasses[badge.variant])} />
+                <span
+                  className={classNames(
+                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+                    badgeClasses[badge.variant],
+                  )}
+                >
+                  <span
+                    className={classNames(
+                      "h-1.5 w-1.5 rounded-full",
+                      badgeDotClasses[badge.variant],
+                    )}
+                  />
                   {badge.label}
                 </span>
               )}
