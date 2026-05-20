@@ -42,8 +42,14 @@ function extractArray<T>(payload: unknown, keys: string[]): T[] {
 export default function TransfersPage() {
   const router = useRouter();
 
-  const [filtersInput, setFiltersInput] = useState<DatasetFilters>({ search: "", activeOnly: true });
-  const [filters, setFilters] = useState<DatasetFilters>({ search: "", activeOnly: true });
+  const [filtersInput, setFiltersInput] = useState<DatasetFilters>({
+    search: "",
+    activeOnly: true,
+  });
+  const [filters, setFilters] = useState<DatasetFilters>({
+    search: "",
+    activeOnly: true,
+  });
 
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [datasetTotal, setDatasetTotal] = useState(0);
@@ -66,7 +72,9 @@ export default function TransfersPage() {
       if (filters.activeOnly) params.set("active_only", "true");
       params.set("page", String(datasetPage));
       params.set("limit", String(datasetPageSize));
-      const res = await fetch(`/api/datasets?${params.toString()}`, { cache: "no-store" });
+      const res = await fetch(`/api/datasets?${params.toString()}`, {
+        cache: "no-store",
+      });
       if (!res.ok) throw new Error("Request failed");
       const json = (await res.json()) as unknown;
       const items = extractArray<Dataset>(json, ["datasets", "data"]);
@@ -86,7 +94,9 @@ export default function TransfersPage() {
     setReleaseError(null);
     setReleases([]);
     try {
-      const res = await fetch(`/api/datasets/${datasetId}/releases`, { cache: "no-store" });
+      const res = await fetch(`/api/datasets/${datasetId}/releases`, {
+        cache: "no-store",
+      });
       if (!res.ok) throw new Error("Request failed");
       const json = (await res.json()) as unknown;
       const items = extractArray<DatasetRelease>(json, ["releases", "data"]);
@@ -160,7 +170,9 @@ export default function TransfersPage() {
           actions={
             <>
               <Button type="submit">Search</Button>
-              <Button type="button" onClick={clearFilters} variant="ghost">Clear</Button>
+              <Button type="button" onClick={clearFilters} variant="ghost">
+                Clear
+              </Button>
             </>
           }
         />
@@ -172,17 +184,24 @@ export default function TransfersPage() {
       <SectionCard className="mt-1">
         {isLoadingDatasets && <p className="text-sm">Loading...</p>}
         {!isLoadingDatasets && datasetError && (
-          <p className="text-sm text-red-600 dark:text-red-400">{datasetError}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">
+            {datasetError}
+          </p>
         )}
         {!isLoadingDatasets && !datasetError && (
           <DynamicTable
             rows={datasets}
-            totalItems={datasetTotal}
-            currentPage={datasetPage}
-            currentItemsPerPage={datasetPageSize}
-            defaultItemsPerPage={10}
-            onPageChange={setDatasetPage}
-            onItemsPerPageChange={(next) => { setDatasetPageSize(next); setDatasetPage(1); }}
+            pagination={{
+              totalItems: datasetTotal,
+              page: datasetPage,
+              pageSize: datasetPageSize,
+              defaultItemsPerPage: 10,
+              onPageChange: setDatasetPage,
+              onPageSizeChange: (next) => {
+                setDatasetPageSize(next);
+                setDatasetPage(1);
+              },
+            }}
             columns={[
               { key: "dataset_id", label: "ID" },
               { key: "dataset_name", label: "Name" },
@@ -201,12 +220,18 @@ export default function TransfersPage() {
             <CardTitle>{selectedDataset.dataset_name} — Releases</CardTitle>
           </CardHeader>
           <SectionCard className="mt-1">
-            {isLoadingReleases && <p className="text-sm">Loading releases...</p>}
+            {isLoadingReleases && (
+              <p className="text-sm">Loading releases...</p>
+            )}
             {!isLoadingReleases && releaseError && (
-              <p className="text-sm text-red-600 dark:text-red-400">{releaseError}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {releaseError}
+              </p>
             )}
             {!isLoadingReleases && !releaseError && releases.length === 0 && (
-              <p className="text-sm" style={{ color: "var(--muted)" }}>No releases found for this dataset.</p>
+              <p className="text-sm" style={{ color: "var(--muted)" }}>
+                No releases found for this dataset.
+              </p>
             )}
             {!isLoadingReleases && releases.length > 0 && (
               <DynamicTable
@@ -218,10 +243,13 @@ export default function TransfersPage() {
                   { key: "release_notes", label: "Notes" },
                 ]}
                 formatters={{
-                  release_date: (v) => v ? new Date(String(v)).toLocaleDateString() : "—",
+                  release_date: (v) =>
+                    v ? new Date(String(v)).toLocaleDateString() : "—",
                 }}
                 onRowClick={(row) =>
-                  router.push(`/datasets/releases/${row.dataset_release_id}/transfers`)
+                  router.push(
+                    `/datasets/releases/${row.dataset_release_id}/transfers`,
+                  )
                 }
                 getRowKey={(row) => row.dataset_release_id}
               />

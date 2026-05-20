@@ -207,8 +207,12 @@ export default function RecordsetByIdPage({ params }: PageProps) {
   // Destinations
   const [destinations, setDestinations] = useState<RecordsetDestination[]>([]);
   const [isLoadingDestinations, setIsLoadingDestinations] = useState(false);
-  const [destinationsError, setDestinationsError] = useState<string | null>(null);
-  const [allDestinations, setAllDestinations] = useState<DestinationLookup[]>([]);
+  const [destinationsError, setDestinationsError] = useState<string | null>(
+    null,
+  );
+  const [allDestinations, setAllDestinations] = useState<DestinationLookup[]>(
+    [],
+  );
   const [transferModes, setTransferModes] = useState<TransferModeLookup[]>([]);
 
   // Destination modal
@@ -216,7 +220,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
   const [destModalIsAdding, setDestModalIsAdding] = useState(true);
   const [destModalDestId, setDestModalDestId] = useState<number | null>(null);
   const [destModalDefaultDisplay, setDestModalDefaultDisplay] = useState(false);
-  const [destModalTransferModeId, setDestModalTransferModeId] = useState<number | null>(null);
+  const [destModalTransferModeId, setDestModalTransferModeId] = useState<
+    number | null
+  >(null);
   const [isSavingDest, setIsSavingDest] = useState(false);
   const [destModalError, setDestModalError] = useState<string | null>(null);
 
@@ -390,7 +396,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     async function loadDestinationsAndLookups() {
       try {
         const [destRes, allDestRes, modesRes] = await Promise.all([
-          fetch(`/api/recordsets/${recordsetId}/destinations`, { cache: "no-store" }),
+          fetch(`/api/recordsets/${recordsetId}/destinations`, {
+            cache: "no-store",
+          }),
           fetch("/api/lookups/destinations", { cache: "no-store" }),
           fetch("/api/lookups/transfer-modes", { cache: "no-store" }),
         ]);
@@ -398,19 +406,25 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         if (!isMounted) return;
 
         if (destRes.ok) {
-          const json = (await destRes.json()) as { data?: RecordsetDestination[] } | RecordsetDestination[];
+          const json = (await destRes.json()) as
+            | { data?: RecordsetDestination[] }
+            | RecordsetDestination[];
           setDestinations(Array.isArray(json) ? json : (json.data ?? []));
         } else {
           setDestinationsError("Could not load destinations.");
         }
 
         if (allDestRes.ok) {
-          const json = (await allDestRes.json()) as { data?: DestinationLookup[] } | DestinationLookup[];
+          const json = (await allDestRes.json()) as
+            | { data?: DestinationLookup[] }
+            | DestinationLookup[];
           setAllDestinations(Array.isArray(json) ? json : (json.data ?? []));
         }
 
         if (modesRes.ok) {
-          const json = (await modesRes.json()) as { data?: TransferModeLookup[] } | TransferModeLookup[];
+          const json = (await modesRes.json()) as
+            | { data?: TransferModeLookup[] }
+            | TransferModeLookup[];
           setTransferModes(Array.isArray(json) ? json : (json.data ?? []));
         }
       } catch {
@@ -421,7 +435,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     }
 
     void loadDestinationsAndLookups();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [recordsetId]);
 
   function openAddDestModal() {
@@ -471,18 +487,31 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         throw new Error(json.error?.message ?? "Could not save destination.");
       }
 
-      toastSuccess(addToast, destModalIsAdding ? "Destination added." : "Destination updated.");
+      toastSuccess(
+        addToast,
+        destModalIsAdding ? "Destination added." : "Destination updated.",
+      );
       closeDestModal();
 
       // Refresh destinations list
-      const destRes = await fetch(`/api/recordsets/${recordsetId}/destinations`, { cache: "no-store" });
+      const destRes = await fetch(
+        `/api/recordsets/${recordsetId}/destinations`,
+        { cache: "no-store" },
+      );
       if (destRes.ok) {
-        const json = (await destRes.json()) as { data?: RecordsetDestination[] } | RecordsetDestination[];
+        const json = (await destRes.json()) as
+          | { data?: RecordsetDestination[] }
+          | RecordsetDestination[];
         setDestinations(Array.isArray(json) ? json : (json.data ?? []));
       }
     } catch (e) {
-      setDestModalError(e instanceof Error ? e.message : "Could not save destination.");
-      toastError(addToast, e instanceof Error ? e.message : "Could not save destination.");
+      setDestModalError(
+        e instanceof Error ? e.message : "Could not save destination.",
+      );
+      toastError(
+        addToast,
+        e instanceof Error ? e.message : "Could not save destination.",
+      );
     } finally {
       setIsSavingDest(false);
     }
@@ -502,9 +531,15 @@ export default function RecordsetByIdPage({ params }: PageProps) {
           setWpMap(null);
         }
       })
-      .catch(() => { if (isMounted) setWpMap(null); })
-      .finally(() => { if (isMounted) setIsLoadingWpMap(false); });
-    return () => { isMounted = false; };
+      .catch(() => {
+        if (isMounted) setWpMap(null);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingWpMap(false);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, [recordsetId]);
 
   async function searchWp() {
@@ -512,7 +547,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
     setIsSearchingWp(true);
     setWpResults([]);
     try {
-      const res = await fetch(`/api/downloads?search=${encodeURIComponent(wpSearchQuery.trim())}`);
+      const res = await fetch(
+        `/api/downloads?search=${encodeURIComponent(wpSearchQuery.trim())}`,
+      );
       if (res.ok) setWpResults((await res.json()) as WpSearchResult[]);
     } finally {
       setIsSearchingWp(false);
@@ -546,8 +583,14 @@ export default function RecordsetByIdPage({ params }: PageProps) {
             }),
           });
       if (!res.ok) {
-        const json = (await res.json()) as { error?: { message?: string } | string };
-        throw new Error(typeof json.error === "string" ? json.error : (json.error?.message ?? "Could not save link."));
+        const json = (await res.json()) as {
+          error?: { message?: string } | string;
+        };
+        throw new Error(
+          typeof json.error === "string"
+            ? json.error
+            : (json.error?.message ?? "Could not save link."),
+        );
       }
       const json = (await res.json()) as { data: WpMap };
       setWpMap(json.data);
@@ -565,7 +608,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
   }
 
   const configuredDestIds = new Set(destinations.map((d) => d.destination_id));
-  const availableDestinations = allDestinations.filter((d) => !configuredDestIds.has(d.destination_id));
+  const availableDestinations = allDestinations.filter(
+    (d) => !configuredDestIds.has(d.destination_id),
+  );
 
   const recordset = data?.recordset ?? data?.data ?? null;
   const recordsetFields: DynamicSectionField[] = recordset
@@ -586,9 +631,20 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         title="Recordset Details"
         breadcrumb={{ label: "Recordsets", href: "/recordsets" }}
         subtitle={recordset?.recordset_name}
-        badge={recordset ? { label: recordset.active ? "Active" : "Inactive", variant: recordset.active ? "success" : "neutral" } : undefined}
+        badge={
+          recordset
+            ? {
+                label: recordset.active ? "Active" : "Inactive",
+                variant: recordset.active ? "success" : "neutral",
+              }
+            : undefined
+        }
         actions={
-          <LinkButton href={recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"}>
+          <LinkButton
+            href={
+              recordsetId ? `/recordsets/${recordsetId}/edit` : "/recordsets"
+            }
+          >
             Edit Recordset
           </LinkButton>
         }
@@ -599,9 +655,38 @@ export default function RecordsetByIdPage({ params }: PageProps) {
         error={error}
         fields={recordsetFields}
         actions={
-          <div className="space-y-1 rounded-md px-3 py-2 text-xs" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)", color: "var(--muted)" }}>
-            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Created:</span>{" "}{recordset ? new Date(recordset.when_created).toLocaleString() : "—"} by {recordset?.who_created}</p>
-            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{recordset ? new Date(recordset.when_updated).toLocaleString() : "—"} by {recordset?.who_updated}</p>
+          <div
+            className="space-y-1 rounded-md px-3 py-2 text-xs"
+            style={{
+              background: "var(--surface-alt)",
+              border: "1px solid var(--border-strong)",
+              color: "var(--muted)",
+            }}
+          >
+            <p>
+              <span
+                className="font-semibold"
+                style={{ color: "var(--foreground)" }}
+              >
+                Created:
+              </span>{" "}
+              {recordset
+                ? new Date(recordset.when_created).toLocaleString()
+                : "—"}{" "}
+              by {recordset?.who_created}
+            </p>
+            <p>
+              <span
+                className="font-semibold"
+                style={{ color: "var(--foreground)" }}
+              >
+                Updated:
+              </span>{" "}
+              {recordset
+                ? new Date(recordset.when_updated).toLocaleString()
+                : "—"}{" "}
+              by {recordset?.who_updated}
+            </p>
           </div>
         }
       />
@@ -617,24 +702,46 @@ export default function RecordsetByIdPage({ params }: PageProps) {
           <SectionCard className="mt-1">
             {isLoadingWpMap && <p className="text-sm">Loading...</p>}
             {!isLoadingWpMap && wpMap === null && (
-              <p className="text-sm" style={{ color: "var(--muted)" }}>No WordPress object linked.</p>
+              <p className="text-sm" style={{ color: "var(--muted)" }}>
+                No WordPress object linked.
+              </p>
             )}
             {!isLoadingWpMap && wpMap && (
               <div className="space-y-1 text-sm">
                 <p>
-                  <span className="font-medium capitalize">{wpMap.wp_object_type}</span>
-                  {" "}<span style={{ color: "var(--muted)" }}>ID {wpMap.wp_object_id}</span>
+                  <span className="font-medium capitalize">
+                    {wpMap.wp_object_type}
+                  </span>{" "}
+                  <span style={{ color: "var(--muted)" }}>
+                    ID {wpMap.wp_object_id}
+                  </span>
                 </p>
                 <div className="flex gap-4 text-xs">
                   {wpMap.wp_view_url && (
-                    <a href={wpMap.wp_view_url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>View on site ↗</a>
+                    <a
+                      href={wpMap.wp_view_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      View on site ↗
+                    </a>
                   )}
                   {wpMap.wp_edit_url && (
-                    <a href={wpMap.wp_edit_url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>Edit in WordPress ↗</a>
+                    <a
+                      href={wpMap.wp_edit_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      Edit in WordPress ↗
+                    </a>
                   )}
                 </div>
                 {wpMap.when_synced && (
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>Synced: {new Date(wpMap.when_synced).toLocaleString()}</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>
+                    Synced: {new Date(wpMap.when_synced).toLocaleString()}
+                  </p>
                 )}
               </div>
             )}
@@ -651,27 +758,37 @@ export default function RecordsetByIdPage({ params }: PageProps) {
             </Button>
           </CardHeader>
           <SectionCard className="mt-1">
-
-            {isLoadingDestinations && <p className="text-sm">Loading destinations...</p>}
+            {isLoadingDestinations && (
+              <p className="text-sm">Loading destinations...</p>
+            )}
             {!isLoadingDestinations && destinationsError && (
-              <p className="text-sm text-red-600 dark:text-red-400">{destinationsError}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {destinationsError}
+              </p>
             )}
             {!isLoadingDestinations && !destinationsError && (
               <DynamicTable
                 rows={destinations}
-                defaultItemsPerPage={4}
-                totalItems={destinations.length}
-                currentPage={destinationsPage}
-                currentItemsPerPage={destinationsItemsPerPage}
-                onPageChange={setDestinationsPage}
-                onItemsPerPageChange={(n) => { setDestinationsItemsPerPage(n); setDestinationsPage(1); }}
+                pagination={{
+                  defaultItemsPerPage: 4,
+                  totalItems: destinations.length,
+                  page: destinationsPage,
+                  pageSize: destinationsItemsPerPage,
+                  onPageChange: setDestinationsPage,
+                  onPageSizeChange: (n) => {
+                    setDestinationsItemsPerPage(n);
+                    setDestinationsPage(1);
+                  },
+                }}
                 columns={[
                   { key: "destination_name", label: "Destination" },
                   { key: "destination_abbr", label: "Abbr" },
                   { key: "default_display", label: "Default Display" },
                   { key: "transfer_mode_name", label: "Transfer Mode" },
                 ]}
-                formatters={{ default_display: (value) => (value ? "Yes" : "No") }}
+                formatters={{
+                  default_display: (value) => (value ? "Yes" : "No"),
+                }}
                 onRowClick={(row) => openEditDestModal(row)}
                 getRowKey={(row) => row.destination_id}
               />
@@ -682,22 +799,27 @@ export default function RecordsetByIdPage({ params }: PageProps) {
             <CardTitle>Releases</CardTitle>
           </CardHeader>
           <SectionCard className="mt-1">
-
-            {isLoadingReleases && <p className="text-sm">Loading releases...</p>}
+            {isLoadingReleases && (
+              <p className="text-sm">Loading releases...</p>
+            )}
             {!isLoadingReleases && releasesError && (
-              <p className="text-sm text-red-600 dark:text-red-400">{releasesError}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {releasesError}
+              </p>
             )}
             {!isLoadingReleases && !releasesError && releasesData && (
               <DynamicTable
                 rows={releasesData.releases}
-                defaultItemsPerPage={4}
-                totalItems={releasesData.total}
-                currentPage={releasesPage}
-                currentItemsPerPage={releasesItemsPerPage}
-                onPageChange={setReleasesPage}
-                onItemsPerPageChange={(nextItemsPerPage) => {
-                  setReleasesItemsPerPage(nextItemsPerPage);
-                  setReleasesPage(1);
+                pagination={{
+                  defaultItemsPerPage: 4,
+                  totalItems: releasesData.total,
+                  page: releasesPage,
+                  pageSize: releasesItemsPerPage,
+                  onPageChange: setReleasesPage,
+                  onPageSizeChange: (nextItemsPerPage) => {
+                    setReleasesItemsPerPage(nextItemsPerPage);
+                    setReleasesPage(1);
+                  },
                 }}
                 columns={[
                   { key: "recordset_release_id", label: "ID" },
@@ -707,9 +829,14 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   { key: "file_count", label: "File Count" },
                 ]}
                 formatters={{
-                  release_date: (value) => new Date(String(value)).toLocaleDateString(),
+                  release_date: (value) =>
+                    new Date(String(value)).toLocaleDateString(),
                 }}
-                onRowClick={(row) => router.push(`/recordsets/releases/${row.recordset_release_id}`)}
+                onRowClick={(row) =>
+                  router.push(
+                    `/recordsets/releases/${row.recordset_release_id}`,
+                  )
+                }
                 getRowKey={(row) => row.recordset_release_id}
               />
             )}
@@ -718,29 +845,36 @@ export default function RecordsetByIdPage({ params }: PageProps) {
           <CardHeader className="mt-6 mb-0">
             <CardTitle>Drafts</CardTitle>
             <LinkButton
-              href={recordsetId ? `/recordsets/drafts/create?recordset_id=${recordsetId}` : "/recordsets/drafts/create"}
+              href={
+                recordsetId
+                  ? `/recordsets/drafts/create?recordset_id=${recordsetId}`
+                  : "/recordsets/drafts/create"
+              }
               size="sm"
             >
               New Draft
             </LinkButton>
           </CardHeader>
           <SectionCard className="mt-1">
-
             {isLoadingDrafts && <p className="text-sm">Loading drafts...</p>}
             {!isLoadingDrafts && draftsError && (
-              <p className="text-sm text-red-600 dark:text-red-400">{draftsError}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {draftsError}
+              </p>
             )}
             {!isLoadingDrafts && !draftsError && draftsData && (
               <DynamicTable
                 rows={draftsData.drafts}
-                defaultItemsPerPage={4}
-                totalItems={draftsData.total}
-                currentPage={draftsPage}
-                currentItemsPerPage={draftsItemsPerPage}
-                onPageChange={setDraftsPage}
-                onItemsPerPageChange={(nextItemsPerPage) => {
-                  setDraftsItemsPerPage(nextItemsPerPage);
-                  setDraftsPage(1);
+                pagination={{
+                  defaultItemsPerPage: 4,
+                  totalItems: draftsData.total,
+                  page: draftsPage,
+                  pageSize: draftsItemsPerPage,
+                  onPageChange: setDraftsPage,
+                  onPageSizeChange: (nextItemsPerPage) => {
+                    setDraftsItemsPerPage(nextItemsPerPage);
+                    setDraftsPage(1);
+                  },
                 }}
                 columns={[
                   { key: "recordset_draft_id", label: "ID" },
@@ -750,7 +884,9 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   { key: "file_count", label: "File Count" },
                   { key: "cloned_from_release_id", label: "Cloned Release ID" },
                 ]}
-                onRowClick={(row) => router.push(`/recordsets/drafts/${row.recordset_draft_id}`)}
+                onRowClick={(row) =>
+                  router.push(`/recordsets/drafts/${row.recordset_draft_id}`)
+                }
                 getRowKey={(row) => row.recordset_draft_id}
               />
             )}
@@ -766,13 +902,17 @@ export default function RecordsetByIdPage({ params }: PageProps) {
             </h2>
 
             {destModalError && (
-              <p className="mt-3 text-sm text-red-600 dark:text-red-400">{destModalError}</p>
+              <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                {destModalError}
+              </p>
             )}
 
             <div className="mt-4 space-y-4">
               {destModalIsAdding ? (
                 <div>
-                  <label className="block text-sm font-medium">Destination</label>
+                  <label className="block text-sm font-medium">
+                    Destination
+                  </label>
                   <select
                     value={destModalDestId ?? ""}
                     onChange={(e) => setDestModalDestId(Number(e.target.value))}
@@ -790,21 +930,32 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                 <div>
                   <span className="block text-sm font-medium">Destination</span>
                   <span className="text-sm">
-                    {destinations.find((d) => d.destination_id === destModalDestId)?.destination_name}
+                    {
+                      destinations.find(
+                        (d) => d.destination_id === destModalDestId,
+                      )?.destination_name
+                    }
                   </span>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium">Transfer Mode</label>
+                <label className="block text-sm font-medium">
+                  Transfer Mode
+                </label>
                 <select
                   value={destModalTransferModeId ?? ""}
-                  onChange={(e) => setDestModalTransferModeId(Number(e.target.value))}
+                  onChange={(e) =>
+                    setDestModalTransferModeId(Number(e.target.value))
+                  }
                   className="select mt-1 w-full"
                 >
                   <option value="">Select a transfer mode...</option>
                   {transferModes.map((tm) => (
-                    <option key={tm.transfer_mode_id} value={tm.transfer_mode_id}>
+                    <option
+                      key={tm.transfer_mode_id}
+                      value={tm.transfer_mode_id}
+                    >
                       {tm.transfer_mode_name}
                     </option>
                   ))}
@@ -819,19 +970,28 @@ export default function RecordsetByIdPage({ params }: PageProps) {
                   onChange={(e) => setDestModalDefaultDisplay(e.target.checked)}
                   className="h-4 w-4"
                 />
-                <label htmlFor="dest_default_display" className="text-sm font-medium">
+                <label
+                  htmlFor="dest_default_display"
+                  className="text-sm font-medium"
+                >
                   Default Display
                 </label>
               </div>
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
-              <Button variant="ghost" onClick={closeDestModal} disabled={isSavingDest}>
+              <Button
+                variant="ghost"
+                onClick={closeDestModal}
+                disabled={isSavingDest}
+              >
                 Cancel
               </Button>
               <Button
                 onClick={() => void handleSaveDestination()}
-                disabled={isSavingDest || !destModalDestId || !destModalTransferModeId}
+                disabled={
+                  isSavingDest || !destModalDestId || !destModalTransferModeId
+                }
               >
                 {isSavingDest ? "Saving..." : "Save"}
               </Button>
@@ -842,47 +1002,89 @@ export default function RecordsetByIdPage({ params }: PageProps) {
 
       {showWpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg rounded-lg p-6 shadow-xl" style={{ background: "var(--surface)", border: "1px solid var(--border-strong)" }}>
-            <h2 className="text-lg font-semibold">Link to WordPress Download</h2>
-            {wpModalError && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{wpModalError}</p>}
+          <div
+            className="w-full max-w-lg rounded-lg p-6 shadow-xl"
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border-strong)",
+            }}
+          >
+            <h2 className="text-lg font-semibold">
+              Link to WordPress Download
+            </h2>
+            {wpModalError && (
+              <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                {wpModalError}
+              </p>
+            )}
             <div className="mt-4 space-y-3">
               <div className="space-y-2">
                 <input
                   type="text"
                   value={wpSearchQuery}
                   onChange={(e) => setWpSearchQuery(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") void searchWp(); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void searchWp();
+                  }}
                   placeholder="Search by title..."
                   className="input w-full"
                   autoFocus
                 />
-                <Button onClick={() => void searchWp()} disabled={isSearchingWp || !wpSearchQuery.trim()}>
+                <Button
+                  onClick={() => void searchWp()}
+                  disabled={isSearchingWp || !wpSearchQuery.trim()}
+                >
                   {isSearchingWp ? "…" : "Search"}
                 </Button>
               </div>
               {wpResults.length > 0 && (
-                <ul className="max-h-64 overflow-y-auto divide-y rounded" style={{ border: "1px solid var(--border-strong)" }}>
+                <ul
+                  className="max-h-64 overflow-y-auto divide-y rounded"
+                  style={{ border: "1px solid var(--border-strong)" }}
+                >
                   {wpResults.map((r) => (
                     <li
                       key={r.id}
                       className="flex cursor-pointer items-center justify-between gap-4 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                      onClick={() => { if (!isSavingWpMap) void saveWpLink(r); }}
+                      onClick={() => {
+                        if (!isSavingWpMap) void saveWpLink(r);
+                      }}
                     >
                       <span className="text-sm">
                         <span className="font-medium">{r.title}</span>
-                        <span className="ml-2 text-xs" style={{ color: "var(--muted)" }}>{r.status}</span>
+                        <span
+                          className="ml-2 text-xs"
+                          style={{ color: "var(--muted)" }}
+                        >
+                          {r.status}
+                        </span>
                       </span>
-                      <span className="shrink-0 text-xs" style={{ color: "var(--muted)" }}>ID {r.id}</span>
+                      <span
+                        className="shrink-0 text-xs"
+                        style={{ color: "var(--muted)" }}
+                      >
+                        ID {r.id}
+                      </span>
                     </li>
                   ))}
                 </ul>
               )}
               {!isSearchingWp && wpResults.length === 0 && wpSearchQuery && (
-                <p className="text-sm" style={{ color: "var(--muted)" }}>No results.</p>
+                <p className="text-sm" style={{ color: "var(--muted)" }}>
+                  No results.
+                </p>
               )}
             </div>
             <div className="mt-6 flex justify-end">
-              <Button variant="ghost" onClick={() => { setShowWpModal(false); setWpSearchQuery(""); setWpResults([]); setWpModalError(null); }}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowWpModal(false);
+                  setWpSearchQuery("");
+                  setWpResults([]);
+                  setWpModalError(null);
+                }}
+              >
                 Cancel
               </Button>
             </div>

@@ -197,7 +197,9 @@ export default function DatasetByIdPage({ params }: PageProps) {
   const [wpMap, setWpMap] = useState<WpMap | null | undefined>(undefined);
   const [isLoadingWpMap, setIsLoadingWpMap] = useState(false);
   const [showWpModal, setShowWpModal] = useState(false);
-  const [wpSearchType, setWpSearchType] = useState<"collection" | "analysis_result">("collection");
+  const [wpSearchType, setWpSearchType] = useState<
+    "collection" | "analysis_result"
+  >("collection");
   const [wpSearchQuery, setWpSearchQuery] = useState("");
   const [wpResults, setWpResults] = useState<WpSearchResult[]>([]);
   const [isSearchingWp, setIsSearchingWp] = useState(false);
@@ -385,9 +387,15 @@ export default function DatasetByIdPage({ params }: PageProps) {
           setWpMap(null);
         }
       })
-      .catch(() => { if (isMounted) setWpMap(null); })
-      .finally(() => { if (isMounted) setIsLoadingWpMap(false); });
-    return () => { isMounted = false; };
+      .catch(() => {
+        if (isMounted) setWpMap(null);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingWpMap(false);
+      });
+    return () => {
+      isMounted = false;
+    };
   }, [datasetId]);
 
   async function searchWp() {
@@ -395,8 +403,11 @@ export default function DatasetByIdPage({ params }: PageProps) {
     setIsSearchingWp(true);
     setWpResults([]);
     try {
-      const endpoint = wpSearchType === "collection" ? "collections" : "analysis-results";
-      const res = await fetch(`/api/${endpoint}?search=${encodeURIComponent(wpSearchQuery.trim())}`);
+      const endpoint =
+        wpSearchType === "collection" ? "collections" : "analysis-results";
+      const res = await fetch(
+        `/api/${endpoint}?search=${encodeURIComponent(wpSearchQuery.trim())}`,
+      );
       if (res.ok) setWpResults((await res.json()) as WpSearchResult[]);
     } finally {
       setIsSearchingWp(false);
@@ -430,8 +441,14 @@ export default function DatasetByIdPage({ params }: PageProps) {
             }),
           });
       if (!res.ok) {
-        const json = (await res.json()) as { error?: { message?: string } | string };
-        throw new Error(typeof json.error === "string" ? json.error : (json.error?.message ?? "Could not save link."));
+        const json = (await res.json()) as {
+          error?: { message?: string } | string;
+        };
+        throw new Error(
+          typeof json.error === "string"
+            ? json.error
+            : (json.error?.message ?? "Could not save link."),
+        );
       }
       const json = (await res.json()) as { data: WpMap };
       setWpMap(json.data);
@@ -465,9 +482,18 @@ export default function DatasetByIdPage({ params }: PageProps) {
         title="Dataset Details"
         breadcrumb={{ label: "Datasets", href: "/datasets" }}
         subtitle={dataset?.dataset_name}
-        badge={dataset ? { label: dataset.active ? "Active" : "Inactive", variant: dataset.active ? "success" : "neutral" } : undefined}
+        badge={
+          dataset
+            ? {
+                label: dataset.active ? "Active" : "Inactive",
+                variant: dataset.active ? "success" : "neutral",
+              }
+            : undefined
+        }
         actions={
-          <LinkButton href={datasetId ? `/datasets/${datasetId}/edit` : "/datasets"}>
+          <LinkButton
+            href={datasetId ? `/datasets/${datasetId}/edit` : "/datasets"}
+          >
             Edit Dataset
           </LinkButton>
         }
@@ -478,9 +504,34 @@ export default function DatasetByIdPage({ params }: PageProps) {
         error={error}
         fields={datasetFields}
         actions={
-          <div className="space-y-1 rounded-md px-3 py-2 text-xs" style={{ background: "var(--surface-alt)", border: "1px solid var(--border-strong)", color: "var(--muted)" }}>
-            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Created:</span>{" "}{dataset ? new Date(dataset.when_created).toLocaleString() : "—"} by {dataset?.who_created}</p>
-            <p><span className="font-semibold" style={{ color: "var(--foreground)" }}>Updated:</span>{" "}{dataset ? new Date(dataset.when_updated).toLocaleString() : "—"} by {dataset?.who_updated}</p>
+          <div
+            className="space-y-1 rounded-md px-3 py-2 text-xs"
+            style={{
+              background: "var(--surface-alt)",
+              border: "1px solid var(--border-strong)",
+              color: "var(--muted)",
+            }}
+          >
+            <p>
+              <span
+                className="font-semibold"
+                style={{ color: "var(--foreground)" }}
+              >
+                Created:
+              </span>{" "}
+              {dataset ? new Date(dataset.when_created).toLocaleString() : "—"}{" "}
+              by {dataset?.who_created}
+            </p>
+            <p>
+              <span
+                className="font-semibold"
+                style={{ color: "var(--foreground)" }}
+              >
+                Updated:
+              </span>{" "}
+              {dataset ? new Date(dataset.when_updated).toLocaleString() : "—"}{" "}
+              by {dataset?.who_updated}
+            </p>
           </div>
         }
       />
@@ -496,24 +547,46 @@ export default function DatasetByIdPage({ params }: PageProps) {
           <SectionCard className="mt-1">
             {isLoadingWpMap && <p className="text-sm">Loading...</p>}
             {!isLoadingWpMap && wpMap === null && (
-              <p className="text-sm" style={{ color: "var(--muted)" }}>No WordPress object linked.</p>
+              <p className="text-sm" style={{ color: "var(--muted)" }}>
+                No WordPress object linked.
+              </p>
             )}
             {!isLoadingWpMap && wpMap && (
               <div className="space-y-1 text-sm">
                 <p>
-                  <span className="font-medium capitalize">{wpMap.wp_object_type.replace("_", " ")}</span>
-                  {" "}<span style={{ color: "var(--muted)" }}>ID {wpMap.wp_object_id}</span>
+                  <span className="font-medium capitalize">
+                    {wpMap.wp_object_type.replace("_", " ")}
+                  </span>{" "}
+                  <span style={{ color: "var(--muted)" }}>
+                    ID {wpMap.wp_object_id}
+                  </span>
                 </p>
                 <div className="flex gap-4 text-xs">
                   {wpMap.wp_view_url && (
-                    <a href={wpMap.wp_view_url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>View on site ↗</a>
+                    <a
+                      href={wpMap.wp_view_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      View on site ↗
+                    </a>
                   )}
                   {wpMap.wp_edit_url && (
-                    <a href={wpMap.wp_edit_url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>Edit in WordPress ↗</a>
+                    <a
+                      href={wpMap.wp_edit_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      Edit in WordPress ↗
+                    </a>
                   )}
                 </div>
                 {wpMap.when_synced && (
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>Synced: {new Date(wpMap.when_synced).toLocaleString()}</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>
+                    Synced: {new Date(wpMap.when_synced).toLocaleString()}
+                  </p>
                 )}
               </div>
             )}
@@ -533,7 +606,6 @@ export default function DatasetByIdPage({ params }: PageProps) {
             </LinkButton>
           </CardHeader>
           <SectionCard className="mt-1">
-
             {isLoadingRecordsets && (
               <p className="text-sm">Loading recordsets...</p>
             )}
@@ -553,14 +625,16 @@ export default function DatasetByIdPage({ params }: PageProps) {
                 ) : (
                   <DynamicTable
                     rows={recordsetsData.recordsets}
-                    defaultItemsPerPage={5}
-                    totalItems={recordsetsData.total}
-                    currentPage={recordsetsPage}
-                    currentItemsPerPage={recordsetsItemsPerPage}
-                    onPageChange={setRecordsetsPage}
-                    onItemsPerPageChange={(nextItemsPerPage) => {
-                      setRecordsetsItemsPerPage(nextItemsPerPage);
-                      setRecordsetsPage(1);
+                    pagination={{
+                      defaultItemsPerPage: 5,
+                      totalItems: recordsetsData.total,
+                      page: recordsetsPage,
+                      pageSize: recordsetsItemsPerPage,
+                      onPageChange: setRecordsetsPage,
+                      onPageSizeChange: (nextItemsPerPage) => {
+                        setRecordsetsItemsPerPage(nextItemsPerPage);
+                        setRecordsetsPage(1);
+                      },
                     }}
                     columns={[
                       { key: "recordset_id", label: "ID" },
@@ -572,8 +646,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
                       { key: "when_updated", label: "Updated" },
                     ]}
                     formatters={{
-                      when_updated: (value) =>
-                        formatDateTime(value as string),
+                      when_updated: (value) => formatDateTime(value as string),
                     }}
                     onRowClick={(row) =>
                       router.push(`/recordsets/${row.recordset_id}`)
@@ -599,7 +672,6 @@ export default function DatasetByIdPage({ params }: PageProps) {
             </LinkButton>
           </CardHeader>
           <SectionCard className="mt-1">
-
             {isLoadingReleases && (
               <p className="text-sm">Loading releases...</p>
             )}
@@ -613,14 +685,16 @@ export default function DatasetByIdPage({ params }: PageProps) {
             {!isLoadingReleases && !releasesError && releasesData && (
               <DynamicTable
                 rows={releasesData.releases}
-                defaultItemsPerPage={4}
-                totalItems={releasesData.total}
-                currentPage={releasesPage}
-                currentItemsPerPage={releasesItemsPerPage}
-                onPageChange={setReleasesPage}
-                onItemsPerPageChange={(nextItemsPerPage) => {
-                  setReleasesItemsPerPage(nextItemsPerPage);
-                  setReleasesPage(1);
+                pagination={{
+                  defaultItemsPerPage: 4,
+                  totalItems: releasesData.total,
+                  page: releasesPage,
+                  pageSize: releasesItemsPerPage,
+                  onPageChange: setReleasesPage,
+                  onPageSizeChange: (nextItemsPerPage) => {
+                    setReleasesItemsPerPage(nextItemsPerPage);
+                    setReleasesPage(1);
+                  },
                 }}
                 columns={[
                   { key: "dataset_release_id", label: "ID" },
@@ -633,9 +707,7 @@ export default function DatasetByIdPage({ params }: PageProps) {
                     new Date(String(value)).toLocaleDateString(),
                 }}
                 onRowClick={(row) =>
-                  router.push(
-                    `/datasets/releases/${row.dataset_release_id}`,
-                  )
+                  router.push(`/datasets/releases/${row.dataset_release_id}`)
                 }
                 getRowKey={(row) => row.dataset_release_id}
               />
@@ -645,21 +717,39 @@ export default function DatasetByIdPage({ params }: PageProps) {
       )}
       {showWpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg rounded-lg p-6 shadow-xl" style={{ background: "var(--surface)", border: "1px solid var(--border-strong)" }}>
+          <div
+            className="w-full max-w-lg rounded-lg p-6 shadow-xl"
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border-strong)",
+            }}
+          >
             <h2 className="text-lg font-semibold">Link to WordPress Object</h2>
-            {wpModalError && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{wpModalError}</p>}
+            {wpModalError && (
+              <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                {wpModalError}
+              </p>
+            )}
             <div className="mt-4 space-y-3">
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <select
                     value={wpSearchType}
-                    onChange={(e) => { setWpSearchType(e.target.value as "collection" | "analysis_result"); setWpResults([]); }}
+                    onChange={(e) => {
+                      setWpSearchType(
+                        e.target.value as "collection" | "analysis_result",
+                      );
+                      setWpResults([]);
+                    }}
                     className="select"
                   >
                     <option value="collection">Collection</option>
                     <option value="analysis_result">Analysis Result</option>
                   </select>
-                  <Button onClick={() => void searchWp()} disabled={isSearchingWp || !wpSearchQuery.trim()}>
+                  <Button
+                    onClick={() => void searchWp()}
+                    disabled={isSearchingWp || !wpSearchQuery.trim()}
+                  >
                     {isSearchingWp ? "…" : "Search"}
                   </Button>
                 </div>
@@ -667,35 +757,62 @@ export default function DatasetByIdPage({ params }: PageProps) {
                   type="text"
                   value={wpSearchQuery}
                   onChange={(e) => setWpSearchQuery(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") void searchWp(); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void searchWp();
+                  }}
                   placeholder="Search by title..."
                   className="input w-full"
                   autoFocus
                 />
               </div>
               {wpResults.length > 0 && (
-                <ul className="max-h-64 overflow-y-auto divide-y rounded" style={{ border: "1px solid var(--border-strong)" }}>
+                <ul
+                  className="max-h-64 overflow-y-auto divide-y rounded"
+                  style={{ border: "1px solid var(--border-strong)" }}
+                >
                   {wpResults.map((r) => (
                     <li
                       key={r.id}
                       className="flex cursor-pointer items-center justify-between gap-4 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                      onClick={() => { if (!isSavingWpMap) void saveWpLink(r); }}
+                      onClick={() => {
+                        if (!isSavingWpMap) void saveWpLink(r);
+                      }}
                     >
                       <span className="text-sm">
                         <span className="font-medium">{r.title}</span>
-                        <span className="ml-2 text-xs" style={{ color: "var(--muted)" }}>{r.status}</span>
+                        <span
+                          className="ml-2 text-xs"
+                          style={{ color: "var(--muted)" }}
+                        >
+                          {r.status}
+                        </span>
                       </span>
-                      <span className="shrink-0 text-xs" style={{ color: "var(--muted)" }}>ID {r.id}</span>
+                      <span
+                        className="shrink-0 text-xs"
+                        style={{ color: "var(--muted)" }}
+                      >
+                        ID {r.id}
+                      </span>
                     </li>
                   ))}
                 </ul>
               )}
               {!isSearchingWp && wpResults.length === 0 && wpSearchQuery && (
-                <p className="text-sm" style={{ color: "var(--muted)" }}>No results.</p>
+                <p className="text-sm" style={{ color: "var(--muted)" }}>
+                  No results.
+                </p>
               )}
             </div>
             <div className="mt-6 flex justify-end">
-              <Button variant="ghost" onClick={() => { setShowWpModal(false); setWpSearchQuery(""); setWpResults([]); setWpModalError(null); }}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowWpModal(false);
+                  setWpSearchQuery("");
+                  setWpResults([]);
+                  setWpModalError(null);
+                }}
+              >
                 Cancel
               </Button>
             </div>

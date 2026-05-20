@@ -272,14 +272,16 @@ export default function DatasetsPage() {
 
             <DynamicTable
               rows={data.datasets}
-              defaultItemsPerPage={6}
-              totalItems={data.total}
-              currentPage={currentPage}
-              currentItemsPerPage={itemsPerPage}
-              onPageChange={setCurrentPage}
-              onItemsPerPageChange={(nextItemsPerPage) => {
-                setItemsPerPage(nextItemsPerPage);
-                setCurrentPage(1);
+              pagination={{
+                defaultItemsPerPage: 6,
+                totalItems: data.total,
+                page: currentPage,
+                pageSize: itemsPerPage,
+                onPageChange: setCurrentPage,
+                onPageSizeChange: (nextItemsPerPage) => {
+                  setItemsPerPage(nextItemsPerPage);
+                  setCurrentPage(1);
+                },
               }}
               columns={[
                 { key: "dataset_id", label: "ID" },

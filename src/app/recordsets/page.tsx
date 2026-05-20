@@ -310,22 +310,19 @@ export default function RecordsetsPage() {
                 { key: "when_updated", label: "Updated" },
               ]}
               excludeKeys={[]}
-              // Pagination & Scrolling
-              // Paginate, if showPagination is true.
-              showPagination={true}
-              defaultItemsPerPage={10}
-              totalItems={data.total}
-              currentPage={currentPage}
-              currentItemsPerPage={itemsPerPage}
-              itemsPerPageOptions={[4, 10, 25, 50]}
-              onPageChange={setCurrentPage}
-              onItemsPerPageChange={(next) => {
-                setItemsPerPage(next);
-                setCurrentPage(1);
+              pagination={{
+                defaultItemsPerPage: 10,
+                totalItems: data.total,
+                page: currentPage,
+                pageSize: itemsPerPage,
+                pageSizeOptions: [4, 10, 25, 50],
+                onPageChange: setCurrentPage,
+                onPageSizeChange: (next) => {
+                  setItemsPerPage(next);
+                  setCurrentPage(1);
+                },
               }}
-              // Do Not Paginate, if showPagination is false, all rows will be shown.
-              scrollMode="content"
-              maxVisibleRows={5}
+              // scroll={{ mode: "content", maxVisibleRows: 5 }}
               // Appearance & Behavior
               formatters={{
                 when_updated: (value) => formatDateTime(value as string),

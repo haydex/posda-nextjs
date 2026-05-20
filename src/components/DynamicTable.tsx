@@ -11,6 +11,21 @@ export type DynamicTableColumn<T extends RowLike> = {
   render?: (value: unknown, row: T) => ReactNode;
 };
 
+export type DynamicTablePagination = {
+  defaultItemsPerPage?: number;
+  totalItems?: number;
+  page?: number;
+  pageSize?: number;
+  pageSizeOptions?: number[];
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+};
+
+export type DynamicTableScroll = {
+  mode?: "none" | "content";
+  maxVisibleRows?: number;
+};
+
 type DynamicTableProps<T extends RowLike> = {
   // Data
   rows: T[];
@@ -25,27 +40,10 @@ type DynamicTableProps<T extends RowLike> = {
   onRowClick?: (row: T) => void;
   getRowKey?: (row: T, index: number) => string | number;
   // Pagination & Scrolling
-  // Paginate, if showPagination is true.
-  // If showPagination is true, only a subset of rows will be shown based on the current page and items per page settings, and pagination controls will be displayed.
-  // If showPagination is false, all rows will be shown and pagination controls will be hidden.
-  showPagination?: boolean;
-  // Pagination controls. Only relevant if showPagination is true.
-  defaultItemsPerPage?: number;
-  totalItems?: number;
-  currentPage?: number;
-  currentItemsPerPage?: number;
-  // If itemsPerPageOptions is provided and non-empty, it will be used as the options for items per page selection. Otherwise, a default set of options [4, 10, 25, 50, 100] will be used.
-  itemsPerPageOptions?: number[];
-  onPageChange?: (page: number) => void;
-  // This callback is triggered when the user changes the items per page selection. It receives the new items per page value as an argument.
-  onItemsPerPageChange?: (itemsPerPage: number) => void;
-  // Do Not Paginate, if showPagination is false, all rows will be shown.
-  // If showPagination is false, scrollMode controls how the table handles overflow when there are many rows.
-  // "none" (default) means no special handling; the table will grow in height as needed.
-  // "content" means the table will have a max height and show a scrollbar if there are too many rows.
-  scrollMode?: "none" | "content";
-  maxVisibleRows?: number;
-  // Other
+  // Pagination is enabled when the config is provided.
+  pagination?: DynamicTablePagination;
+  // Scrolling applies only when pagination is disabled.
+  scroll?: DynamicTableScroll;
 };
 
 function toLabel(raw: string) {
@@ -70,16 +68,8 @@ export default function DynamicTable<T extends RowLike>({
   rows,
   columns,
   emptyMessage = "No rows.",
-  showPagination = true,
-  scrollMode = "none",
-  maxVisibleRows,
-  defaultItemsPerPage = 4,
-  itemsPerPageOptions,
-  totalItems,
-  currentPage,
-  currentItemsPerPage,
-  onPageChange,
-  onItemsPerPageChange,
+  pagination,
+  scroll,
   formatters,
   excludeKeys,
   onRowClick,
@@ -99,9 +89,15 @@ export default function DynamicTable<T extends RowLike>({
     columns ?? inferredColumns;
 
   const safeDefaultItemsPerPage =
-    Number.isFinite(defaultItemsPerPage) && defaultItemsPerPage > 0
-      ? Math.floor(defaultItemsPerPage)
+    Number.isFinite(pagination?.defaultItemsPerPage) &&
+    (pagination?.defaultItemsPerPage ?? 0) > 0
+      ? Math.floor(pagination?.defaultItemsPerPage ?? 4)
       : 4;
+
+  const paginationEnabled = Boolean(pagination);
+  const itemsPerPageOptions = pagination?.pageSizeOptions;
+  const scrollMode = scroll?.mode ?? "none";
+  const scrollMaxVisibleRows = scroll?.maxVisibleRows;
 
   const pageSizeOptions = useMemo(() => {
     const source =
@@ -127,47 +123,61 @@ export default function DynamicTable<T extends RowLike>({
   );
   const [internalCurrentPage, setInternalCurrentPage] = useState<number>(1);
 
-  const resolvedItemsPerPage = currentItemsPerPage ?? internalItemsPerPage;
-  const resolvedCurrentPage = currentPage ?? internalCurrentPage;
-  const resolvedTotalItems = totalItems ?? rows.length;
-  const shouldPaginate = false;
-  const totalPages = Math.max(
-    1,
-    Math.ceil(resolvedTotalItems / resolvedItemsPerPage),
-  );
-  const currentPageSafe = Math.min(resolvedCurrentPage, totalPages);
-  const startIndex = (currentPageSafe - 1) * resolvedItemsPerPage;
-  const endIndex = startIndex + resolvedItemsPerPage;
-  const visibleRows = shouldPaginate ? rows.slice(startIndex, endIndex) : rows;
+  const resolvedItemsPerPage = pagination?.pageSize ?? internalItemsPerPage;
+  const resolvedCurrentPage = pagination?.page ?? internalCurrentPage;
+  const resolvedTotalItems = pagination?.totalItems ?? rows.length;
+  const totalPages = paginationEnabled
+    ? Math.max(1, Math.ceil(resolvedTotalItems / resolvedItemsPerPage))
+    : 1;
+  const currentPageSafe = paginationEnabled
+    ? Math.min(resolvedCurrentPage, totalPages)
+    : 1;
+  const startIndex = paginationEnabled
+    ? (currentPageSafe - 1) * resolvedItemsPerPage
+    : 0;
+  const endIndex = paginationEnabled
+    ? startIndex + resolvedItemsPerPage
+    : rows.length;
+  const isServerPaged =
+    paginationEnabled &&
+    typeof pagination?.totalItems === "number" &&
+    pagination.totalItems > rows.length;
+  const visibleRows = paginationEnabled
+    ? isServerPaged
+      ? rows
+      : rows.slice(startIndex, endIndex)
+    : rows;
 
   const showingStart =
-    visibleRows.length > 0 ? (showPagination ? startIndex + 1 : 1) : 0;
-  const showingEnd = showPagination
+    visibleRows.length > 0 ? (paginationEnabled ? startIndex + 1 : 1) : 0;
+  const showingEnd = paginationEnabled
     ? Math.min(startIndex + visibleRows.length, resolvedTotalItems)
     : visibleRows.length;
-  const showingTotal = showPagination ? resolvedTotalItems : visibleRows.length;
+  const showingTotal = paginationEnabled
+    ? resolvedTotalItems
+    : visibleRows.length;
 
   const hasScrollableRows =
-    !showPagination &&
+    !paginationEnabled &&
     scrollMode === "content" &&
-    typeof maxVisibleRows === "number" &&
-    Number.isFinite(maxVisibleRows) &&
-    maxVisibleRows > 0;
+    typeof scrollMaxVisibleRows === "number" &&
+    Number.isFinite(scrollMaxVisibleRows) &&
+    scrollMaxVisibleRows > 0;
   const tableViewportMaxHeight = hasScrollableRows
-    ? `${Math.floor(maxVisibleRows) * 41}px`
+    ? `${Math.floor(scrollMaxVisibleRows) * 41}px`
     : undefined;
 
   function updatePage(nextPage: number) {
     const clampedPage = Math.max(1, Math.min(totalPages, nextPage));
     setInternalCurrentPage(clampedPage);
-    onPageChange?.(clampedPage);
+    pagination?.onPageChange?.(clampedPage);
   }
 
   function updateItemsPerPage(nextItemsPerPage: number) {
     setInternalItemsPerPage(nextItemsPerPage);
     setInternalCurrentPage(1);
-    onItemsPerPageChange?.(nextItemsPerPage);
-    onPageChange?.(1);
+    pagination?.onPageSizeChange?.(nextItemsPerPage);
+    pagination?.onPageChange?.(1);
   }
 
   return (
@@ -177,7 +187,7 @@ export default function DynamicTable<T extends RowLike>({
           Showing {showingStart}-{showingEnd} of {showingTotal}
         </p>
 
-        {showPagination && (
+        {paginationEnabled && (
           <label className="inline-flex items-center gap-2 whitespace-nowrap">
             <span className="whitespace-nowrap">Items per page</span>
             <select
@@ -300,7 +310,7 @@ export default function DynamicTable<T extends RowLike>({
         </div>
       )}
 
-      {showPagination && totalPages > 1 && (
+      {paginationEnabled && totalPages > 1 && (
         <div className="mt-3 flex items-center justify-between gap-3 text-sm text-muted">
           <p>
             Page {currentPageSafe} of {totalPages}
