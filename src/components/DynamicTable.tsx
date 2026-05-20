@@ -46,8 +46,6 @@ type DynamicTableProps<T extends RowLike> = {
   scrollMode?: "none" | "content";
   maxVisibleRows?: number;
   // Other
-  // If paginateRows is true, the component will slice the rows based on the current page and items per page settings before rendering. If false, pagination controls will still be shown (if showPagination is true), but all rows will be rendered regardless of pagination settings. This allows for scenarios where you want to show pagination controls but not actually paginate the data, such as when server-side pagination is being handled externally.
-  paginateRows?: boolean;
 };
 
 function toLabel(raw: string) {
@@ -80,7 +78,6 @@ export default function DynamicTable<T extends RowLike>({
   totalItems,
   currentPage,
   currentItemsPerPage,
-  paginateRows = true,
   onPageChange,
   onItemsPerPageChange,
   formatters,
@@ -133,7 +130,7 @@ export default function DynamicTable<T extends RowLike>({
   const resolvedItemsPerPage = currentItemsPerPage ?? internalItemsPerPage;
   const resolvedCurrentPage = currentPage ?? internalCurrentPage;
   const resolvedTotalItems = totalItems ?? rows.length;
-  const shouldPaginate = showPagination && paginateRows;
+  const shouldPaginate = false;
   const totalPages = Math.max(
     1,
     Math.ceil(resolvedTotalItems / resolvedItemsPerPage),

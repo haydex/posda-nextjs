@@ -557,7 +557,6 @@ export default function DatasetByIdPage({ params }: PageProps) {
                     totalItems={recordsetsData.total}
                     currentPage={recordsetsPage}
                     currentItemsPerPage={recordsetsItemsPerPage}
-                    paginateRows={false}
                     onPageChange={setRecordsetsPage}
                     onItemsPerPageChange={(nextItemsPerPage) => {
                       setRecordsetsItemsPerPage(nextItemsPerPage);
@@ -618,7 +617,6 @@ export default function DatasetByIdPage({ params }: PageProps) {
                 totalItems={releasesData.total}
                 currentPage={releasesPage}
                 currentItemsPerPage={releasesItemsPerPage}
-                paginateRows={false}
                 onPageChange={setReleasesPage}
                 onItemsPerPageChange={(nextItemsPerPage) => {
                   setReleasesItemsPerPage(nextItemsPerPage);

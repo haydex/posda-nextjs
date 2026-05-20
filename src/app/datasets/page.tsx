@@ -276,7 +276,6 @@ export default function DatasetsPage() {
               totalItems={data.total}
               currentPage={currentPage}
               currentItemsPerPage={itemsPerPage}
-              paginateRows={false}
               onPageChange={setCurrentPage}
               onItemsPerPageChange={(nextItemsPerPage) => {
                 setItemsPerPage(nextItemsPerPage);

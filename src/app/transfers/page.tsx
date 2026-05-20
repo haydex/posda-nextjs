@@ -181,7 +181,6 @@ export default function TransfersPage() {
             currentPage={datasetPage}
             currentItemsPerPage={datasetPageSize}
             defaultItemsPerPage={10}
-            paginateRows={false}
             onPageChange={setDatasetPage}
             onItemsPerPageChange={(next) => { setDatasetPageSize(next); setDatasetPage(1); }}
             columns={[

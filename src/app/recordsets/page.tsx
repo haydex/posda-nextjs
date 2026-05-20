@@ -334,8 +334,6 @@ export default function RecordsetsPage() {
                 router.push(`/recordsets/${row.recordset_id}`)
               }
               getRowKey={(row) => row.recordset_id}
-              // Other
-              paginateRows={false}
             />
 
             {/* <p className="text-xs text-zinc-500 dark:text-zinc-400">
