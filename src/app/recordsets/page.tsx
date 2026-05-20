@@ -258,7 +258,9 @@ export default function RecordsetsPage() {
     <PageShell size="6xl">
       <PageDetailHeader
         title="Recordsets"
-        actions={<LinkButton href="/recordsets/create">New Recordset</LinkButton>}
+        actions={
+          <LinkButton href="/recordsets/create">New Recordset</LinkButton>
+        }
       />
 
       <SectionCard>
@@ -295,17 +297,9 @@ export default function RecordsetsPage() {
             </p> */}
 
             <DynamicTable
+              // Data
               rows={data.recordsets}
-              defaultItemsPerPage={10}
-              totalItems={data.total}
-              currentPage={currentPage}
-              currentItemsPerPage={itemsPerPage}
-              paginateRows={false}
-              onPageChange={setCurrentPage}
-              onItemsPerPageChange={(next) => {
-                setItemsPerPage(next);
-                setCurrentPage(1);
-              }}
+              // Columns
               columns={[
                 { key: "recordset_id", label: "ID" },
                 { key: "dataset_name", label: "Dataset" },
@@ -315,6 +309,24 @@ export default function RecordsetsPage() {
                 { key: "active", label: "Active" },
                 { key: "when_updated", label: "Updated" },
               ]}
+              excludeKeys={[]}
+              // Pagination & Scrolling
+              // Paginate, if showPagination is true.
+              showPagination={true}
+              defaultItemsPerPage={10}
+              totalItems={data.total}
+              currentPage={currentPage}
+              currentItemsPerPage={itemsPerPage}
+              itemsPerPageOptions={[4, 10, 25, 50]}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(next) => {
+                setItemsPerPage(next);
+                setCurrentPage(1);
+              }}
+              // Do Not Paginate, if showPagination is false, all rows will be shown.
+              scrollMode="content"
+              maxVisibleRows={5}
+              // Appearance & Behavior
               formatters={{
                 when_updated: (value) => formatDateTime(value as string),
               }}
@@ -322,6 +334,8 @@ export default function RecordsetsPage() {
                 router.push(`/recordsets/${row.recordset_id}`)
               }
               getRowKey={(row) => row.recordset_id}
+              // Other
+              paginateRows={false}
             />
 
             {/* <p className="text-xs text-zinc-500 dark:text-zinc-400">

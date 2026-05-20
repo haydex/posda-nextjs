@@ -12,26 +12,42 @@ export type DynamicTableColumn<T extends RowLike> = {
 };
 
 type DynamicTableProps<T extends RowLike> = {
+  // Data
   rows: T[];
+  // Columns
   columns?: Array<DynamicTableColumn<T>>;
+  excludeKeys?: Array<keyof T & string>;
+  // Appearance & Behavior
   emptyMessage?: string;
-  showPagination?: boolean;
-  scrollMode?: "none" | "content";
-  maxVisibleRows?: number;
-  defaultItemsPerPage?: number;
-  itemsPerPageOptions?: number[];
-  totalItems?: number;
-  currentPage?: number;
-  currentItemsPerPage?: number;
-  paginateRows?: boolean;
-  onPageChange?: (page: number) => void;
-  onItemsPerPageChange?: (itemsPerPage: number) => void;
   formatters?: Partial<
     Record<keyof T & string, (value: unknown, row: T) => ReactNode>
   >;
-  excludeKeys?: Array<keyof T & string>;
   onRowClick?: (row: T) => void;
   getRowKey?: (row: T, index: number) => string | number;
+  // Pagination & Scrolling
+  // Paginate, if showPagination is true.
+  // If showPagination is true, only a subset of rows will be shown based on the current page and items per page settings, and pagination controls will be displayed.
+  // If showPagination is false, all rows will be shown and pagination controls will be hidden.
+  showPagination?: boolean;
+  // Pagination controls. Only relevant if showPagination is true.
+  defaultItemsPerPage?: number;
+  totalItems?: number;
+  currentPage?: number;
+  currentItemsPerPage?: number;
+  // If itemsPerPageOptions is provided and non-empty, it will be used as the options for items per page selection. Otherwise, a default set of options [4, 10, 25, 50, 100] will be used.
+  itemsPerPageOptions?: number[];
+  onPageChange?: (page: number) => void;
+  // This callback is triggered when the user changes the items per page selection. It receives the new items per page value as an argument.
+  onItemsPerPageChange?: (itemsPerPage: number) => void;
+  // Do Not Paginate, if showPagination is false, all rows will be shown.
+  // If showPagination is false, scrollMode controls how the table handles overflow when there are many rows.
+  // "none" (default) means no special handling; the table will grow in height as needed.
+  // "content" means the table will have a max height and show a scrollbar if there are too many rows.
+  scrollMode?: "none" | "content";
+  maxVisibleRows?: number;
+  // Other
+  // If paginateRows is true, the component will slice the rows based on the current page and items per page settings before rendering. If false, pagination controls will still be shown (if showPagination is true), but all rows will be rendered regardless of pagination settings. This allows for scenarios where you want to show pagination controls but not actually paginate the data, such as when server-side pagination is being handled externally.
+  paginateRows?: boolean;
 };
 
 function toLabel(raw: string) {
@@ -73,9 +89,7 @@ export default function DynamicTable<T extends RowLike>({
   getRowKey,
 }: DynamicTableProps<T>) {
   if (rows.length === 0) {
-    return (
-      <p className="text-sm text-muted">{emptyMessage}</p>
-    );
+    return <p className="text-sm text-muted">{emptyMessage}</p>;
   }
 
   const blocked = new Set<string>(excludeKeys ?? []);
@@ -197,7 +211,10 @@ export default function DynamicTable<T extends RowLike>({
             <thead className="sticky top-0">
               <tr className="bg-accent">
                 {resolvedColumns.map((column) => (
-                  <th key={column.key} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                  <th
+                    key={column.key}
+                    className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-white"
+                  >
                     {column.label ?? toLabel(column.key)}
                   </th>
                 ))}
@@ -221,8 +238,7 @@ export default function DynamicTable<T extends RowLike>({
                 >
                   {resolvedColumns.map((column) => {
                     const rawValue = row[column.key];
-                    const formatter =
-                      column.render ?? formatters?.[column.key];
+                    const formatter = column.render ?? formatters?.[column.key];
 
                     return (
                       <td key={column.key} className="px-2 py-2">
@@ -243,7 +259,10 @@ export default function DynamicTable<T extends RowLike>({
             <thead>
               <tr className="bg-accent">
                 {resolvedColumns.map((column) => (
-                  <th key={column.key} className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                  <th
+                    key={column.key}
+                    className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-white"
+                  >
                     {column.label ?? toLabel(column.key)}
                   </th>
                 ))}
