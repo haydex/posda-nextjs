@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { PageDetailHeader, PageShell } from "@/components/ui/Page";
@@ -56,7 +56,7 @@ function formatReleaseLabel(release: RecordsetRelease) {
   return `v${release.release_number}${date ? ` (${date})` : ""}`;
 }
 
-export default function RecordsetDraftCreatePage() {
+function RecordsetDraftCreatePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -359,5 +359,13 @@ export default function RecordsetDraftCreatePage() {
         )}
       </SectionCard>
     </PageShell>
+  );
+}
+
+export default function RecordsetDraftCreatePage() {
+  return (
+    <Suspense>
+      <RecordsetDraftCreatePageContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { PageDetailHeader, PageShell } from "@/components/ui/Page";
@@ -47,7 +47,7 @@ function extractArray<T>(payload: unknown, keys: string[]): T[] {
   return [];
 }
 
-export default function DatasetReleaseCreatePage() {
+function DatasetReleaseCreatePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -352,5 +352,13 @@ export default function DatasetReleaseCreatePage() {
         )}
       </SectionCard>
     </PageShell>
+  );
+}
+
+export default function DatasetReleaseCreatePage() {
+  return (
+    <Suspense>
+      <DatasetReleaseCreatePageContent />
+    </Suspense>
   );
 }

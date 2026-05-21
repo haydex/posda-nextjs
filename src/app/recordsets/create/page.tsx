@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import DynamicForm, { DynamicFormField } from "@/components/DynamicForm";
 import { useToast } from "@/components/Toast";
 import { toastError, toastSuccess } from "@/components/toastHelpers";
@@ -53,7 +53,7 @@ function extractArray<T>(payload: unknown, keys: string[]): T[] {
   return [];
 }
 
-export default function RecordsetCreatePage() {
+function RecordsetCreatePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -353,5 +353,13 @@ export default function RecordsetCreatePage() {
         />
       </SectionCard>
     </PageShell>
+  );
+}
+
+export default function RecordsetCreatePage() {
+  return (
+    <Suspense>
+      <RecordsetCreatePageContent />
+    </Suspense>
   );
 }
