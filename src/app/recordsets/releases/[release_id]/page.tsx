@@ -1,6 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import DynamicSection, {
   DynamicSectionField,
@@ -97,7 +96,6 @@ type PageProps = {
 };
 
 export default function ReleaseByIdPage({ params }: PageProps) {
-  const searchParams = useSearchParams();
   const [data, setData] = useState<ReleaseResponse | null>(null);
   const [summary, setSummary] = useState<ReleaseSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -113,17 +111,13 @@ export default function ReleaseByIdPage({ params }: PageProps) {
 
       const { release_id } = await params;
       const id = release_id;
-      const recordsetIdFromQuery = searchParams.get("recordset_id");
       if (!isMounted) {
         return;
       }
 
       try {
-        const endpoint = recordsetIdFromQuery
-          ? `/api/recordsets/${recordsetIdFromQuery}/releases/${id}`
-          : `/api/recordsets/releases/${id}`;
         const [response, summaryRes] = await Promise.all([
-          fetch(endpoint, { cache: "no-store" }),
+          fetch(`/api/recordsets/releases/${id}`, { cache: "no-store" }),
           fetch(`/api/recordsets/releases/${id}/summary`, { cache: "no-store" }),
         ]);
 
@@ -171,7 +165,7 @@ export default function ReleaseByIdPage({ params }: PageProps) {
     return () => {
       isMounted = false;
     };
-  }, [params, searchParams]);
+  }, [params]);
 
   const release = data?.release ?? data?.data ?? null;
   const releaseFields: DynamicSectionField[] = release
@@ -192,7 +186,7 @@ export default function ReleaseByIdPage({ params }: PageProps) {
       ]
     : [];
 
-  const recordsetId = release?.recordset_id ?? searchParams.get("recordset_id");
+  const recordsetId = release?.recordset_id;
 
   return (
     <PageShell size="5xl">
