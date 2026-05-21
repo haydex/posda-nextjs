@@ -143,7 +143,7 @@ const [isLoadingActivities, setIsLoadingActivities] = useState(false);
       const { draft_id } = await params;
       if (!isMounted) return;
       setDraftId(draft_id);
-      setIsLoadingDraft(true);
+      setIsLoadingDiff(true);
       setIsLoadingActivities(true);
 
       try {
@@ -172,7 +172,7 @@ const [isLoadingActivities, setIsLoadingActivities] = useState(false);
         setDraftError("Could not load page data.");
       } finally {
         if (isMounted) {
-          setIsLoadingDraft(false);
+          setIsLoadingDiff(false);
           setIsLoadingActivities(false);
         }
       }
