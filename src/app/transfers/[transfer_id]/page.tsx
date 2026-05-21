@@ -45,6 +45,7 @@ type RecordsetRelease = {
   recordset_release_id: number;
   recordset_id: number;
   recordset_name: string;
+  recordset_type_name: string;
   release_number: number;
   retriever_manifest_file_id: number | null;
   downloadable_file_id: number | null;
@@ -415,31 +416,35 @@ export default function TransferDetailPage({ params }: PageProps) {
             {recordsets.map((r) => {
               const hasManifest = r.retriever_manifest_file_id !== null;
               const isGenerating = generatingManifestId === r.recordset_release_id;
+              const isRadiology = r.recordset_type_name === "Radiology Images";
               return (
                 <li key={r.recordset_release_id} className="flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
                   <span className="flex items-center gap-2">
                     <span className="font-medium">{r.recordset_name}</span>
                     <span style={{ color: "var(--muted)" }}>v{r.release_number}</span>
+                    <span className="text-xs" style={{ color: "var(--muted)" }}>{r.recordset_type_name}</span>
                   </span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    <span className="text-xs" style={{ color: "var(--muted)" }}>Download Manifest</span>
-                    <button
-                      className="btn btn-sm btn-ghost"
-                      onClick={() => void generateManifest(r)}
-                      disabled={isGenerating}
-                    >
-                      {isGenerating ? "Generating…" : hasManifest ? "Replace" : "Generate"}
-                    </button>
-                    {hasManifest && r.downloadable_file_id && r.security_hash && (
-                      <a
+                  {isRadiology && (
+                    <span className="flex shrink-0 items-center gap-2">
+                      <span className="text-xs" style={{ color: "var(--muted)" }}>Retriever Manifest</span>
+                      <button
                         className="btn btn-sm btn-ghost"
-                        href={`/api/download/file/${r.downloadable_file_id}/${r.security_hash}`}
-                        download
+                        onClick={() => void generateManifest(r)}
+                        disabled={isGenerating}
                       >
-                        Download
-                      </a>
-                    )}
-                  </span>
+                        {isGenerating ? "Generating…" : hasManifest ? "Replace" : "Generate"}
+                      </button>
+                      {hasManifest && r.downloadable_file_id && r.security_hash && (
+                        <a
+                          className="btn btn-sm btn-ghost"
+                          href={`/api/download/file/${r.downloadable_file_id}/${r.security_hash}`}
+                          download
+                        >
+                          Download
+                        </a>
+                      )}
+                    </span>
+                  )}
                 </li>
               );
             })}
