@@ -30,8 +30,14 @@ type DestSettings = {
   // idc
   gcs_url?: string | null;
   dataset_manifest_file_id?: number | null;
+  dataset_manifest_downloadable_file_id?: number | null;
+  dataset_manifest_security_hash?: string | null;
   recordset_manifest_file_id?: number | null;
+  recordset_manifest_downloadable_file_id?: number | null;
+  recordset_manifest_security_hash?: string | null;
   clinical_manifest_file_id?: number | null;
+  clinical_manifest_downloadable_file_id?: number | null;
+  clinical_manifest_security_hash?: string | null;
   // aspera
   faspex_url?: string | null;
   // nbia
@@ -258,9 +264,18 @@ export default function TransferDetailPage({ params }: PageProps) {
         const msg = typeof json.error === "string" ? json.error : (json.error?.message ?? "Could not generate manifest.");
         throw new Error(msg);
       }
-      const json = (await res.json()) as { data: { file_id: number } };
+      const json = (await res.json()) as {
+        data: { file_id: number; downloadable_file_id: number; security_hash: string };
+      };
       setDestSettings((prev) =>
-        prev ? { ...prev, [`${type}_manifest_file_id`]: json.data.file_id } : prev
+        prev
+          ? {
+              ...prev,
+              [`${type}_manifest_file_id`]:               json.data.file_id,
+              [`${type}_manifest_downloadable_file_id`]:  json.data.downloadable_file_id,
+              [`${type}_manifest_security_hash`]:         json.data.security_hash,
+            }
+          : prev
       );
       toastSuccess(addToast, `${type.charAt(0).toUpperCase() + type.slice(1)} manifest generated.`);
     } catch (e) {
@@ -478,20 +493,35 @@ export default function TransferDetailPage({ params }: PageProps) {
                       <span className={labelClass} style={{ color: "var(--muted)" }}>IDC Manifests</span>
                       <ul className="mt-1 divide-y text-sm" style={{ borderColor: "var(--border-strong)" }}>
                         {(["dataset", "recordset", "clinical"] as const).map((type) => {
-                          const fileIdKey = `${type}_manifest_file_id` as keyof DestSettings;
-                          const hasFile = destSettings?.[fileIdKey] != null;
+                          const fileIdKey  = `${type}_manifest_file_id`                as keyof DestSettings;
+                          const dfIdKey    = `${type}_manifest_downloadable_file_id`   as keyof DestSettings;
+                          const hashKey    = `${type}_manifest_security_hash`          as keyof DestSettings;
+                          const hasFile    = destSettings?.[fileIdKey] != null;
+                          const dfId       = destSettings?.[dfIdKey];
+                          const hash       = destSettings?.[hashKey];
                           const isGenerating = generatingIdcManifest === type;
                           return (
                             <li key={type} className="flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
                               <span className="capitalize">{type}</span>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-ghost"
-                                onClick={() => void generateIdcManifest(type)}
-                                disabled={isGenerating}
-                              >
-                                {isGenerating ? "Generating…" : hasFile ? "Replace" : "Generate"}
-                              </button>
+                              <span className="flex shrink-0 items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-ghost"
+                                  onClick={() => void generateIdcManifest(type)}
+                                  disabled={isGenerating}
+                                >
+                                  {isGenerating ? "Generating…" : hasFile ? "Replace" : "Generate"}
+                                </button>
+                                {hasFile && dfId && hash && (
+                                  <a
+                                    className="btn btn-sm btn-ghost"
+                                    href={`/api/download/file/${String(dfId)}/${String(hash)}`}
+                                    download
+                                  >
+                                    Download
+                                  </a>
+                                )}
+                              </span>
                             </li>
                           );
                         })}
